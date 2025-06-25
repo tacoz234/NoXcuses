@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NoXcuses - Current Workout</title>
-    <!-- Add this inside <head> in both files -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -18,9 +18,9 @@
             padding-bottom: 1rem; /* Small padding at bottom */
         }
 
-        /* Custom styles for the three-dot menu */
+        /* Custom styles for the three-dot menu icon */
         .three-dots::after {
-            content: "\2022\2022\2022"; /* Three middle dots */
+            content: "\2022\2022\2022"; /* Three middle dots character */
             display: inline-block;
             font-size: 1.2em;
             line-height: 0.5em;
@@ -29,59 +29,44 @@
             color: #888; /* Gray color for the dots */
         }
 
-        /* Custom styling for the rest timer and workout timer */
+        /* Custom styling for the rest timer and workout timer buttons */
         .timer-button {
             background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white for a subtle look */
             border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(5px); /* Frosted glass effect */
         }
 
+        /* Main exercise card styling */
         .exercise-card {
-    position: relative;
-}
-.exercise-card .delete-exercise-btn {
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 80px;
-    border-radius: 0 0.5rem 0.5rem 0;
-    transform: translateX(100%);
-    transition: transform 0.2s;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.exercise-card.swiped .delete-exercise-btn {
-    transform: translateX(0);
-}
-.exercise-card .exercise-content {
-    transition: transform 0.2s;
-}
+            position: relative; /* Needed for absolute positioning of the menu */
+            /* Explicitly ensure overflow is visible to allow the menu to pop out */
+            overflow: visible !important;
+        }
 
-/* Add to your <style> */
-.set-row {
-    position: relative;
-}
-.set-row .delete-set-btn {
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 64px;
-    border-radius: 0 0.5rem 0.5rem 0;
-    transform: translateX(100%);
-    transition: transform 0.2s;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.set-row.swiped .delete-set-btn {
-    transform: translateX(0);
-}
-.set-row .set-content {
-    transition: transform 0.2s;
-}
+        /* Set row swipe-to-delete styles (retained) */
+        .set-row {
+            position: relative;
+            overflow: hidden; /* Keep overflow hidden for set rows to clip delete button */
+        }
+        .set-row .delete-set-btn {
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 64px; /* Width for delete button */
+            border-radius: 0 0.5rem 0.5rem 0;
+            transform: translateX(100%); /* Initially hidden */
+            transition: transform 0.2s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .set-row.swiped .delete-set-btn {
+            transform: translateX(0); /* Show on swipe */
+        }
+        .set-row .set-content {
+            transition: transform 0.2s; /* Smooth content movement */
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -109,7 +94,7 @@
 
         <!-- Exercises Section (initially empty) -->
         <section id="exercises-container" class="space-y-4">
-            <!-- No exercise cards here initially -->
+            <!-- Exercise cards will be dynamically added here -->
         </section>
 
         <!-- Add Exercise Button -->
@@ -118,6 +103,54 @@
         </button>
 
     </main>
+
+    <!-- Consistent Bottom Navbar for all pages -->
+    <nav class="fixed bottom-0 left-0 w-full bg-gray-800 border-t border-gray-700 shadow-lg md:hidden z-50">
+        <ul class="flex justify-around items-center h-16">
+            <li class="flex-1">
+                <a href="index.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
+                    HOME_ACTIVE
+                    text-blue-500 hover:text-blue-400">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs mt-1">Home</span>
+                </a>
+            </li>
+            <li class="flex-1">
+                <a href="history.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
+                    HISTORY_ACTIVE
+                    text-blue-500 hover:text-blue-400">
+                    <i class="fas fa-history text-xl"></i>
+                    <span class="text-xs mt-1">History</span>
+                </a>
+            </li>
+            <li class="flex-1">
+                <a href="workout.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
+                    WORKOUT_ACTIVE
+                    text-blue-500 hover:text-blue-400">
+                    <i class="fas fa-plus-circle text-3xl"></i>
+                    <span class="text-xs mt-1">Start</span>
+                </a>
+            </li>
+            <li class="flex-1">
+                <a href="exercises.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
+                    EXERCISES_ACTIVE
+                    text-blue-500 hover:text-blue-400">
+                    <i class="fas fa-dumbbell text-xl"></i>
+                    <span class="text-xs mt-1">Exercises</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Exercise Search Modal -->
+    <div id="exercise-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900 relative">
+            <button id="close-exercise-modal" class="absolute top-2 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+            <h2 class="text-xl font-semibold mb-4">Add Exercise</h2>
+            <input id="exercise-search" type="text" placeholder="Search exercises..." class="w-full mb-4 p-2 border rounded" />
+            <div id="exercise-list" class="max-h-64 overflow-y-auto space-y-2"></div>
+        </div>
+    </div>
 
     <script>
         let workoutStartTime;
@@ -129,6 +162,61 @@
         const restTimerButton = document.querySelector('button.bg-blue-600');
         const addExerciseButton = document.getElementById('add-exercise-btn');
         const exercisesContainer = document.getElementById('exercises-container');
+        let allExercises = []; // To store fetched exercises for the modal
+
+        // --- NEW --- Save workout state to localStorage
+        function saveWorkoutState() {
+            const exercises = [];
+            document.querySelectorAll('#exercises-container .exercise-card').forEach(exCard => {
+                const nameEl = exCard.querySelector('.flex-1.text-lg.font-semibold');
+                if (!nameEl) return;
+
+                const exerciseName = nameEl.textContent || nameEl.value;
+                const sets = [];
+                exCard.querySelectorAll('.set-row').forEach(setRow => {
+                    const inputs = setRow.querySelectorAll('input');
+                    sets.push({
+                        weight: inputs[0].value,
+                        reps: inputs[1].value,
+                        completed: inputs[2].checked
+                    });
+                });
+                exercises.push({ name: exerciseName, sets });
+            });
+
+            const workoutState = {
+                startTime: workoutStartTime,
+                exercises: exercises
+            };
+            localStorage.setItem('currentWorkout', JSON.stringify(workoutState));
+        }
+
+        // --- NEW --- Load workout state from localStorage
+        function loadWorkoutState() {
+            const savedWorkout = localStorage.getItem('currentWorkout');
+            if (savedWorkout) {
+                const workout = JSON.parse(savedWorkout);
+                workoutStartTime = workout.startTime;
+                if (workout.exercises) {
+                    workout.exercises.forEach(ex => {
+                        addExerciseCard(ex.name, ex.sets);
+                    });
+                }
+                // Resume timer
+                if (workoutStartTime) {
+                    const elapsedSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
+                    workoutDurationDisplay.textContent = formatTime(elapsedSeconds);
+                    workoutInterval = setInterval(() => {
+                        const elapsed = Math.floor((Date.now() - workoutStartTime) / 1000);
+                        workoutDurationDisplay.textContent = formatTime(elapsed);
+                    }, 1000);
+                } else {
+                    startWorkoutTimer();
+                }
+            } else {
+                startWorkoutTimer();
+            }
+        }
 
         // Function to format time as HH:MM:SS
         function formatTime(totalSeconds) {
@@ -140,7 +228,9 @@
 
         // Start workout timer
         function startWorkoutTimer() {
-            workoutStartTime = Date.now();
+            if (!workoutStartTime) { // Only set if not already loaded
+                workoutStartTime = Date.now();
+            }
             workoutInterval = setInterval(() => {
                 const elapsedSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
                 workoutDurationDisplay.textContent = formatTime(elapsedSeconds);
@@ -174,10 +264,13 @@
 
         // Function to add a new exercise card
         function addExerciseCard(name, sets, rest) {
+            // Ensure name is a string, default to empty if not provided or invalid
             if (typeof name !== 'string') {
                 name = '';
             }
+
             let setsHtml = '';
+            // If sets are provided and valid, generate HTML for each set
             if (Array.isArray(sets) && sets.length > 0) {
                 sets.forEach((set, idx) => {
                     setsHtml += `
@@ -186,12 +279,12 @@
                             <div class="set-content flex items-center space-x-2 w-full transition-transform duration-200">
                                 <span class="font-medium text-gray-600">Set ${idx + 1}</span>
                                 <input type="number" placeholder="Weight (kg/lbs)" value="${set.weight || ''}" class="flex-1 p-2 border rounded-md text-sm text-gray-800 bg-gray-100">
-                                <input type="number" placeholder="Reps" value="${set.reps || ''}" class="w-20 p-2 border rounded-md text-sm text-gray-800 bg-gray-100">
+                                <input type="text" placeholder="Reps" value="${set.reps || ''}" class="w-20 p-2 border rounded-md text-sm text-gray-800 bg-gray-100">
                                 <input type="checkbox" class="h-5 w-5 text-blue-600 rounded-md" ${set.completed ? 'checked' : ''}>
                             </div>
                         </div>
                     `;
-                    // Add rest row after each set except the last
+                    // Add rest row after each set except the last one, if rest time is provided
                     if (rest && idx < sets.length - 1) {
                         setsHtml += `
                             <div class="rest-row flex items-center justify-center text-xs text-blue-500 my-1">
@@ -201,23 +294,23 @@
                     }
                 });
             }
-            // Show number of sets before the name, and prevent name cutoff
+
             const setCount = Array.isArray(sets) ? sets.length : 0;
             const newExerciseHtml = `
-                <div class="exercise-card relative bg-white p-4 rounded-lg shadow-md text-gray-900 overflow-hidden group">
-                    <button class="delete-exercise-btn absolute top-0 right-0 h-full w-20 bg-red-600 text-white font-bold rounded-lg transition-all duration-200 translate-x-full z-10 hidden">Delete</button>
-                    <div class="exercise-content transition-transform duration-200">
+                <div class="exercise-card relative bg-white p-4 rounded-lg shadow-md text-gray-900">
+                    <div class="exercise-content">
                         <div class="flex justify-between items-center mb-3">
                             <div class="flex items-center w-full gap-2">
                                 <span class="font-bold text-blue-600">${setCount > 0 ? setCount : ''}</span>
                                 <span class="flex-1 text-lg font-semibold p-1 border-b border-gray-300 bg-transparent focus:outline-none whitespace-normal break-words" style="word-break:break-word;min-width:0;">${name}</span>
                             </div>
-                            <button class="three-dots cursor-pointer bg-transparent border-0 text-xl ml-2" title="More"></button>
-                            <div class="exercise-menu absolute right-0 top-10 bg-white rounded shadow-lg z-20 hidden min-w-[140px]">
-                                <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 delete-exercise-menu">Delete</button>
-                                <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 replace-exercise-menu">Replace Exercise</button>
-                                <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 cancel-exercise-menu">Cancel</button>
-                            </div>
+                            <button class="three-dots cursor-pointer bg-transparent border-0 text-xl ml-2" title="More options"></button>
+                        </div>
+                        <!-- Moved exercise-menu here, outside the flex container but inside exercise-content -->
+                        <div class="exercise-menu absolute right-0 top-10 bg-white rounded shadow-lg z-20 hidden min-w-[140px] border-2 border-red-500">
+                            <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 delete-exercise-menu">Delete</button>
+                            <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 replace-exercise-menu">Replace Exercise</button>
+                            <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 cancel-exercise-menu">Cancel</button>
                         </div>
                         <div class="sets-container space-y-2">
                             ${setsHtml}
@@ -229,65 +322,147 @@
                 </div>
             `;
             exercisesContainer.insertAdjacentHTML('beforeend', newExerciseHtml);
-            const newCard = exercisesContainer.lastElementChild;
-            attachAddSetListeners();
-            // attachExerciseSwipeListener(newCard); // REMOVE THIS LINE
-            attachThreeDotsMenu(newCard);
+            const newCard = exercisesContainer.lastElementChild; // Get the newly added card
+
+            // --- MODIFIED --- Add event listeners to save on input change
+            newCard.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', saveWorkoutState);
+            });
+
+            attachAddSetListeners(); // Re-attach listeners for all add set buttons
+            attachThreeDotsMenu(newCard); // Attach menu logic to the new card
+
+            // Attach set swipe listeners to all existing sets within the new card
+            newCard.querySelectorAll('.set-row').forEach(setRow => {
+                attachSetSwipeListener(setRow);
+            });
         }
+
+        // Global variable to hold the reference to the hideMenuOutsideGlobal function
+        let hideMenuOutsideGlobalRef = null;
 
         // Attach three-dots menu logic
         function attachThreeDotsMenu(card) {
             const dotsBtn = card.querySelector('.three-dots');
+            // Select menu relative to the card, since it's now a direct child of exercise-content
             const menu = card.querySelector('.exercise-menu');
-            // Remove any previous click handler
-            dotsBtn.onclick = null;
-            dotsBtn.addEventListener('click', function(e) {
+
+            if (!dotsBtn || !menu) {
+                console.error('Three dots button or menu not found for card:', card);
+                return;
+            }
+
+            console.log('Attaching three dots menu listener to:', dotsBtn);
+
+            // Define the click handler for the three dots button
+            const handleThreeDotsClick = function(e) {
                 e.stopPropagation();
-                // Hide all other menus
-                document.querySelectorAll('.exercise-menu').forEach(m => m.classList.add('hidden'));
-                menu.classList.toggle('hidden');
-            });
-            // Hide menu on click outside
-            document.addEventListener('click', function hideMenu(e) {
-                if (!card.contains(e.target)) menu.classList.add('hidden');
-            });
+                console.log('Three dots clicked for card:', card.querySelector('.flex-1').textContent.trim());
+
+                // Hide all other exercise menus before showing this one
+                document.querySelectorAll('.exercise-menu').forEach(m => {
+                    // Check if 'm' is the current menu or if it's already hidden
+                    if (m !== menu && !m.classList.contains('hidden')) {
+                        m.classList.add('hidden');
+                        console.log('Hiding other menu:', m.closest('.exercise-card').querySelector('.flex-1') ? m.closest('.exercise-card').querySelector('.flex-1').textContent.trim() : 'Unnamed Card');
+                    }
+                });
+                menu.classList.toggle('hidden'); // Toggle visibility of the current menu
+                console.log('Menu visibility toggled. Current hidden state:', menu.classList.contains('hidden'));
+            };
+
+            // Remove any existing click listeners before adding a new one to prevent duplicates
+            dotsBtn.removeEventListener('click', handleThreeDotsClick);
+            dotsBtn.addEventListener('click', handleThreeDotsClick);
+
+            // Define the global click handler for hiding menus when clicking outside
+            // Ensure only one global listener exists
+            if (hideMenuOutsideGlobalRef) {
+                document.removeEventListener('click', hideMenuOutsideGlobalRef);
+            }
+            hideMenuOutsideGlobalRef = function(e) {
+                // Get all currently visible menus
+                const visibleMenus = Array.from(document.querySelectorAll('.exercise-menu')).filter(m => !m.classList.contains('hidden'));
+
+                // If there are visible menus, check if the click was outside of them or their trigger buttons
+                if (visibleMenus.length > 0) {
+                    let clickedOutsideAnyVisibleMenu = true;
+                    for (const m of visibleMenus) {
+                        const menuCard = m.closest('.exercise-card');
+                        const menuDotsBtn = menuCard ? menuCard.querySelector('.three-dots') : null;
+
+                        if (m.contains(e.target) || (menuDotsBtn && menuDotsBtn.contains(e.target))) {
+                            clickedOutsideAnyVisibleMenu = false;
+                            break; // Click was inside a visible menu or its button
+                        }
+                    }
+
+                    if (clickedOutsideAnyVisibleMenu) {
+                        visibleMenus.forEach(m => {
+                            m.classList.add('hidden');
+                            console.log('Hiding menu due to outside click:', m.closest('.exercise-card').querySelector('.flex-1') ? m.closest('.exercise-card').querySelector('.flex-1').textContent.trim() : 'Unnamed Card');
+                        });
+                    }
+                }
+            };
+            document.addEventListener('click', hideMenuOutsideGlobalRef);
+
+
             // Menu actions
             menu.querySelector('.delete-exercise-menu').onclick = (e) => {
-                e.stopPropagation();
-                card.remove();
+                e.stopPropagation(); // Prevent event bubbling
+                card.remove(); // Remove the entire exercise card
+                saveWorkoutState(); // --- NEW ---
+                menu.classList.add('hidden'); // Hide the menu after action
+                console.log('Exercise deleted.');
             };
+
             menu.querySelector('.replace-exercise-menu').onclick = (e) => {
                 e.stopPropagation();
-                alert('Replace Exercise (not implemented)');
+                // Replace Exercise logic (currently a placeholder)
+                // In a full app, this would open the exercise selection modal again,
+                // and replace the current card with the new exercise selected.
+                console.log('Replace Exercise functionality to be implemented. (Click handled)');
                 menu.classList.add('hidden');
             };
+
             menu.querySelector('.cancel-exercise-menu').onclick = (e) => {
                 e.stopPropagation();
-                menu.classList.add('hidden');
+                menu.classList.add('hidden'); // Just hide the menu
+                console.log('Menu cancelled.');
             };
         }
 
         // Function to add a new set to an exercise
         function addSetToExercise(button) {
-            const setsContainer = button.previousElementSibling; // This is the sets-container div
-            const currentSetCount = setsContainer.children.length + 1;
+            // Find the sets-container div which is the previous sibling of the button
+            const setsContainer = button.previousElementSibling;
+            const currentSetCount = setsContainer.children.length + 1; // Calculate new set number
+
             const newSetHtml = `
                 <div class="set-row relative flex items-center space-x-2 bg-white rounded-md overflow-hidden group">
-                    <button class="delete-set-btn absolute top-0 right-0 h-full w-16 bg-red-600 text-white font-bold rounded-md transition-all duration-200 translate-x-full z-10 hidden">Delete</button>
+                    <button class="delete-set-btn absolute top-0 right-0 h-full w-16 bg-red-600 text-white font-bold rounded-md transition-all duration-200 translate-x-full z-10">Delete</button>
                     <div class="set-content flex items-center space-x-2 w-full transition-transform duration-200">
                         <span class="font-medium text-gray-600">Set ${currentSetCount}</span>
                         <input type="number" placeholder="Weight (kg/lbs)" class="flex-1 p-2 border rounded-md text-sm text-gray-800 bg-gray-100">
-                        <input type="number" placeholder="Reps" class="w-20 p-2 border rounded-md text-sm text-gray-800 bg-gray-100">
+                        <input type="text" placeholder="Reps" class="w-20 p-2 border rounded-md text-sm text-gray-800 bg-gray-100">
                         <input type="checkbox" class="h-5 w-5 text-blue-600 rounded-md">
                     </div>
                 </div>
             `;
-            setsContainer.insertAdjacentHTML('beforeend', newSetHtml);
-            const newSetRow = setsContainer.lastElementChild;
+            setsContainer.insertAdjacentHTML('beforeend', newSetHtml); // Add the new set HTML
+            const newSetRow = setsContainer.lastElementChild; // Get the newly added set row
+
+            // --- MODIFIED --- Add event listeners to save on input change
+            newSetRow.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', saveWorkoutState);
+            });
+
+            // Ensure the delete button is hidden initially for the new set
             newSetRow.classList.remove('swiped');
             newSetRow.querySelector('.set-content').style.transform = '';
-            attachSetSwipeListener(newSetRow);
-            setsContainer.lastElementChild.classList.remove('swiped'); // Ensure delete button is hidden
+
+            attachSetSwipeListener(newSetRow); // Attach swipe listener to the new set row
         }
 
         // Attach event listeners for dynamically added "Add Set" buttons
@@ -297,22 +472,24 @@
             });
         }
 
-        // Add this function to gather workout data and save to localStorage
+        // Function to gather workout data and save to localStorage
         function finishWorkout() {
-            clearInterval(workoutInterval);
+            clearInterval(workoutInterval); // Stop the workout timer
 
-            // Gather workout duration
-            const duration = workoutDurationDisplay.textContent;
+            const duration = workoutDurationDisplay.textContent; // Get the final workout duration
 
-            // Gather exercises and sets
             const exercises = [];
-            document.querySelectorAll('#exercises-container > div').forEach(exDiv => {
-                let nameInput = exDiv.querySelector('input[type="text"], h3');
-                let exerciseName = nameInput ? (nameInput.value || nameInput.textContent) : 'Exercise';
+            // Iterate through each exercise card to gather its data
+            document.querySelectorAll('#exercises-container > .exercise-card').forEach(exDiv => {
+                // Get exercise name from the span
+                const exerciseNameSpan = exDiv.querySelector('.exercise-content .flex-1');
+                const exerciseName = exerciseNameSpan ? exerciseNameSpan.textContent.trim() : 'Unnamed Exercise';
+
                 let sets = [];
-                exDiv.querySelectorAll('.sets-container > div, .space-y-2 > div').forEach(setDiv => {
+                // Iterate through each set within the current exercise card
+                exDiv.querySelectorAll('.sets-container > .set-row').forEach(setDiv => {
                     const inputs = setDiv.querySelectorAll('input');
-                    if (inputs.length >= 3) {
+                    if (inputs.length >= 3) { // Ensure all expected inputs (weight, reps, checkbox) are present
                         sets.push({
                             weight: inputs[0].value,
                             reps: inputs[1].value,
@@ -320,389 +497,266 @@
                         });
                     }
                 });
+                // Add exercise to the array only if it has sets
                 if (sets.length > 0) {
-                    exercises.push({ name: exerciseName, sets });
+                    exercises.push({ name: exerciseName, sets: sets });
                 }
             });
 
-            // Prepare workout object
+            // Prepare workout object to be saved
             const workout = {
-                date: new Date().toISOString(),
-                duration,
-                exercises
+                date: new Date().toISOString(), // Current date/time in ISO format
+                duration: duration,
+                exercises: exercises
             };
 
             // Save to localStorage
-            const history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-            history.push(workout);
-            localStorage.setItem('workoutHistory', JSON.stringify(history));
+            const history = JSON.parse(localStorage.getItem('workoutHistory') || '[]'); // Get existing history or an empty array
+            history.push(workout); // Add current workout
+            localStorage.setItem('workoutHistory', JSON.stringify(history)); // Save updated history
 
             // Redirect to history page
             window.location.href = 'history.html';
         }
 
+        // --- Exercise Search Modal Logic ---
+
+        // Show modal on Add Exercise button click
+        document.getElementById('add-exercise-btn').onclick = function() {
+            document.getElementById('exercise-modal').classList.remove('hidden');
+            document.getElementById('exercise-search').value = ''; // Clear previous search
+            renderExerciseList(''); // Show all exercises initially
+        };
+
+        // Close modal
+        document.getElementById('close-exercise-modal').onclick = function() {
+            document.getElementById('exercise-modal').classList.add('hidden');
+        };
+
+        // Fetch exercises from JSON file
+        fetch('exercises.json')
+            .then(res => {
+                if (!res.ok) {
+                    console.error('Failed to load exercises.json. Status:', res.status);
+                    return []; // Return empty array on error
+                }
+                return res.json();
+            })
+            .then(data => {
+                allExercises = data; // Store all exercises
+                renderExerciseList(''); // Render initial list
+            })
+            .catch(error => {
+                console.error('Error fetching exercises:', error);
+                allExercises = []; // Ensure it's empty if fetch fails
+            });
+
+        // Render exercise list in the modal based on filter
+        function renderExerciseList(filter) {
+            const list = document.getElementById('exercise-list');
+            list.innerHTML = ''; // Clear current list
+            const filtered = allExercises.filter(ex => ex.name.toLowerCase().includes(filter.toLowerCase()));
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center py-4">No exercises found.</p>';
+            } else {
+                filtered.forEach(ex => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full text-left p-2 rounded hover:bg-blue-100';
+                    btn.textContent = ex.name;
+                    btn.onclick = function() {
+                        // When an exercise is selected, add it to the main workout view
+                        // Default to 3 sets and 60s rest if not specified in exercise data
+                        const defaultSets = [];
+                        const numSets = parseInt(ex.working_sets) || 3;
+                        const defaultReps = ex.reps || '';
+                        const defaultRest = ex.rest || '60s';
+
+                        for(let i = 0; i < numSets; i++) {
+                            defaultSets.push({ weight: '', reps: defaultReps, completed: false });
+                        }
+                        addExerciseCard(ex.name, defaultSets, defaultRest);
+                        document.getElementById('exercise-modal').classList.add('hidden'); // Hide modal
+                    };
+                    list.appendChild(btn);
+                });
+            }
+        }
+
+        // Filter exercises as user types in the search bar
+        document.getElementById('exercise-search').oninput = function(e) {
+            renderExerciseList(e.target.value);
+        };
+
+        // --- Set swipe-to-delete functionality (retained) ---
+        function attachSetSwipeListener(setRow) {
+            const content = setRow.querySelector('.set-content');
+            const deleteBtn = setRow.querySelector('.delete-set-btn');
+            let startX = 0, currentX = 0, swiped = false;
+
+            // Touch events for mobile swipe
+            content.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+                content.style.transition = ''; // Disable transition during swipe
+            });
+            content.addEventListener('touchmove', function(e) {
+                currentX = e.touches[0].clientX;
+                let dx = currentX - startX;
+                if (swiped && dx > 0) { // If already swiped, allow closing
+                    content.style.transform = `translateX(${dx - 64}px)`; // 64px is delete button width
+                } else if (!swiped) { // If not swiped, allow opening
+                    content.style.transform = `translateX(${dx}px)`;
+                }
+            });
+            content.addEventListener('touchend', function(e) {
+                let dx = currentX - startX;
+                content.style.transition = 'transform 0.2s'; // Re-enable transition for smooth snap
+
+                if (!swiped && dx < -40) { // Swipe left threshold to reveal delete
+                    content.style.transform = 'translateX(-64px)';
+                    setRow.classList.add('swiped');
+                    swiped = true;
+                } else if (swiped && dx > 30) { // Swipe right threshold to hide delete
+                    content.style.transform = '';
+                    setRow.classList.remove('swiped');
+                    swiped = false;
+                } else if (swiped) { // Snap back to swiped state if not enough right swipe
+                    content.style.transform = 'translateX(-64px)';
+                    setRow.classList.add('swiped');
+                } else { // Snap back to hidden state
+                    content.style.transform = '';
+                    setRow.classList.remove('swiped');
+                    swiped = false;
+                }
+                startX = 0; currentX = 0; // Reset touch coordinates
+            });
+
+            // Mouse events for desktop swipe
+            let mouseDown = false, mouseStartX = 0, mouseCurrentX = 0;
+            content.addEventListener('mousedown', function(e) {
+                mouseDown = true;
+                mouseStartX = e.clientX;
+                content.style.transition = '';
+            });
+            content.addEventListener('mousemove', function(e) {
+                if (!mouseDown) return;
+                mouseCurrentX = e.clientX;
+                let dx = mouseCurrentX - mouseStartX;
+                if (swiped && dx > 0) {
+                    content.style.transform = `translateX(${dx - 64}px)`;
+                } else if (!swiped) {
+                    content.style.transform = `translateX(${dx}px)`;
+                }
+            });
+            content.addEventListener('mouseup', function(e) {
+                if (!mouseDown) return;
+                let dx = mouseCurrentX - mouseStartX;
+                content.style.transition = 'transform 0.2s';
+                if (!swiped && dx < -40) {
+                    content.style.transform = 'translateX(-64px)';
+                    setRow.classList.add('swiped');
+                    swiped = true;
+                } else if (swiped && dx > 30) {
+                    content.style.transform = '';
+                    setRow.classList.remove('swiped');
+                    swiped = false;
+                } else if (swiped) {
+                    content.style.transform = 'translateX(-64px)';
+                    setRow.classList.add('swiped');
+                } else {
+                    content.style.transform = '';
+                    setRow.classList.remove('swiped');
+                    swiped = false;
+                }
+                mouseDown = false;
+                mouseStartX = 0; mouseCurrentX = 0;
+            });
+            // Handle mouse leaving the element while dragging
+            content.addEventListener('mouseleave', function(e) {
+                if (mouseDown) {
+                    content.dispatchEvent(new MouseEvent('mouseup')); // Trigger mouseup if mouse leaves while dragging
+                }
+            });
+
+            // Delete button click for sets
+            deleteBtn.onclick = function() {
+                setRow.remove(); // Remove the set row
+            };
+        }
+
+        // Navbar highlight logic (kept as is)
+        (function() {
+            const path = window.location.pathname;
+            const nav = document.querySelector('nav');
+            if (!nav) return;
+            let page = '';
+            if (path.endsWith('index.html')) page = 'HOME';
+            else if (path.endsWith('history.html')) page = 'HISTORY';
+            else if (path.endsWith('workout.html')) page = 'WORKOUT';
+            else if (path.endsWith('exercises.html')) page = 'EXERCISES';
+
+            // Use string replacement for active class based on current page
+            nav.innerHTML = nav.innerHTML
+                .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
+                .replace('HISTORY_ACTIVE', page==='HISTORY' ? 'text-blue-500' : 'text-gray-400')
+                .replace('WORKOUT_ACTIVE', page==='WORKOUT' ? 'text-blue-500' : 'text-gray-400')
+                .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400');
+        })();
+
+
         // Initial setup on page load
         window.onload = function() {
-            // Check for a selected template in localStorage
+            // Start the main workout timer
+            startWorkoutTimer();
+
+            // Attach event listener for the rest timer button
+            restTimerButton.addEventListener('click', toggleRestTimer);
+
+            // Attach event listener for the "Finish Workout" button
+            const finishBtn = document.querySelector('header button.bg-red-600');
+            if (finishBtn) {
+                finishBtn.addEventListener('click', finishWorkout);
+            }
+
+            // Check for a selected template in localStorage and load exercises if present
             const selectedTemplate = localStorage.getItem('selectedTemplate');
             if (selectedTemplate) {
                 try {
                     const template = JSON.parse(selectedTemplate);
-                    exercisesContainer.innerHTML = '';
+                    exercisesContainer.innerHTML = ''; // Clear any existing content
                     template.exercises.forEach(ex => {
-                        // Fill sets array based on working_sets and reps from template
                         let sets = [];
                         let reps = ex.reps || '';
                         let workingSets = parseInt(ex.working_sets) || 0;
                         for (let i = 0; i < workingSets; i++) {
                             sets.push({ weight: '', reps: reps, completed: false });
                         }
-                        addExerciseCard(ex.name, sets, ex.rest);
+                        addExerciseCard(ex.name, sets, ex.rest); // Add exercise with pre-filled sets
                     });
-                    // Optionally clear the selected template after loading
-                    // localStorage.removeItem('selectedTemplate');
+                    // Optionally clear the selected template after loading to prevent re-loading on refresh
+                    localStorage.removeItem('selectedTemplate');
                 } catch (e) {
-                    // If parsing fails, ignore and start empty
+                    console.error('Error parsing selected template from localStorage:', e);
+                    // If parsing fails, just start with an empty workout
                 }
             }
-            startWorkoutTimer();
-            restTimerButton.addEventListener('click', toggleRestTimer);
-            attachAddSetListeners();
-            const finishBtn = document.querySelector('header button.bg-red-600');
-            if (finishBtn) {
-                finishBtn.addEventListener('click', finishWorkout);
-            }
+
+            // Initially attach listeners for "Add Set" buttons and swipe listeners for sets
+            // This is crucial for any sets that might be loaded from a template
+            document.querySelectorAll('.add-set-btn').forEach(button => {
+                button.onclick = () => addSetToExercise(button);
+            });
+
+            // Attach set swipe listeners to all initial sets (if any were loaded from template)
+            document.querySelectorAll('.set-row').forEach(setRow => {
+                attachSetSwipeListener(setRow);
+            });
+
+            // Attach three-dots menu listeners to all initially loaded exercise cards
+            document.querySelectorAll('.exercise-card').forEach(card => {
+                attachThreeDotsMenu(card);
+            });
         };
     </script>
-<!-- Consistent Bottom Navbar for all pages -->
-<nav class="fixed bottom-0 left-0 w-full bg-gray-800 border-t border-gray-700 shadow-lg md:hidden z-50">
-    <ul class="flex justify-around items-center h-16">
-        <li class="flex-1">
-            <a href="index.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                HOME_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-home text-xl"></i>
-                <span class="text-xs mt-1">Home</span>
-            </a>
-        </li>
-        <li class="flex-1">
-            <a href="history.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                HISTORY_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-history text-xl"></i>
-                <span class="text-xs mt-1">History</span>
-            </a>
-        </li>
-        <li class="flex-1">
-            <a href="workout.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                WORKOUT_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-plus-circle text-3xl"></i>
-                <span class="text-xs mt-1">Start</span>
-            </a>
-        </li>
-        <li class="flex-1">
-            <a href="exercises.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                EXERCISES_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-dumbbell text-xl"></i>
-                <span class="text-xs mt-1">Exercises</span>
-            </a>
-        </li>
-    </ul>
-</nav>
-<script>
-// Navbar highlight logic
-(function() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('nav');
-    if (!nav) return;
-    let page = '';
-    if (path.endsWith('index.html')) page = 'HOME';
-    else if (path.endsWith('history.html')) page = 'HISTORY';
-    else if (path.endsWith('workout.html')) page = 'WORKOUT';
-    else if (path.endsWith('exercises.html')) page = 'EXERCISES';
-    nav.innerHTML = nav.innerHTML
-        .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
-        .replace('HISTORY_ACTIVE', page==='HISTORY' ? 'text-blue-500' : 'text-gray-400')
-        .replace('WORKOUT_ACTIVE', page==='WORKOUT' ? 'text-blue-500' : 'text-gray-400')
-        .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400');
-})();
-</script>
-<!-- Exercise Search Modal -->
-<div id="exercise-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900 relative">
-        <button id="close-exercise-modal" class="absolute top-2 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
-        <h2 class="text-xl font-semibold mb-4">Add Exercise</h2>
-        <input id="exercise-search" type="text" placeholder="Search exercises..." class="w-full mb-4 p-2 border rounded" />
-        <div id="exercise-list" class="max-h-64 overflow-y-auto space-y-2"></div>
-    </div>
-</div>
-<script>
-let allExercises = [];
-
-// Show modal on Add Exercise click
-document.getElementById('add-exercise-btn').onclick = function() {
-    document.getElementById('exercise-modal').classList.remove('hidden');
-    document.getElementById('exercise-search').value = '';
-    renderExerciseList('');
-};
-
-// Close modal
-document.getElementById('close-exercise-modal').onclick = function() {
-    document.getElementById('exercise-modal').classList.add('hidden');
-};
-
-// Fetch exercises from JSON
-fetch('exercises.json')
-    .then(res => res.json())
-    .then(data => {
-        allExercises = data;
-        renderExerciseList('');
-    });
-
-function renderExerciseList(filter) {
-    const list = document.getElementById('exercise-list');
-    list.innerHTML = '';
-    const filtered = allExercises.filter(ex => ex.name.toLowerCase().includes(filter.toLowerCase()));
-    filtered.forEach(ex => {
-        const btn = document.createElement('button');
-        btn.className = 'w-full text-left p-2 rounded hover:bg-blue-100';
-        btn.textContent = ex.name;
-        btn.onclick = function() {
-            // Use main addExerciseCard with default set/rest
-            addExerciseCard(ex.name, [{weight: '', reps: '', completed: false}], '60s');
-            document.getElementById('exercise-modal').classList.add('hidden');
-        };
-        list.appendChild(btn);
-    });
-}
-
-// Filter as you type
-document.getElementById('exercise-search').oninput = function(e) {
-    renderExerciseList(e.target.value);
-};
-
-// Update addExerciseCard to accept a name
-function addExerciseCard(name) {
-    if (typeof name !== 'string') {
-        name = '';
-    }
-    const newExerciseHtml = `
-        <div class="exercise-card relative bg-white p-4 rounded-lg shadow-md text-gray-900 overflow-hidden group">
-            <button class="delete-exercise-btn absolute top-0 right-0 h-full w-20 bg-red-600 text-white font-bold rounded-lg transition-all duration-200 translate-x-full z-10 hidden">Delete</button>
-            <div class="exercise-content transition-transform duration-200">
-                <div class="flex justify-between items-center mb-3">
-                    <input type="text" value="${name}" placeholder="Exercise Name" class="flex-1 text-lg font-semibold p-1 border-b border-gray-300 bg-transparent focus:outline-none truncate">
-                    <button class="three-dots cursor-pointer bg-transparent border-0 text-xl" title="Delete Exercise"></button>
-                </div>
-                <div class="sets-container space-y-2">
-                    <!-- Sets will be added here -->
-                </div>
-                <button class="w-full mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-md text-sm transition-colors duration-300 add-set-btn">
-                    Add Set
-                </button>
-            </div>
-        </div>
-    `;
-    // Insert and get the new card element
-    exercisesContainer.insertAdjacentHTML('beforeend', newExerciseHtml);
-    const newCard = exercisesContainer.lastElementChild;
-    attachAddSetListeners();
-    attachExerciseSwipeListener(newCard); // Only for the new card
-
-    // Attach delete to three-dots button
-    const dotsBtn = newCard.querySelector('.three-dots');
-    dotsBtn.onclick = () => newCard.remove();
-}
-
-// Exercise swipe listeners for delete functionality
-function attachExerciseSwipeListener(card) {
-    const content = card.querySelector('.exercise-content');
-    const deleteBtn = card.querySelector('.delete-exercise-btn');
-    let startX = 0, currentX = 0, swiped = false;
-
-    // Touch events for mobile
-    content.addEventListener('touchstart', function(e) {
-        startX = e.touches[0].clientX;
-        content.style.transition = '';
-    });
-    content.addEventListener('touchmove', function(e) {
-        currentX = e.touches[0].clientX;
-        let dx = currentX - startX;
-        if (swiped && dx > 0) {
-            content.style.transform = `translateX(${dx - 80}px)`;
-        } else if (!swiped) {
-            content.style.transform = `translateX(${dx}px)`;
-        }
-    });
-    content.addEventListener('touchend', function(e) {
-        let dx = currentX - startX;
-        content.style.transition = 'transform 0.2s';
-        if (!swiped && dx < -60) {
-            content.style.transform = 'translateX(-80px)';
-            card.classList.add('swiped');
-            swiped = true;
-        } else if (swiped && dx > 40) {
-            content.style.transform = '';
-            card.classList.remove('swiped');
-            swiped = false;
-        } else if (swiped) {
-            content.style.transform = 'translateX(-80px)';
-            card.classList.add('swiped');
-        } else {
-            content.style.transform = '';
-            card.classList.remove('swiped');
-            swiped = false;
-        }
-        startX = 0; currentX = 0;
-    });
-
-    // Mouse events for desktop
-    let mouseDown = false, mouseStartX = 0, mouseCurrentX = 0;
-    content.addEventListener('mousedown', function(e) {
-        mouseDown = true;
-        mouseStartX = e.clientX;
-        content.style.transition = '';
-    });
-    content.addEventListener('mousemove', function(e) {
-        if (!mouseDown) return;
-        mouseCurrentX = e.clientX;
-        let dx = mouseCurrentX - mouseStartX;
-        if (swiped && dx > 0) {
-            content.style.transform = `translateX(${dx - 80}px)`;
-        } else if (!swiped) {
-            content.style.transform = `translateX(${dx}px)`;
-        }
-    });
-    content.addEventListener('mouseup', function(e) {
-        if (!mouseDown) return;
-        let dx = mouseCurrentX - mouseStartX;
-        content.style.transition = 'transform 0.2s';
-        if (!swiped && dx < -60) {
-            content.style.transform = 'translateX(-80px)';
-            card.classList.add('swiped');
-            swiped = true;
-        } else if (swiped && dx > 40) {
-            content.style.transform = '';
-            card.classList.remove('swiped');
-            swiped = false;
-        } else if (swiped) {
-            content.style.transform = 'translateX(-80px)';
-            card.classList.add('swiped');
-        } else {
-            content.style.transform = '';
-            card.classList.remove('swiped');
-            swiped = false;
-        }
-        mouseDown = false;
-        mouseStartX = 0; mouseCurrentX = 0;
-    });
-    content.addEventListener('mouseleave', function(e) {
-        if (mouseDown) {
-            content.dispatchEvent(new MouseEvent('mouseup'));
-        }
-    });
-
-    // Delete button click
-    deleteBtn.onclick = function() {
-        card.remove();
-    };
-}
-
-// Update attachSetSwipeListener with the new code
-function attachSetSwipeListener(setRow) {
-    const content = setRow.querySelector('.set-content');
-    const deleteBtn = setRow.querySelector('.delete-set-btn');
-    let startX = 0, currentX = 0, swiped = false;
-
-    // Touch events
-    content.addEventListener('touchstart', function(e) {
-        startX = e.touches[0].clientX;
-        content.style.transition = '';
-    });
-    content.addEventListener('touchmove', function(e) {
-        currentX = e.touches[0].clientX;
-        let dx = currentX - startX;
-        if (swiped && dx > 0) {
-            content.style.transform = `translateX(${dx - 64}px)`;
-        } else if (!swiped) {
-            content.style.transform = `translateX(${dx}px)`;
-        }
-    });
-    content.addEventListener('touchend', function(e) {
-        let dx = currentX - startX;
-        content.style.transition = 'transform 0.2s';
-        if (!swiped && dx < -40) {
-            content.style.transform = 'translateX(-64px)';
-            setRow.classList.add('swiped');
-            swiped = true;
-        } else if (swiped && dx > 30) {
-            content.style.transform = '';
-            setRow.classList.remove('swiped');
-            swiped = false;
-        } else if (swiped) {
-            content.style.transform = 'translateX(-64px)';
-            setRow.classList.add('swiped');
-        } else {
-            content.style.transform = '';
-            setRow.classList.remove('swiped');
-            swiped = false;
-        }
-        startX = 0; currentX = 0;
-    });
-
-    // Mouse events
-    let mouseDown = false, mouseStartX = 0, mouseCurrentX = 0;
-    content.addEventListener('mousedown', function(e) {
-        mouseDown = true;
-        mouseStartX = e.clientX;
-        content.style.transition = '';
-    });
-    content.addEventListener('mousemove', function(e) {
-        if (!mouseDown) return;
-        mouseCurrentX = e.clientX;
-        let dx = mouseCurrentX - mouseStartX;
-        if (swiped && dx > 0) {
-            content.style.transform = `translateX(${dx - 64}px)`;
-        } else if (!swiped) {
-            content.style.transform = `translateX(${dx}px)`;
-        }
-    });
-    content.addEventListener('mouseup', function(e) {
-        if (!mouseDown) return;
-        let dx = mouseCurrentX - mouseStartX;
-        content.style.transition = 'transform 0.2s';
-        if (!swiped && dx < -40) {
-            content.style.transform = 'translateX(-64px)';
-            setRow.classList.add('swiped');
-            swiped = true;
-        } else if (swiped && dx > 30) {
-            content.style.transform = '';
-            setRow.classList.remove('swiped');
-            swiped = false;
-        } else if (swiped) {
-            content.style.transform = 'translateX(-64px)';
-            setRow.classList.add('swiped');
-        } else {
-            content.style.transform = '';
-            setRow.classList.remove('swiped');
-            swiped = false;
-        }
-        mouseDown = false;
-        mouseStartX = 0; mouseCurrentX = 0;
-    });
-    content.addEventListener('mouseleave', function(e) {
-        if (mouseDown) {
-            content.dispatchEvent(new MouseEvent('mouseup'));
-        }
-    });
-
-    // Delete button click
-    deleteBtn.onclick = function() {
-        setRow.remove();
-    };
-}
-</script>
 </body>
 </html>
