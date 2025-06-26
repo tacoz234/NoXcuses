@@ -593,24 +593,33 @@
             const content = setRow.querySelector('.set-content');
             const deleteBtn = setRow.querySelector('.delete-set-btn');
             let startX = 0, currentX = 0, swiped = false;
+            let swipeBlocked = false;
 
-            // Touch events for mobile swipe
+            function isInputEvent(e) {
+                // Block if the event target or any of its parents is an input, or if any input inside set-content is focused
+                return e.target.closest('input') || content.querySelector('input:focus');
+            }
+
             content.addEventListener('touchstart', function(e) {
+                swipeBlocked = isInputEvent(e);
+                if (swipeBlocked) return;
                 startX = e.touches[0].clientX;
-                content.style.transition = ''; // Disable transition during swipe
+                content.style.transition = '';
             });
             content.addEventListener('touchmove', function(e) {
+                if (swipeBlocked) return;
                 currentX = e.touches[0].clientX;
                 let dx = currentX - startX;
-                if (swiped && dx > 0) { // If already swiped, allow closing
-                    content.style.transform = `translateX(${dx - 64}px)`; // 64px is delete button width
-                } else if (!swiped) { // If not swiped, allow opening
+                if (swiped && dx > 0) {
+                    content.style.transform = `translateX(${dx - 64}px)`;
+                } else if (!swiped) {
                     content.style.transform = `translateX(${dx}px)`;
                 }
             });
             content.addEventListener('touchend', function(e) {
+                if (swipeBlocked) { swipeBlocked = false; return; }
                 let dx = currentX - startX;
-                content.style.transition = 'transform 0.2s'; // Re-enable transition for smooth snap
+                content.style.transition = 'transform 0.2s';
 
                 if (!swiped && dx < -40) { // Swipe left threshold to reveal delete
                     content.style.transform = 'translateX(-64px)';
@@ -634,12 +643,14 @@
             // Mouse events for desktop swipe
             let mouseDown = false, mouseStartX = 0, mouseCurrentX = 0;
             content.addEventListener('mousedown', function(e) {
+                swipeBlocked = isInputEvent(e);
+                if (swipeBlocked) return;
                 mouseDown = true;
                 mouseStartX = e.clientX;
                 content.style.transition = '';
             });
             content.addEventListener('mousemove', function(e) {
-                if (!mouseDown) return;
+                if (!mouseDown || swipeBlocked) return;
                 mouseCurrentX = e.clientX;
                 let dx = mouseCurrentX - mouseStartX;
                 if (swiped && dx > 0) {
@@ -649,9 +660,10 @@
                 }
             });
             content.addEventListener('mouseup', function(e) {
-                if (!mouseDown) return;
+                if (!mouseDown || swipeBlocked) { swipeBlocked = false; mouseDown = false; return; }
                 let dx = mouseCurrentX - mouseStartX;
                 content.style.transition = 'transform 0.2s';
+
                 if (!swiped && dx < -40) {
                     content.style.transform = 'translateX(-64px)';
                     setRow.classList.add('swiped');
