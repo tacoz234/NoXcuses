@@ -1,21 +1,15 @@
 [
   {
     "name": "Squat (Barbell)",
-    "highestVolumeSet": { "weight": 225, "reps": 8, "date": "2025-06-20" },
-    "lastPerformedSet": { "weight": 205, "reps": 10, "date": "2025-06-18" },
     "notes": "Bring toes out slightly until heels don't come off the ground.",
     "image": "images/placeholder.jpg"
   },
   {
     "name": "Bench Press (Barbell)",
-    "highestVolumeSet": { "weight": 185, "reps": 10, "date": "2025-06-19" },
-    "lastPerformedSet": { "weight": 175, "reps": 8, "date": "2025-06-17" },
     "video": "https://youtu.be/nQL5ieH39sw?si=RjZSWBZ3CGKg-pax"
   },
   {
     "name": "Deadlift (Barbell)",
-    "highestVolumeSet": { "weight": 315, "reps": 5, "date": "2025-06-15" },
-    "lastPerformedSet": { "weight": 295, "reps": 6, "date": "2025-06-13" },
     "image": "images/placeholder.jpg"
   },
   {

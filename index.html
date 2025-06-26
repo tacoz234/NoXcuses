@@ -93,17 +93,23 @@
             // Add click event to show/hide exercises and Start button for each template
             Array.from(container.getElementsByClassName('template-card')).forEach((card, idx) => {
                 card.addEventListener('click', function(e) {
-                    // Remove any other open details/start buttons
-                    Array.from(container.getElementsByClassName('template-details')).forEach(d => d.remove());
-                    Array.from(container.getElementsByClassName('start-template-btn')).forEach(b => b.remove());
-                    // If already open, just close
-                    let details = card.querySelector('.template-details');
-                    if (details) {
-                        details.remove();
+                    // If this card is already selected, unselect it and close details
+                    if (card.classList.contains('bg-blue-100')) {
+                        card.classList.remove('bg-blue-100');
+                        Array.from(card.getElementsByClassName('template-details')).forEach(d => d.remove());
+                        Array.from(card.getElementsByClassName('start-template-btn')).forEach(b => b.remove());
                         return;
                     }
+                    // Remove highlight and details from all cards
+                    Array.from(container.getElementsByClassName('template-card')).forEach(c => {
+                        c.classList.remove('bg-blue-100');
+                        Array.from(c.getElementsByClassName('template-details')).forEach(d => d.remove());
+                        Array.from(c.getElementsByClassName('start-template-btn')).forEach(b => b.remove());
+                    });
+                    // Highlight this card
+                    card.classList.add('bg-blue-100');
                     // Show details
-                    details = document.createElement('div');
+                    const details = document.createElement('div');
                     details.className = 'template-details mt-3';
                     let exercisesHtml = '<ul class="ml-2 space-y-1">';
                     templates[idx].exercises.forEach(ex => {
@@ -179,12 +185,10 @@
             </a>
         </li>
         <li class="flex-1">
-            <a href="workout.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                WORKOUT_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-plus-circle text-3xl"></i>
-                <span class="text-xs mt-1">Start</span>
-            </a>
+            <a href="social.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 text-gray-400 hover:text-blue-400">
+                    <i class="fas fa-users text-xl"></i>
+                    <span class="text-xs mt-1">Social</span>
+                </a>
         </li>
         <li class="flex-1">
             <a href="exercises.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
