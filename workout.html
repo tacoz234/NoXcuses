@@ -49,20 +49,13 @@
             overflow: hidden; /* Keep overflow hidden for set rows to clip delete button */
         }
         .set-row .delete-set-btn {
-            right: 0;
-            top: 0;
-            height: 100%;
-            width: 64px; /* Width for delete button */
-            border-radius: 0 0.5rem 0.5rem 0;
-            transform: translateX(100%); /* Initially hidden */
-            transition: transform 0.2s;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            left: 0; /* Move to left */
+            right: auto;
+            border-radius: 0.5rem 0 0 0.5rem; /* Rounded on left */
+            transform: translateX(-100%); /* Hide to the left */
         }
         .set-row.swiped .delete-set-btn {
-            transform: translateX(0); /* Show on swipe */
+            transform: translateX(0); /* Slide in from left */
         }
         .set-row .set-content {
             transition: transform 0.2s; /* Smooth content movement */
@@ -594,99 +587,130 @@
             const deleteBtn = setRow.querySelector('.delete-set-btn');
             let startX = 0, currentX = 0, swiped = false;
             let swipeBlocked = false;
+            let hasMoved = false;
+            const SWIPE_THRESHOLD = 10;
 
             function isInputEvent(e) {
-                // Block if the event target or any of its parents is an input, or if any input inside set-content is focused
-                return e.target.closest('input') || content.querySelector('input:focus');
+                return e.target.tagName === 'INPUT' || document.activeElement.tagName === 'INPUT';
             }
 
             content.addEventListener('touchstart', function(e) {
                 swipeBlocked = isInputEvent(e);
                 if (swipeBlocked) return;
                 startX = e.touches[0].clientX;
+                currentX = startX;
+                hasMoved = false;
                 content.style.transition = '';
             });
             content.addEventListener('touchmove', function(e) {
                 if (swipeBlocked) return;
                 currentX = e.touches[0].clientX;
                 let dx = currentX - startX;
-                if (swiped && dx > 0) {
-                    content.style.transform = `translateX(${dx - 64}px)`;
-                } else if (!swiped) {
-                    content.style.transform = `translateX(${dx}px)`;
+                if (Math.abs(dx) > SWIPE_THRESHOLD) hasMoved = true;
+                if (hasMoved) {
+                    if (swiped && dx < 0) {
+                        content.style.transform = `translateX(${dx + 64}px)`;
+                    } else if (!swiped && dx > 0) {
+                        content.style.transform = `translateX(${dx}px)`;
+                    }
                 }
             });
             content.addEventListener('touchend', function(e) {
                 if (swipeBlocked) { swipeBlocked = false; return; }
+                if (!hasMoved) { startX = 0; currentX = 0; return; }
                 let dx = currentX - startX;
                 content.style.transition = 'transform 0.2s';
-
-                if (!swiped && dx < -40) { // Swipe left threshold to reveal delete
-                    content.style.transform = 'translateX(-64px)';
+                if (!swiped && dx > 40) {
+                    content.style.transform = 'translateX(64px)';
                     setRow.classList.add('swiped');
                     swiped = true;
-                } else if (swiped && dx > 30) { // Swipe right threshold to hide delete
-                    content.style.transform = '';
-                    setRow.classList.remove('swiped');
-                    swiped = false;
-                } else if (swiped) { // Snap back to swiped state if not enough right swipe
-                    content.style.transform = 'translateX(-64px)';
-                    setRow.classList.add('swiped');
-                } else { // Snap back to hidden state
-                    content.style.transform = '';
-                    setRow.classList.remove('swiped');
-                    swiped = false;
-                }
-                startX = 0; currentX = 0; // Reset touch coordinates
-            });
-
-            // Mouse events for desktop swipe
-            let mouseDown = false, mouseStartX = 0, mouseCurrentX = 0;
-            content.addEventListener('mousedown', function(e) {
-                swipeBlocked = isInputEvent(e);
-                if (swipeBlocked) return;
-                mouseDown = true;
-                mouseStartX = e.clientX;
-                content.style.transition = '';
-            });
-            content.addEventListener('mousemove', function(e) {
-                if (!mouseDown || swipeBlocked) return;
-                mouseCurrentX = e.clientX;
-                let dx = mouseCurrentX - mouseStartX;
-                if (swiped && dx > 0) {
-                    content.style.transform = `translateX(${dx - 64}px)`;
-                } else if (!swiped) {
-                    content.style.transform = `translateX(${dx}px)`;
-                }
-            });
-            content.addEventListener('mouseup', function(e) {
-                if (!mouseDown || swipeBlocked) { swipeBlocked = false; mouseDown = false; return; }
-                let dx = mouseCurrentX - mouseStartX;
-                content.style.transition = 'transform 0.2s';
-
-                if (!swiped && dx < -40) {
-                    content.style.transform = 'translateX(-64px)';
-                    setRow.classList.add('swiped');
-                    swiped = true;
-                } else if (swiped && dx > 30) {
+                } else if (swiped && dx < -30) {
                     content.style.transform = '';
                     setRow.classList.remove('swiped');
                     swiped = false;
                 } else if (swiped) {
-                    content.style.transform = 'translateX(-64px)';
+                    content.style.transform = 'translateX(64px)';
                     setRow.classList.add('swiped');
                 } else {
                     content.style.transform = '';
                     setRow.classList.remove('swiped');
                     swiped = false;
                 }
-                mouseDown = false;
-                mouseStartX = 0; mouseCurrentX = 0;
+                startX = 0; currentX = 0; hasMoved = false;
             });
+            // Mouse events for desktop swipe
+            let mouseDown = false, mouseStartX = 0, mouseCurrentX = 0, mouseHasMoved = false;
+            content.addEventListener('mousedown', function(e) {
+                swipeBlocked = isInputEvent(e);
+                if (swipeBlocked) return;
+                mouseDown = true;
+                mouseStartX = e.clientX;
+                mouseCurrentX = mouseStartX;
+                mouseHasMoved = false;
+                content.style.transition = '';
+            });
+
+            content.addEventListener('mousemove', function(e) {
+                if (!mouseDown || swipeBlocked) return;
+                mouseCurrentX = e.clientX;
+                let dx = mouseCurrentX - mouseStartX;
+                
+                // Only consider it movement if it exceeds threshold
+                if (Math.abs(dx) > SWIPE_THRESHOLD) {
+                    mouseHasMoved = true;
+                }
+                
+                if (mouseHasMoved) {
+                    if (swiped && dx < 0) {
+                        // When swiped and moving left, allow closing
+                        content.style.transform = `translateX(${dx + 64}px)`;
+                    } else if (!swiped && dx > 0) {
+                        // When not swiped and moving right, show delete
+                        content.style.transform = `translateX(${dx}px)`;
+                    }
+                }
+            });
+
+            content.addEventListener('mouseup', function(e) {
+                if (!mouseDown || swipeBlocked) { swipeBlocked = false; mouseDown = false; return; }
+                
+                // Only process swipe if there was actual movement
+                if (!mouseHasMoved) {
+                    mouseDown = false;
+                    mouseStartX = 0; mouseCurrentX = 0;
+                    return;
+                }
+                
+                let dx = mouseCurrentX - mouseStartX;
+                content.style.transition = 'transform 0.2s';
+                if (!swiped && dx > 40) {
+                    // Swipe RIGHT to show delete (positive dx)
+                    content.style.transform = 'translateX(64px)';
+                    setRow.classList.add('swiped');
+                    swiped = true;
+                } else if (swiped && dx < -30) {
+                    // Swipe LEFT to hide delete (negative dx)
+                    content.style.transform = '';
+                    setRow.classList.remove('swiped');
+                    swiped = false;
+                } else if (swiped) {
+                    // Snap back to swiped position
+                    content.style.transform = 'translateX(64px)';
+                    setRow.classList.add('swiped');
+                } else {
+                    // Snap back to normal position
+                    content.style.transform = '';
+                    setRow.classList.remove('swiped');
+                    swiped = false;
+                }
+                mouseDown = false;
+                mouseStartX = 0; mouseCurrentX = 0; mouseHasMoved = false;
+            });
+            
             // Handle mouse leaving the element while dragging
             content.addEventListener('mouseleave', function(e) {
                 if (mouseDown) {
-                    content.dispatchEvent(new MouseEvent('mouseup')); // Trigger mouseup if mouse leaves while dragging
+                    content.dispatchEvent(new MouseEvent('mouseup'));
                 }
             });
 
