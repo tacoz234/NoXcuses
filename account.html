@@ -1,0 +1,159 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoXcuses - Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+    <header class="w-full p-4 fixed top-0 z-10 flex justify-between items-center bg-gray-900 shadow-lg">
+        <h1 class="text-2xl font-bold text-white">Account</h1>
+        <button id="editAccountBtn" class="text-gray-300 hover:text-blue-400 text-xl p-2 rounded-full focus:outline-none" title="Edit Account">
+            <i class="fas fa-edit"></i>
+        </button>
+    </header>
+    <main class="flex-grow container mx-auto p-4 pt-24 flex flex-col items-center">
+        <!-- Profile Picture -->
+        <div class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center mb-4 shadow-lg overflow-hidden">
+            <img src="https://ui-avatars.com/api/?name=User&background=444&color=fff&size=128" alt="Profile Picture" class="w-full h-full object-cover">
+        </div>
+        <!-- Username -->
+        <div class="text-xl font-semibold mb-6 text-center">Username</div>
+        <!-- Achievements -->
+        <section class="w-full max-w-md bg-white rounded-lg shadow-md p-6 text-gray-900 animate-fade-in">
+            <h2 class="text-lg font-bold mb-4 text-center">Achievements</h2>
+            <div id="badges-container" class="flex flex-wrap gap-3 justify-center"></div>
+        </section>
+    </main>
+    <script>
+    fetch('badges.json')
+      .then(response => response.json())
+      .then(badges => {
+        const colorMap = {
+          blue: 'bg-blue-100 text-blue-700',
+          green: 'bg-green-100 text-green-700',
+          yellow: 'bg-yellow-100 text-yellow-700',
+          purple: 'bg-purple-100 text-purple-700',
+          pink: 'bg-pink-100 text-pink-700'
+        };
+        const container = document.getElementById('badges-container');
+        badges.forEach(badge => {
+          const span = document.createElement('span');
+          span.className = `inline-flex items-center px-3 py-1 rounded-full font-semibold text-sm shadow mr-2 mb-2 ${colorMap[badge.color] || 'bg-gray-200 text-gray-800'}`;
+          span.textContent = badge.label;
+          span.title = badge.description;
+          container.appendChild(span);
+        });
+      });
+    </script>
+</body>
+<!-- Modal for editing account info -->
+<div id="editAccountModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm text-gray-900 relative">
+    <button id="closeEditModal" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg">&times;</button>
+    <h2 class="text-xl font-bold mb-4 text-center">Edit Account</h2>
+    <form id="editAccountForm" class="flex flex-col gap-4">
+      <div>
+        <label class="block text-sm font-semibold mb-1">Username</label>
+        <input type="text" id="editUsername" class="w-full border rounded px-3 py-2" required>
+        <div id="usernameError" class="text-red-500 text-xs mt-1 hidden">Username already taken.</div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1">New Password</label>
+        <input type="password" id="editPassword" class="w-full border rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1">Profile Picture URL</label>
+        <input type="url" id="editProfilePic" class="w-full border rounded px-3 py-2">
+      </div>
+      <button type="submit" class="bg-blue-600 text-white rounded px-4 py-2 font-semibold hover:bg-blue-700">Save Changes</button>
+    </form>
+  </div>
+</div>
+<script>
+    fetch('badges.json')
+      .then(response => response.json())
+      .then(badges => {
+        const colorMap = {
+          blue: 'bg-blue-100 text-blue-700',
+          green: 'bg-green-100 text-green-700',
+          yellow: 'bg-yellow-100 text-yellow-700',
+          purple: 'bg-purple-100 text-purple-700',
+          pink: 'bg-pink-100 text-pink-700'
+        };
+        const container = document.getElementById('badges-container');
+        badges.forEach(badge => {
+          const span = document.createElement('span');
+          span.className = `inline-flex items-center px-3 py-1 rounded-full font-semibold text-sm shadow mr-2 mb-2 ${colorMap[badge.color] || 'bg-gray-200 text-gray-800'}`;
+          span.textContent = badge.label;
+          span.title = badge.description;
+          container.appendChild(span);
+        });
+      });
+    </script>
+    <nav class="fixed bottom-0 left-0 w-full bg-gray-800 border-t border-gray-700 shadow-lg md:hidden z-50">
+    <ul class="flex justify-around items-center h-16">
+        <li class="flex-1">
+        <a href="index.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 HOME_ACTIVE text-blue-500 hover:text-blue-400">
+          <i class="fas fa-chart-line text-xl"></i>
+          <span class="text-xs mt-1">Progress</span>
+        </a>
+      </li>
+        <li class="flex-1">
+            <a href="history.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 HISTORY_ACTIVE">
+                <i class="fas fa-history text-xl"></i>
+                <span class="text-xs mt-1">History</span>
+            </a>
+        </li>
+        <li class="flex-1">
+            <a href="workout.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 WORKOUT_ACTIVE">
+                <i class="fas fa-plus-circle text-3xl"></i>
+                <span class="text-xs mt-1">Start</span>
+            </a>
+        </li>
+        <li class="flex-1">
+            <a href="social.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 SOCIAL_ACTIVE">
+                <i class="fas fa-users text-xl"></i>
+                <span class="text-xs mt-1">Social</span>
+            </a>
+        </li>
+        <li class="flex-1">
+            <a href="exercises.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 EXERCISES_ACTIVE">
+                <i class="fas fa-dumbbell text-xl"></i>
+                <span class="text-xs mt-1">Exercises</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+<script>
+        (function() {
+            const path = window.location.pathname;
+            const nav = document.querySelector('nav');
+            if (!nav) return;
+            let page = '';
+            if (path.endsWith('index.html')) page = 'HOME';
+            else if (path.endsWith('history.html')) page = 'HISTORY';
+            else if (path.endsWith('workout.html')) page = 'WORKOUT';
+            else if (path.endsWith('exercises.html')) page = 'EXERCISES';
+            else if (path.endsWith('social.html') || path.endsWith('account.html')) page = 'SOCIAL';
+
+            nav.innerHTML = nav.innerHTML
+                .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
+                .replace('HISTORY_ACTIVE', page==='HISTORY' ? 'text-blue-500' : 'text-gray-400')
+                .replace('WORKOUT_ACTIVE', page==='WORKOUT' ? 'text-blue-500' : 'text-gray-400')
+                .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400')
+                .replace('SOCIAL_ACTIVE', page==='SOCIAL' ? 'text-blue-500' : 'text-gray-400');
+        })();
+    </script>
+</body>
+<!-- Remove or properly comment out the stray modal logic comment at the end -->
+</html>

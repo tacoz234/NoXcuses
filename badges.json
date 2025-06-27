@@ -1,0 +1,7 @@
+[
+  {"id": "bench225", "label": "225 Bench", "color": "blue", "description": "Bench press 225 lbs"},
+  {"id": "deadlift315", "label": "315 Deadlift", "color": "green", "description": "Deadlift 315 lbs"},
+  {"id": "squat185", "label": "185 Squat", "color": "yellow", "description": "Squat 185 lbs"},
+  {"id": "pullup1", "label": "First Pull-Up", "color": "purple", "description": "Complete your first pull-up"},
+  {"id": "consistency30", "label": "Consistency 30 Days", "color": "pink", "description": "Log a workout 30 days in a row"}
+]
