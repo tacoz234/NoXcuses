@@ -31,7 +31,10 @@
             <h2 class="text-lg font-semibold">Templates</h2>
             <button class="bg-gray-700 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-plus"></i> Template</button>
         </div>
-        <div id="template-list" class="flex flex-col gap-5">
+        <div id="routines-list" class="flex flex-col gap-5 mb-5">
+            <!-- Routines will be injected here -->
+        </div>
+        <div id="template-list" class="grid grid-cols-2 gap-4">
             <!-- Templates will be injected here -->
         </div>
     </main>
@@ -91,23 +94,87 @@
     // Load templates from templates.json and render
     fetch('templates.json')
         .then(res => res.json())
-        .then(templates => {
-            const list = document.getElementById('template-list');
-            if (!templates.length) {
-                list.innerHTML = '<div class="text-gray-400 text-center">No templates found.</div>';
+        .then(data => {
+            const routinesList = document.getElementById('routines-list');
+            const templateList = document.getElementById('template-list');
+
+            // Handle both old array format and new object format
+            const templates = Array.isArray(data) ? data : (data.templates || []);
+            const routines = Array.isArray(data) ? [] : (data.routines || []);
+
+            if (!templates.length && !routines.length) {
+                templateList.innerHTML = '<div class="text-gray-400 text-center col-span-2">No templates or routines found.</div>';
                 return;
             }
-            templates.forEach((tpl, idx) => {
-                let exercises = tpl.exercises.slice(0, 3).map(ex => `<span class='inline-block bg-gray-100 text-gray-800 rounded-lg px-3 py-1 text-xs font-medium mr-2 mb-2 border border-gray-200'>${ex.name}</span>`).join('');
-                let more = tpl.exercises.length > 3 ? `<span class='inline-block bg-gray-200 text-gray-700 rounded-lg px-3 py-1 text-xs font-medium border border-gray-300'>+${tpl.exercises.length-3} more</span>` : '';
-                let card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl shadow-lg p-5 text-gray-900 flex flex-col gap-3 cursor-pointer border border-gray-200 hover:shadow-xl transition-all';
-                card.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="font-semibold text-base">${tpl.name}</div>
-                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold shadow-sm">Start</button>
+
+            // Get all template names that are included in routines
+            const templatesInRoutines = new Set();
+            routines.forEach(routine => {
+                routine.templates.forEach(templateName => {
+                    templatesInRoutines.add(templateName);
+                });
+            });
+
+            // Render Routines (folders)
+            routines.forEach(routine => {
+                const routineEl = document.createElement('div');
+                routineEl.className = 'bg-gray-800 rounded-2xl shadow-lg p-5 text-white flex flex-col gap-3 cursor-pointer border border-gray-700 hover:shadow-xl transition-all';
+                routineEl.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div class="font-semibold text-base"><i class="fas fa-folder mr-2 text-yellow-400"></i>${routine.name}</div>
+                        <i class="fas fa-chevron-down transition-transform"></i>
                     </div>
-                    <div class="flex flex-wrap gap-2 mt-1">${exercises}${more}</div>
+                    <div class="routine-templates hidden pl-2 pt-2 border-l-2 border-gray-600 ml-2 space-y-2">
+                        ${routine.templates.map(tplName => {
+                            const template = templates.find(t => t.name === tplName);
+                            if (!template) return `<div class="text-gray-400 p-2">Template "${tplName}" not found</div>`;
+                            
+                            const exerciseCount = template.exercises ? template.exercises.length : 0;
+                            return `
+                                <div class="bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors cursor-pointer template-item" data-template="${tplName}">
+                                    <div class="font-medium text-sm">${tplName}</div>
+                                    <div class="text-xs text-gray-300 mt-1">${exerciseCount} exercises</div>
+                                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold mt-2 template-start-btn">Start</button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                
+                // Toggle routine expansion
+                const header = routineEl.querySelector('.flex.justify-between');
+                header.onclick = (e) => {
+                    if (e.target.closest('.template-start-btn')) return; // Don't toggle if clicking start button
+                    const templatesDiv = routineEl.querySelector('.routine-templates');
+                    const chevron = routineEl.querySelector('.fa-chevron-down, .fa-chevron-up');
+                    templatesDiv.classList.toggle('hidden');
+                    chevron.classList.toggle('fa-chevron-down');
+                    chevron.classList.toggle('fa-chevron-up');
+                };
+                
+                // Add click handlers for template start buttons within routines
+                routineEl.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('template-start-btn')) {
+                        e.stopPropagation();
+                        const templateName = e.target.closest('.template-item').dataset.template;
+                        alert('Start workout from template: ' + templateName);
+                    }
+                });
+                
+                routinesList.appendChild(routineEl);
+            });
+
+            // Render Individual Templates in 2-column grid (only templates NOT in routines)
+            const standaloneTemplates = templates.filter(tpl => !templatesInRoutines.has(tpl.name));
+            standaloneTemplates.forEach((tpl, idx) => {
+                let exercises = tpl.exercises.slice(0, 2).map(ex => `<span class='inline-block bg-gray-100 text-gray-800 rounded-lg px-2 py-1 text-xs font-medium'>${ex.name}</span>`).join('');
+                let more = tpl.exercises.length > 2 ? `<span class='inline-block bg-gray-200 text-gray-700 rounded-lg px-2 py-1 text-xs font-medium'>+${tpl.exercises.length-2} more</span>` : '';
+                let card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl shadow-lg p-4 text-gray-900 flex flex-col gap-2 cursor-pointer border border-gray-200 hover:shadow-xl transition-all';
+                card.innerHTML = `
+                    <div class="font-semibold text-sm mb-1">${tpl.name}</div>
+                    <div class="flex flex-wrap gap-1 text-xs">${exercises}${more}</div>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm mt-2 self-start">Start</button>
                 `;
                 card.querySelector('button').onclick = (e) => {
                     e.stopPropagation();
@@ -116,8 +183,12 @@
                 card.onclick = () => {
                     alert('Show details or start: ' + tpl.name);
                 };
-                list.appendChild(card);
+                templateList.appendChild(card);
             });
+        })
+        .catch(error => {
+            console.error('Error loading templates:', error);
+            document.getElementById('template-list').innerHTML = '<div class="text-red-400 text-center col-span-2">Error loading templates.</div>';
         });
     </script>
     <!-- Workout Drawer Overlay -->
