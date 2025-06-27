@@ -1,249 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NoXcuses</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Add this inside <head> in both files -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
-            padding-bottom: 5rem;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
-        .three-dots::after {
-            content: "\2022\2022\2022";
-            display: inline-block;
-            font-size: 1.2em;
-            line-height: 0.5em;
-            vertical-align: middle;
-            letter-spacing: 0.1em;
-            color: #888;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracking Progress</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #1a1a1a;
+      color: #fff;
+      padding-bottom: 5rem;
+    }
+  </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
+  <!-- Header -->
+  <header class="w-full p-4 fixed top-0 z-10 flex justify-center items-center bg-gray-900 shadow-lg">
+    <h1 class="text-2xl font-bold text-white">Tracking Progress</h1>
+  </header>
 
-    <!-- Header Section -->
-    <header class="w-full p-4 fixed top-0 z-10 flex justify-center items-center">
-        <h1 class="text-3xl font-bold text-white">No Xcuses</h1>
-    </header>
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto p-4 pt-20 space-y-8">
+    <section class="bg-gray-800 rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-2">Weight Change</h2>
+      <canvas id="weightChart" height="120"></canvas>
+    </section>
+    <section class="bg-gray-800 rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-2">Measurements</h2>
+      <canvas id="measurementsChart" height="120"></canvas>
+    </section>
+    <section class="bg-gray-800 rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-2">Heart Health</h2>
+      <canvas id="heartChart" height="120"></canvas>
+    </section>
+  </main>
 
-    <!-- Main Content Section -->
-    <main class="flex-grow container mx-auto p-4 pt-20 md:pt-24 lg:pt-28">
-
-        <!-- Quick Start Section -->
-        <section class="bg-white p-4 rounded-lg shadow-md mb-6 animate-fade-in text-gray-900">
-            <h2 class="text-xl font-semibold mb-3">Quick Start</h2>
-            <button
-                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-md shadow-md transition-colors duration-300 text-lg"
-                id="quick-start-btn"
-            >
-                Start an Empty Workout
-            </button>
-        </section>
-
-        <!-- Routines Section -->
-        <section class="bg-white p-4 rounded-lg shadow-md mb-6 animate-fade-in text-gray-900">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-xl font-semibold">Routines</h2>
-                <button id="add-routine-btn" class="ml-2 text-blue-500 hover:text-blue-700 text-2xl font-bold rounded-full w-9 h-9 flex items-center justify-center bg-blue-100 hover:bg-blue-200 transition-colors duration-200 shadow-none" title="Add Routine">+</button>
-            </div>
-            <div class="mb-2 font-bold text-base text-gray-700">Jeff Nippard</div>
-            <div id="template-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-            <button class="w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition-colors duration-300 text-base" id="add-template-btn">
-                + Add Template
-            </button>
-        </section>
-
-    </main>
-
-    <script>
-    fetch('templates.json')
-        .then(res => res.json())
-        .then(templates => {
-            const container = document.getElementById('template-list');
-            if (!templates.length) {
-                container.innerHTML = '<div class="text-center text-gray-400">No templates found.</div>';
-                return;
-            }
-            templates.forEach((template, idx) => {
-                container.insertAdjacentHTML('beforeend', `
-                    <div class="template-card bg-gray-100 rounded-lg shadow p-4 cursor-pointer hover:bg-blue-100 transition relative">
-                        <div class="flex items-center justify-between">
-                            <span class="font-semibold text-lg">${template.name}</span>
-                        </div>
-                    </div>
-                `);
-            });
-
-            // Add click event to show/hide exercises and Start button for each template
-            Array.from(container.getElementsByClassName('template-card')).forEach((card, idx) => {
-                card.addEventListener('click', function(e) {
-                    // If this card is already selected, unselect it and close details
-                    if (card.classList.contains('bg-blue-100')) {
-                        card.classList.remove('bg-blue-100');
-                        Array.from(card.getElementsByClassName('template-details')).forEach(d => d.remove());
-                        Array.from(card.getElementsByClassName('start-template-btn')).forEach(b => b.remove());
-                        return;
-                    }
-                    // Remove highlight and details from all cards
-                    Array.from(container.getElementsByClassName('template-card')).forEach(c => {
-                        c.classList.remove('bg-blue-100');
-                        Array.from(c.getElementsByClassName('template-details')).forEach(d => d.remove());
-                        Array.from(c.getElementsByClassName('start-template-btn')).forEach(b => b.remove());
-                    });
-                    // Highlight this card
-                    card.classList.add('bg-blue-100');
-                    // Show details
-                    const details = document.createElement('div');
-                    details.className = 'template-details mt-3';
-                    let exercisesHtml = '<ul class="ml-2 space-y-1">';
-                    templates[idx].exercises.forEach(ex => {
-                        exercisesHtml += `<li class='flex justify-between items-center text-sm text-gray-700'>
-                            <span class='font-bold text-blue-600 mr-2'>${ex.working_sets || ''}</span>
-                            <span class='flex-1'>${ex.name}</span>
-                            <span class='text-xs text-gray-400 ml-2'>Rest: ${ex.rest || ''}</span>
-                        </li>`;
-                    });
-                    exercisesHtml += '</ul>';
-                    details.innerHTML = exercisesHtml;
-                    card.appendChild(details);
-                    // Add Start button
-                    const startBtn = document.createElement('button');
-                    startBtn.className = 'start-template-btn w-full mt-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-md transition-colors duration-300 text-base';
-                    startBtn.textContent = 'Start This Workout';
-                    startBtn.setAttribute('data-template-idx', idx);
-                    startBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        localStorage.setItem('selectedTemplate', JSON.stringify(templates[idx]));
-                        localStorage.setItem('lastUsedTemplate', JSON.stringify(templates[idx]));
-                        window.location.href = 'workout.html';
-                    });
-                    card.appendChild(startBtn);
-                });
-            });
-        });
-    // Add Routine button event
-    document.addEventListener('DOMContentLoaded', function() {
-        const addRoutineBtn = document.getElementById('add-routine-btn');
-        if (addRoutineBtn) {
-            addRoutineBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                alert('Add new routine (not implemented)');
-            });
-        }
-        const addTemplateBtn = document.getElementById('add-template-btn');
-        if (addTemplateBtn) {
-            addTemplateBtn.addEventListener('click', function() {
-                alert('Add new template to this routine (not implemented)');
-            });
-        }
-    });
-    document.getElementById('quick-start-btn').addEventListener('click', function() {
-        // Try to load last used template from localStorage
-        const lastTemplate = localStorage.getItem('lastUsedTemplate');
-        if (lastTemplate) {
-            localStorage.setItem('selectedTemplate', lastTemplate);
-        } else {
-            localStorage.removeItem('selectedTemplate');
-        }
-        window.location.href = 'workout.html';
-    });
-    </script>
-    <!-- Fixed Bottom Navigation -->
-    <!-- Consistent Bottom Navbar for all pages -->
-<nav class="fixed bottom-0 left-0 w-full bg-gray-800 border-t border-gray-700 shadow-lg md:hidden z-50">
+  <!-- Bottom Navbar -->
+  <nav class="fixed bottom-0 left-0 w-full bg-gray-800 border-t border-gray-700 shadow-lg md:hidden z-50">
     <ul class="flex justify-around items-center h-16">
-        <li class="flex-1">
-            <a href="index.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                HOME_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-home text-xl"></i>
-                <span class="text-xs mt-1">Home</span>
-            </a>
-        </li>
-        <li class="flex-1">
-            <a href="history.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                HISTORY_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-history text-xl"></i>
-                <span class="text-xs mt-1">History</span>
-            </a>
-        </li>
-        <li class="flex-1">
-                <a href="workout.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                    WORKOUT_ACTIVE
-                    text-blue-500 hover:text-blue-400">
-                    <i class="fas fa-plus-circle text-3xl"></i>
-                    <span class="text-xs mt-1">Start</span>
-                </a>
-            </li>
-        <li class="flex-1">
-            <a href="social.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 text-gray-400 hover:text-blue-400">
-                    <i class="fas fa-users text-xl"></i>
-                    <span class="text-xs mt-1">Social</span>
-                </a>
-        </li>
-        <li class="flex-1">
-            <a href="exercises.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2
-                EXERCISES_ACTIVE
-                text-blue-500 hover:text-blue-400">
-                <i class="fas fa-dumbbell text-xl"></i>
-                <span class="text-xs mt-1">Exercises</span>
-            </a>
-        </li>
+      <li class="flex-1">
+        <a href="index.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 HOME_ACTIVE text-blue-500 hover:text-blue-400">
+          <i class="fas fa-home text-xl"></i>
+          <span class="text-xs mt-1">Home</span>
+        </a>
+      </li>
+      <li class="flex-1">
+        <a href="history.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 HISTORY_ACTIVE text-gray-400 hover:text-blue-400">
+          <i class="fas fa-history text-xl"></i>
+          <span class="text-xs mt-1">History</span>
+        </a>
+      </li>
+      <li class="flex-1">
+        <a href="workout.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 WORKOUT_ACTIVE text-gray-400 hover:text-blue-400">
+          <i class="fas fa-plus-circle text-3xl"></i>
+          <span class="text-xs mt-1">Start</span>
+        </a>
+      </li>
+      <li class="flex-1">
+        <a href="social.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 SOCIAL_ACTIVE text-gray-400 hover:text-blue-400">
+          <i class="fas fa-users text-xl"></i>
+          <span class="text-xs mt-1">Social</span>
+        </a>
+      </li>
+      <li class="flex-1">
+        <a href="exercises.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 EXERCISES_ACTIVE text-gray-400 hover:text-blue-400">
+          <i class="fas fa-dumbbell text-xl"></i>
+          <span class="text-xs mt-1">Exercises</span>
+        </a>
+      </li>
     </ul>
-</nav>
-<script>
-// Navbar highlight logic
-(function() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('nav');
-    if (!nav) return;
-    let page = '';
-    if (path.endsWith('index.html')) page = 'HOME';
-    else if (path.endsWith('history.html')) page = 'HISTORY';
-    else if (path.endsWith('workout.html')) page = 'WORKOUT';
-    else if (path.endsWith('exercises.html')) page = 'EXERCISES';
-    nav.innerHTML = nav.innerHTML
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Example Chart.js setup for Weight
+    const weightCtx = document.getElementById('weightChart').getContext('2d');
+    new Chart(weightCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+          label: 'Weight (kg)',
+          data: [70, 71, 69, 68, 67],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.2)',
+          fill: true
+        }]
+      },
+      options: { responsive: true }
+    });
+    // Repeat similar setup for measurementsChart and heartChart
+    const measurementsCtx = document.getElementById('measurementsChart').getContext('2d');
+    new Chart(measurementsCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+          label: 'Waist (cm)',
+          data: [80, 79, 78, 77, 76],
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16,185,129,0.2)',
+          fill: true
+        }]
+      },
+      options: { responsive: true }
+    });
+    const heartCtx = document.getElementById('heartChart').getContext('2d');
+    new Chart(heartCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+          label: 'Resting HR (bpm)',
+          data: [72, 70, 69, 68, 67],
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.2)',
+          fill: true
+        }]
+      },
+      options: { responsive: true }
+    });
+    // Navbar highlight logic
+    (function() {
+      const path = window.location.pathname;
+      const nav = document.querySelector('nav');
+      if (!nav) return;
+      let page = '';
+      if (path.endsWith('index.html')) page = 'HOME';
+      else if (path.endsWith('history.html')) page = 'HISTORY';
+      else if (path.endsWith('workout.html')) page = 'WORKOUT';
+      else if (path.endsWith('exercises.html')) page = 'EXERCISES';
+      else if (path.endsWith('social.html')) page = 'SOCIAL';
+      nav.innerHTML = nav.innerHTML
         .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
         .replace('HISTORY_ACTIVE', page==='HISTORY' ? 'text-blue-500' : 'text-gray-400')
         .replace('WORKOUT_ACTIVE', page==='WORKOUT' ? 'text-blue-500' : 'text-gray-400')
-        .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400');
-})();
-</script>
+        .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400')
+        .replace('SOCIAL_ACTIVE', page==='SOCIAL' ? 'text-blue-500' : 'text-gray-400');
+    })();
+  </script>
 </body>
 </html>
-<div id="workout-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-  <div class="bg-gray-900 rounded-lg shadow-lg w-full max-w-2xl p-0 relative">
-    <!-- Place workout.html's main content here -->
-    <!-- Add a swipe-down handle at the top -->
-    <div id="swipe-down-handle" class="w-full h-8 flex items-center justify-center cursor-pointer">
-      <div class="w-12 h-1 bg-gray-400 rounded-full"></div>
-    </div>
-    const modal = document.getElementById('workout-modal');
-    const handle = document.getElementById('swipe-down-handle');
-    let startY = 0;
-    handle.addEventListener('touchstart', e => { startY = e.touches[0].clientY; });
-    handle.addEventListener('touchend', e => {
-      const endY = e.changedTouches[0].clientY;
-      if (endY - startY > 60) { // swipe down threshold
-        modal.classList.add('hidden');
-      }
-    });
-  </div>
-</div>
