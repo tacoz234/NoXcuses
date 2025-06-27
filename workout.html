@@ -210,16 +210,16 @@
         <div id="drawerContent" class="relative w-full bg-[#101828] rounded-t-3xl shadow-lg p-6 pt-4 flex flex-col transition-transform duration-300" style="box-shadow: 0 -4px 32px rgba(0,0,0,0.5); min-height:98vh; width:100vw; left:0; right:0; margin:0 auto;">
             <!-- Centered Slider Icon (pull tab) -->
             <div id="drawerTab" class="absolute left-1/2 -translate-x-1/2 top-2 flex justify-center w-full cursor-pointer z-10">
-                <div class="w-12 h-1.5 bg-gray-500 rounded-full mb-2"></div>
+                <div class="w-8 h-1.5 bg-gray-500 rounded-full mb-2"></div>
             </div>
-            <!-- Drawer Content (rest unchanged) -->
-            <div class="flex items-center justify-between mb-4 mt-6">
-                <span class="text-gray-400 text-2xl font-bold">&mdash;</span>
+            
+            <!-- Drawer Content with stopwatch inline -->
+            <div class="flex items-center justify-between mb-4 mt-8">
+                <div id="stopwatch" class="text-white text-lg font-mono font-semibold">00:00</div>
                 <button id="finishWorkoutBtn" class="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold">Finish</button>
             </div>
             <div class="mb-2">
                 <h2 class="text-white text-xl font-bold">Morning Workout</h2>
-                <div class="text-gray-300 text-sm mt-1">0:12</div>
                 <div class="text-gray-400 text-xs mt-2">Notes</div>
                 <textarea class="w-full mt-1 p-3 rounded-lg bg-[#1a2233] text-white placeholder-gray-400 focus:outline-none" rows="2" placeholder="Add notes..."></textarea>
             </div>
@@ -248,6 +248,9 @@
       drawerContent.style.pointerEvents = 'auto';
       drawerTab.style.pointerEvents = 'auto';
       setWorkoutActive(true);
+      
+      // Auto-start stopwatch when workout begins
+      setTimeout(autoStartStopwatch, 500); // Small delay to ensure DOM is ready
     }
     function closeDrawer() {
       drawer.style.pointerEvents = 'none';
@@ -364,11 +367,18 @@ function setupButtonHandlers() {
   if (finishBtn) {
     finishBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      e.stopPropagation(); // Stop click from affecting the drawer
+      e.stopPropagation();
       showConfirm('Finish and save this workout?', function() {
+        // Stop stopwatch and save final time
+        stopStopwatch();
+        const finalTime = formatTime(stopwatchSeconds);
+        
         saveWorkoutToHistory();
         setWorkoutActive(false);
         closeDrawer();
+        
+        // Reset stopwatch for next workout
+        resetStopwatch();
       });
     });
   }
@@ -380,12 +390,61 @@ function setupButtonHandlers() {
       e.preventDefault();
       e.stopPropagation();
       showConfirm('Cancel and erase this workout?', function() {
-        // Erase workout data (if any specific clearing is needed, add here)
+        // Reset stopwatch on cancel
+        resetStopwatch();
         setWorkoutActive(false);
         closeDrawer();
       });
     });
   }
+}
+
+// Stopwatch functionality - simplified auto-tracking
+let stopwatchInterval = null;
+let stopwatchSeconds = 0;
+let isStopwatchRunning = false;
+
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function updateStopwatchDisplay() {
+    const stopwatchEl = document.getElementById('stopwatch');
+    if (stopwatchEl) {
+        stopwatchEl.textContent = formatTime(stopwatchSeconds);
+    }
+}
+
+function startStopwatch() {
+    if (!isStopwatchRunning) {
+        stopwatchInterval = setInterval(() => {
+            stopwatchSeconds++;
+            updateStopwatchDisplay();
+        }, 1000);
+        isStopwatchRunning = true;
+    }
+}
+
+function stopStopwatch() {
+    if (stopwatchInterval) {
+        clearInterval(stopwatchInterval);
+        isStopwatchRunning = false;
+    }
+}
+
+function resetStopwatch() {
+    stopStopwatch();
+    stopwatchSeconds = 0;
+    updateStopwatchDisplay();
+}
+
+// Auto-start stopwatch when workout begins
+function autoStartStopwatch() {
+    if (!isStopwatchRunning) {
+        startStopwatch();
+    }
 }
 </script>
 </body>
