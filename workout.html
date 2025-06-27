@@ -121,17 +121,25 @@
         });
     </script>
     <!-- Workout Drawer Overlay -->
-    <!-- Drawer Overlay -->
+    <!-- Workout Drawer Overlay -->
+    <div id="drawerTabContainer" style="display:none;">
     <div id="workoutDrawer" class="fixed inset-0 z-40 flex items-end justify-center transition-opacity duration-300" style="pointer-events: none;">
     <!-- Navbar -->
     <nav class="fixed bottom-0 ... z-50 ...">
-        <!-- Drawer Content -->
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60" style="display:none;">
+          <div class="bg-white rounded-xl p-6 w-80 text-center">
+            <div id="confirmMessage" class="text-gray-900 text-lg font-semibold mb-4"></div>
+            <div class="flex gap-4 justify-center">
+              <button id="confirmYes" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">Yes</button>
+              <button id="confirmNo" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold">No</button>
+            </div>
+          </div>
+        </div>
         <div id="drawerContent" class="relative w-full bg-[#101828] rounded-t-3xl shadow-lg p-6 pt-4 flex flex-col transition-transform duration-300" style="box-shadow: 0 -4px 32px rgba(0,0,0,0.5); min-height:98vh; width:100vw; left:0; right:0; margin:0 auto;">
-            <!-- Centered Slider Icon -->
-            <div id="drawerTabContainer">
-                <div id="drawerTab" class="absolute left-1/2 -translate-x-1/2 top-2 flex justify-center w-full cursor-pointer z-10">
-                    <div class="w-12 h-1.5 bg-gray-500 rounded-full mb-2"></div>
-                </div>
+            <!-- Centered Slider Icon (pull tab) -->
+            <div id="drawerTab" class="absolute left-1/2 -translate-x-1/2 top-2 flex justify-center w-full cursor-pointer z-10">
+                <div class="w-12 h-1.5 bg-gray-500 rounded-full mb-2"></div>
             </div>
             <!-- Drawer Content (rest unchanged) -->
             <div class="flex items-center justify-between mb-4 mt-6">
@@ -180,10 +188,10 @@
       // Do not setWorkoutActive(false) here, only on finish/cancel
     }
     // On finish/cancel workout:
-    document.getElementById('finishWorkoutBtn').onclick = function() {
-      setWorkoutActive(false);
-      closeDrawer();
-    };
+    // document.getElementById('finishWorkoutBtn').onclick = function() {
+    //   setWorkoutActive(false);
+    //   closeDrawer();
+    // };
     // On page load:
     document.addEventListener('DOMContentLoaded', function() {
       attachDrawerEvents();
@@ -192,9 +200,13 @@
         openDrawer();
       } else {
         setWorkoutActive(false);
-        closeDrawer();
+        // closeDrawer();
       }
+
+      // Attach button handlers after DOM is loaded
+      setupButtonHandlers();
     });
+
     function attachDrawerEvents() {
         document.querySelectorAll('#template-list button, .mb-6 button').forEach(btn => {
             btn.addEventListener('click', function(e) {
@@ -213,37 +225,97 @@
         drawerTab.addEventListener('click', function() {
             openDrawer();
         });
-        document.getElementById('finishWorkoutBtn').onclick = function() {
-            closeDrawer();
-        };
-        // Pull tab click
-        drawerContent.addEventListener('touchstart', function(e) {
+
+        // Attach drag/touch events ONLY to the pull tab
+        drawerTab.addEventListener('touchstart', function(e) {
             if (e.touches.length !== 1) return;
             isDragging = true;
             startY = e.touches[0].clientY;
         });
-        drawerContent.addEventListener('touchmove', function(e) {
+
+        drawerTab.addEventListener('touchmove', function(e) {
             if (!isDragging) return;
             currentY = e.touches[0].clientY;
             let dy = currentY - startY;
-            if (dy > 0) {
+            if (dy > 0) { // Only allow dragging down
                 drawerContent.style.transform = `translateY(${dy}px)`;
             }
         });
-        drawerContent.addEventListener('touchend', function(e) {
+
+        drawerTab.addEventListener('touchend', function(e) {
             if (!isDragging) return;
             isDragging = false;
             let dy = currentY - startY;
-            if (dy > 100) {
+            if (dy > 100) { // If dragged down far enough
                 closeDrawer();
-                setTimeout(()=>{drawerContent.style.transform=`translateY(calc(100vh - ${NAVBAR_HEIGHT}px - 20px))`;},300);
-            } else {
-                drawerContent.style.transform = isOpen ? 'translateY(0)' : `translateY(calc(100vh - ${NAVBAR_HEIGHT}px - 20px))`;
+            } else { // Snap back to open position
+                drawerContent.style.transform = 'translateY(0)';
             }
         });
     }
     document.addEventListener('DOMContentLoaded', attachDrawerEvents);
-    closeDrawer();
-    </script>
+    // closeDrawer();
+
+function showConfirm(message, onYes) {
+  const modal = document.getElementById('confirmModal');
+  document.getElementById('confirmMessage').textContent = message;
+  modal.style.display = '';
+  function cleanup() {
+    modal.style.display = 'none';
+    yesBtn.removeEventListener('click', yesHandler);
+    noBtn.removeEventListener('click', noHandler);
+  }
+  const yesBtn = document.getElementById('confirmYes');
+  const noBtn = document.getElementById('confirmNo');
+  function yesHandler() { cleanup(); onYes(); }
+  function noHandler() { cleanup(); }
+  yesBtn.addEventListener('click', yesHandler);
+  noBtn.addEventListener('click', noHandler);
+}
+
+// Save workout to localStorage for history.html
+function saveWorkoutToHistory() {
+  // Example: Save a simple workout object; adjust as needed
+  const workout = {
+    name: document.querySelector('.text-xl.font-bold')?.textContent || 'Workout',
+    time: new Date().toISOString(),
+    notes: document.querySelector('textarea')?.value || '',
+    exercises: [] // Add exercises array to prevent crash
+  };
+  let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+  history.push(workout);
+  localStorage.setItem('workoutHistory', JSON.stringify(history));
+}
+
+function setupButtonHandlers() {
+  // Finish button handler
+  const finishBtn = document.getElementById('finishWorkoutBtn');
+  if (finishBtn) {
+    finishBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation(); // Stop click from affecting the drawer
+      showConfirm('Finish and save this workout?', function() {
+        saveWorkoutToHistory();
+        setWorkoutActive(false);
+        closeDrawer();
+      });
+    });
+  }
+
+  // Cancel button handler
+  const cancelBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Cancel Workout');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      showConfirm('Cancel and erase this workout?', function() {
+        // Erase workout data (if any specific clearing is needed, add here)
+        setWorkoutActive(false);
+        closeDrawer();
+      });
+    });
+  }
+}
+</script>
 </body>
 </html>

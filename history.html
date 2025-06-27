@@ -124,10 +124,12 @@
                 card.style.touchAction = "pan-y";
 
                 let exercisesHtml = '';
-                workout.exercises.forEach(ex => {
-                    let setsHtml = '';
-                    ex.sets.forEach((set, i) => {
-                        setsHtml += `
+                if (workout.exercises && Array.isArray(workout.exercises)) {
+                  workout.exercises.forEach(ex => {
+                      let setsHtml = '';
+                      if (ex.sets && Array.isArray(ex.sets)) {
+                        ex.sets.forEach((set, i) => {
+                            setsHtml += `
                             <div class="flex items-center space-x-2 text-sm">
                                 <span class="text-gray-600">Set ${i+1}:</span>
                                 <span>${set.weight || '-'} kg/lbs</span>
@@ -136,14 +138,16 @@
                                 <span>${set.completed ? '✅' : ''}</span>
                             </div>
                         `;
-                    });
-                    exercisesHtml += `
+                        });
+                      }
+                      exercisesHtml += `
                         <div class="mb-2">
                             <div class="font-semibold">${ex.name}</div>
                             <div class="ml-2 space-y-1">${setsHtml}</div>
                         </div>
                     `;
                 });
+                } // <-- This closing brace was missing
 
                 card.innerHTML = `
                     <div class="flex justify-between items-center mb-2">
