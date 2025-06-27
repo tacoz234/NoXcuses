@@ -162,15 +162,59 @@
         document.getElementById('workout-modal').classList.remove('hidden');
         // Optionally, initialize workout logic here
     });
-    // Swipe-down logic for workout modal
-    const modal = document.getElementById('workout-modal');
-    const handle = document.getElementById('swipe-down-handle');
+    // Swipe-down and swipe-up logic for workout modal
+    const workoutModal = document.getElementById('workout-modal');
+    const swipeDownHandle = document.getElementById('swipe-down-handle');
+    const swipeUpHandle = document.getElementById('swipe-up-handle');
     let startY = 0;
-    handle.addEventListener('touchstart', e => { startY = e.touches[0].clientY; });
-    handle.addEventListener('touchend', e => {
+
+    // Swipe down to hide modal
+    swipeDownHandle.addEventListener('touchstart', e => { startY = e.touches[0].clientY; });
+    swipeDownHandle.addEventListener('touchend', e => {
       const endY = e.changedTouches[0].clientY;
-      if (endY - startY > 60) { modal.classList.add('hidden'); }
+      if (endY - startY > 60) {
+        workoutModal.classList.add('hidden');
+        swipeUpHandle.classList.remove('hidden');
+      }
     });
+    // Also allow mouse drag for desktop
+    swipeDownHandle.addEventListener('mousedown', e => { startY = e.clientY; });
+    swipeDownHandle.addEventListener('mouseup', e => {
+      const endY = e.clientY;
+      if (endY - startY > 60) {
+        workoutModal.classList.add('hidden');
+        swipeUpHandle.classList.remove('hidden');
+      }
+    });
+    // Swipe up to show modal
+    swipeUpHandle.addEventListener('touchstart', e => { startY = e.touches[0].clientY; });
+    swipeUpHandle.addEventListener('touchend', e => {
+      const endY = e.changedTouches[0].clientY;
+      if (startY - endY > 60) {
+        workoutModal.classList.remove('hidden');
+        swipeUpHandle.classList.add('hidden');
+      }
+    });
+    swipeUpHandle.addEventListener('mousedown', e => { startY = e.clientY; });
+    swipeUpHandle.addEventListener('mouseup', e => {
+      const endY = e.clientY;
+      if (startY - endY > 60) {
+        workoutModal.classList.remove('hidden');
+        swipeUpHandle.classList.add('hidden');
+      }
+    });
+    // When opening modal (starting workout), hide swipe-up handle
+    function showWorkoutModal() {
+      workoutModal.classList.remove('hidden');
+      swipeUpHandle.classList.add('hidden');
+    }
+    // When hiding modal, show swipe-up handle
+    function hideWorkoutModal() {
+      workoutModal.classList.add('hidden');
+      swipeUpHandle.classList.remove('hidden');
+    }
+    // Use showWorkoutModal() and hideWorkoutModal() in your workout start/finish logic.
+
     </script>
     <!-- Fixed Bottom Navigation -->
     <!-- Consistent Bottom Navbar for all pages -->
@@ -234,32 +278,28 @@
 </script>
 </body>
 </html>
-<div id="workout-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-  <div class="bg-gray-900 rounded-lg shadow-lg w-full max-w-2xl p-0 relative">
+<div id="workout-modal" class="fixed inset-0 bg-black bg-opacity-70 flex flex-col z-50 hidden">
+  <div class="bg-gray-900 rounded-t-lg shadow-lg w-full h-full flex flex-col relative">
     <!-- Swipe-down handle -->
     <div id="swipe-down-handle" class="w-full h-8 flex items-center justify-center cursor-pointer">
       <div class="w-12 h-1 bg-gray-400 rounded-full"></div>
     </div>
-    <!-- Workout UI: timer, controls, exercises, etc. -->
+    <!-- Modal header with controls -->
     <header class="w-full p-4 flex justify-between items-center bg-gray-900 shadow-lg">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full text-sm shadow-md transition-colors duration-300 timer-button">Rest Timer</button>
-      <div id="workout-duration" class="text-white text-lg font-bold timer-button px-4 py-2 rounded-full">00:00:00</div>
-      <button class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-full text-sm shadow-md transition-colors duration-300">Finish</button>
+      <button id="rest-timer-btn" class="bg-gray-700 text-white px-4 py-2 rounded-md mr-2">Rest Timer</button>
+      <span id="workout-timer" class="text-white text-lg font-mono">00:00:00</span>
+      <button id="finish-workout-btn" class="bg-red-500 text-white px-4 py-2 rounded-md ml-2">Finish</button>
     </header>
-    <main class="flex-grow container mx-auto p-4 pt-24 md:pt-28 lg:pt-32">
+    <!-- Scrollable exercises area -->
+    <main class="flex-1 overflow-y-auto p-4">
       <section id="exercises-container" class="space-y-4"></section>
       <button id="add-exercise-btn" class="w-full mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-md shadow-md transition-colors duration-300 text-lg">Add Exercise</button>
     </main>
-    <!-- Exercise Search Modal -->
-    <div id="exercise-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-      <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900 relative">
-        <button id="close-exercise-modal" class="absolute top-2 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
-        <h2 class="text-xl font-semibold mb-4">Add Exercise</h2>
-        <input id="exercise-search" type="text" placeholder="Search exercises..." class="w-full mb-4 p-2 border rounded" />
-        <div id="exercise-list" class="max-h-64 overflow-y-auto space-y-2"></div>
-      </div>
-    </div>
   </div>
+</div>
+<!-- Swipe-up handle (appears when modal is hidden) -->
+<div id="swipe-up-handle" class="fixed bottom-0 left-0 w-full flex justify-center z-40 hidden">
+  <div class="w-12 h-2 bg-gray-400 rounded-full my-2 cursor-pointer"></div>
 </div>
 
 <head>
