@@ -82,7 +82,7 @@
         let page = '';
         if (path.endsWith('index.html')) page = 'HOME';
         else if (path.endsWith('history.html')) page = 'HISTORY';
-        else if (path.endsWith('workout2.html')) page = 'WORKOUT';
+        else if (path.endsWith('workout.html')) page = 'WORKOUT';
         else if (path.endsWith('exercises.html')) page = 'EXERCISES';
         nav.innerHTML = nav.innerHTML
             .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
@@ -238,6 +238,15 @@
     function setWorkoutActive(active) {
       localStorage.setItem('isWorkoutActive', active ? '1' : '0');
       document.getElementById('drawerTabContainer').style.display = active ? '' : 'none';
+      
+      // Save workout state when activating
+      if (active) {
+        saveWorkoutState();
+      } else {
+        // Clear workout state when deactivating
+        localStorage.removeItem('currentWorkout');
+        localStorage.removeItem('workoutStartTime');
+      }
     }
     
     function openDrawer() {
@@ -271,6 +280,7 @@
       attachDrawerEvents();
       if (localStorage.getItem('isWorkoutActive') === '1') {
         setWorkoutActive(true);
+        restoreWorkoutState(); // Restore workout state before opening
         openDrawer();
       } else {
         setWorkoutActive(false);
@@ -279,6 +289,19 @@
 
       // Attach button handlers after DOM is loaded
       setupButtonHandlers();
+      
+      // Start auto-save functionality
+      startAutoSave();
+      
+      // Auto-save when notes change
+      const notesTextarea = document.querySelector('textarea');
+      if (notesTextarea) {
+        notesTextarea.addEventListener('input', () => {
+          if (localStorage.getItem('isWorkoutActive') === '1') {
+            saveWorkoutState();
+          }
+        });
+      }
     });
 
     function attachDrawerEvents() {
@@ -446,6 +469,74 @@ function autoStartStopwatch() {
         startStopwatch();
     }
 }
+
+    // Save current workout state
+    function saveWorkoutState() {
+      // Only set start time if it doesn't exist (first time saving)
+      const existingStartTime = localStorage.getItem('workoutStartTime');
+      
+      const workoutData = {
+        name: document.querySelector('.text-xl.font-bold')?.textContent || 'Morning Workout',
+        notes: document.querySelector('textarea')?.value || '',
+        stopwatchSeconds: stopwatchSeconds,
+        isRunning: isStopwatchRunning,
+        lastSaveTime: Date.now() // Track when we last saved
+      };
+      localStorage.setItem('currentWorkout', JSON.stringify(workoutData));
+      
+      // Only set workoutStartTime if it doesn't exist (first workout start)
+      if (!existingStartTime) {
+        localStorage.setItem('workoutStartTime', Date.now().toString());
+      }
+    }
+    
+    // Restore workout state
+    function restoreWorkoutState() {
+      const savedWorkout = localStorage.getItem('currentWorkout');
+      if (savedWorkout) {
+        try {
+          const workoutData = JSON.parse(savedWorkout);
+          
+          // Restore workout name
+          const nameEl = document.querySelector('.text-xl.font-bold');
+          if (nameEl && workoutData.name) {
+            nameEl.textContent = workoutData.name;
+          }
+          
+          // Restore notes
+          const notesEl = document.querySelector('textarea');
+          if (notesEl && workoutData.notes) {
+            notesEl.value = workoutData.notes;
+          }
+          
+          // Calculate elapsed time since last save
+          const now = Date.now();
+          const lastSaveTime = workoutData.lastSaveTime || now;
+          const elapsedSinceLastSave = Math.floor((now - lastSaveTime) / 1000);
+          
+          // Restore stopwatch time + elapsed time since last save
+          stopwatchSeconds = (workoutData.stopwatchSeconds || 0) + elapsedSinceLastSave;
+          updateStopwatchDisplay();
+          
+          // Resume stopwatch if it was running
+          if (workoutData.isRunning) {
+            startStopwatch();
+          }
+        } catch (e) {
+          console.error('Error restoring workout state:', e);
+        }
+      }
+    }
+    
+    // Auto-save workout state periodically
+    function startAutoSave() {
+      setInterval(() => {
+        if (localStorage.getItem('isWorkoutActive') === '1') {
+          saveWorkoutState();
+        }
+      }, 30000); // Save every 30 seconds
+    }
 </script>
+
 </body>
 </html>
