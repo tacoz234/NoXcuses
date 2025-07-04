@@ -279,8 +279,8 @@
     document.addEventListener('DOMContentLoaded', function() {
       attachDrawerEvents();
       if (localStorage.getItem('isWorkoutActive') === '1') {
+        restoreWorkoutState(); // Restore state first!
         setWorkoutActive(true);
-        restoreWorkoutState(); // Restore workout state before opening
         openDrawer();
       } else {
         setWorkoutActive(false);
@@ -470,26 +470,56 @@ function autoStartStopwatch() {
     }
 }
 
-    // Save current workout state
+    // Add these functions near your other workout logic
     function saveWorkoutState() {
-      // Only set start time if it doesn't exist (first time saving)
-      const existingStartTime = localStorage.getItem('workoutStartTime');
-      
-      const workoutData = {
-        name: document.querySelector('.text-xl.font-bold')?.textContent || 'Morning Workout',
-        notes: document.querySelector('textarea')?.value || '',
-        stopwatchSeconds: stopwatchSeconds,
-        isRunning: isStopwatchRunning,
-        lastSaveTime: Date.now() // Track when we last saved
+      const notes = document.querySelector('textarea')?.value || '';
+      const stopwatchSeconds = window.stopwatchSeconds || 0;
+      const isRunning = window.isStopwatchRunning || false;
+      const lastSaveTime = Date.now();
+      const state = {
+        notes,
+        stopwatchSeconds,
+        isRunning,
+        lastSaveTime
       };
-      localStorage.setItem('currentWorkout', JSON.stringify(workoutData));
-      
-      // Only set workoutStartTime if it doesn't exist (first workout start)
-      if (!existingStartTime) {
-        localStorage.setItem('workoutStartTime', Date.now().toString());
+      localStorage.setItem('currentWorkout', JSON.stringify(state));
+    }
+    
+    function restoreWorkoutState() {
+      const savedWorkout = localStorage.getItem('currentWorkout');
+      if (savedWorkout) {
+        try {
+          const workoutData = JSON.parse(savedWorkout);
+          // Restore notes
+          const notesEl = document.querySelector('textarea');
+          if (notesEl) notesEl.value = workoutData.notes || '';
+          // Calculate elapsed time since last save if running
+          const now = Date.now();
+          let elapsed = 0;
+          if (workoutData.isRunning) {
+            elapsed = Math.floor((now - (workoutData.lastSaveTime || now)) / 1000);
+          }
+          window.stopwatchSeconds = (workoutData.stopwatchSeconds || 0) + elapsed;
+          updateStopwatchDisplay();
+          if (workoutData.isRunning) {
+            startStopwatch();
+          }
+        } catch (e) {
+          console.error('Error restoring workout state:', e);
+        }
       }
     }
     
+    // Call saveWorkoutState() whenever the workout state changes (e.g., on notes input, stopwatch tick, exercise changes)
+    // Example: Save every 5 seconds
+    setInterval(() => {
+      if (localStorage.getItem('isWorkoutActive') === '1') saveWorkoutState();
+    }, 5000);
+    
+    // On page load, restore state if a workout is active
+    if (localStorage.getItem('isWorkoutActive') === '1') {
+      restoreWorkoutState();
+    }
     // Restore workout state
     function restoreWorkoutState() {
       const savedWorkout = localStorage.getItem('currentWorkout');
