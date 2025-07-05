@@ -626,11 +626,20 @@ function renderWorkoutExercises() {
   });
 }
 
-// --- Update addExerciseToWorkout to initialize sets as an array ---
 function addExerciseToWorkout(ex) {
+  const sets = [];
+  const numSets = ex.working_sets || 1;
+  
+  for (let i = 0; i < numSets; i++) {
+    sets.push({
+      reps: ex.reps ? parseInt(ex.reps) || 10 : 10,
+      weight: 0
+    });
+  }
+  
   workoutExercises.push({
     name: ex.name,
-    sets: [ { reps: 10, weight: 0 } ]
+    sets: sets
   });
   renderWorkoutExercises();
   saveWorkoutState();
