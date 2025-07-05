@@ -235,63 +235,6 @@ function autoStartStopwatch() {
     }
 }
 
-function saveWorkoutState() {
-  const notes = document.querySelector('textarea')?.value || '';
-  const stopwatchSeconds = window.stopwatchSeconds || 0;
-  const isRunning = window.isStopwatchRunning || false;
-  const lastSaveTime = Date.now();
-  const state = {
-    notes,
-    stopwatchSeconds,
-    isRunning,
-    lastSaveTime
-  };
-  localStorage.setItem('currentWorkout', JSON.stringify(state));
-}
-
-function restoreWorkoutState() {
-  const savedWorkout = localStorage.getItem('currentWorkout');
-  if (savedWorkout) {
-    try {
-      const workoutData = JSON.parse(savedWorkout);
-      const nameEl = document.querySelector('.text-xl.font-bold');
-      if (nameEl && workoutData.name) {
-        nameEl.textContent = workoutData.name;
-      }
-      const notesEl = document.querySelector('textarea');
-      if (notesEl && workoutData.notes) {
-        notesEl.value = workoutData.notes;
-      }
-      const now = Date.now();
-      const lastSaveTime = workoutData.lastSaveTime || now;
-      const elapsedSinceLastSave = Math.floor((now - lastSaveTime) / 1000);
-      stopwatchSeconds = (workoutData.stopwatchSeconds || 0) + elapsedSinceLastSave;
-      updateStopwatchDisplay();
-      if (workoutData.isRunning) {
-        startStopwatch();
-      }
-    } catch (e) {
-      console.error('Error restoring workout state:', e);
-    }
-  }
-}
-
-setInterval(() => {
-  if (localStorage.getItem('isWorkoutActive') === '1') saveWorkoutState();
-}, 5000);
-
-if (localStorage.getItem('isWorkoutActive') === '1') {
-  restoreWorkoutState();
-}
-
-function startAutoSave() {
-  setInterval(() => {
-    if (localStorage.getItem('isWorkoutActive') === '1') {
-      saveWorkoutState();
-    }
-  }, 30000);
-}
-
 // Exercise Modal Logic
 let allExercises = [];
 const exerciseModal = document.getElementById('exerciseModal');
@@ -352,7 +295,159 @@ if (addExercisesBtn) {
 }
 
 // Placeholder: Add selected exercise to workout (replace with your logic)
+// --- Add after your exercise modal logic ---
+let workoutExercises = [];
+const exercisesContainer = document.createElement('div');
+exercisesContainer.id = 'workoutExercisesContainer';
+exercisesContainer.className = 'mb-4';
+// Insert this container into the drawer, e.g. after notes textarea
+const notesTextarea = document.querySelector('textarea');
+if (notesTextarea && notesTextarea.parentNode) {
+  notesTextarea.parentNode.insertBefore(exercisesContainer, notesTextarea.nextSibling);
+}
+
+// --- Replace renderWorkoutExercises with this version ---
+function renderWorkoutExercises() {
+  exercisesContainer.innerHTML = '';
+  workoutExercises.forEach((ex, exIdx) => {
+    const exDiv = document.createElement('div');
+    exDiv.className = 'bg-white rounded-lg p-4 mb-4 text-gray-900 shadow';
+    exDiv.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <span class="font-semibold">${ex.name}</span>
+        <button class="text-red-500 text-xs remove-ex-btn" data-idx="${exIdx}">Remove</button>
+      </div>
+      <div class="mb-2">
+        <label class="block text-xs font-bold text-gray-600 mb-1">Sets</label>
+        <button class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs mr-2 add-set-btn" data-idx="${exIdx}">+ Add Set</button>
+      </div>
+      <div class="space-y-2">
+        ${ex.sets.map((set, setIdx) => `
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
+            <label class="text-xs text-gray-600">Reps</label>
+            <input type="number" min="1" value="${set.reps}" class="reps-input w-14 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+            <label class="text-xs text-gray-600">Weight</label>
+            <input type="number" min="0" value="${set.weight}" class="weight-input w-20 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+            <span class="text-gray-400 text-xs">kg/lbs</span>
+            <button class="text-red-400 text-xs remove-set-btn" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">Remove</button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    exercisesContainer.appendChild(exDiv);
+  });
+  // Remove exercise handlers
+  exercisesContainer.querySelectorAll('.remove-ex-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = parseInt(this.dataset.idx);
+      workoutExercises.splice(idx, 1);
+      renderWorkoutExercises();
+      saveWorkoutState();
+    };
+  });
+  // Add set handlers
+  exercisesContainer.querySelectorAll('.add-set-btn').forEach(btn => {
+    btn.onclick = function() {
+      const idx = parseInt(this.dataset.idx);
+      workoutExercises[idx].sets.push({reps: 10, weight: 0});
+      renderWorkoutExercises();
+      saveWorkoutState();
+    };
+  });
+  // Remove set handlers
+  exercisesContainer.querySelectorAll('.remove-set-btn').forEach(btn => {
+    btn.onclick = function() {
+      const exIdx = parseInt(this.dataset.exIdx);
+      const setIdx = parseInt(this.dataset.setIdx);
+      workoutExercises[exIdx].sets.splice(setIdx, 1);
+      renderWorkoutExercises();
+      saveWorkoutState();
+    };
+  });
+  // Input handlers
+  exercisesContainer.querySelectorAll('.reps-input, .weight-input').forEach(input => {
+    input.onchange = function() {
+      const exIdx = parseInt(this.dataset.exIdx);
+      const setIdx = parseInt(this.dataset.setIdx);
+      if (this.classList.contains('reps-input')) workoutExercises[exIdx].sets[setIdx].reps = parseInt(this.value) || 1;
+      if (this.classList.contains('weight-input')) workoutExercises[exIdx].sets[setIdx].weight = parseFloat(this.value) || 0;
+      saveWorkoutState();
+    };
+  });
+}
+
+// --- Update addExerciseToWorkout to initialize sets as an array ---
 function addExerciseToWorkout(ex) {
-  alert('Exercise added: ' + ex.name);
-  // TODO: Actually add the exercise to the workout list in the drawer
+  workoutExercises.push({
+    name: ex.name,
+    sets: [ { reps: 10, weight: 0 } ]
+  });
+  renderWorkoutExercises();
+  saveWorkoutState();
+}
+
+// --- Update save/restoreWorkoutState to persist sets as arrays ---
+function saveWorkoutState() {
+  const notes = document.querySelector('textarea')?.value || '';
+  const stopwatchSeconds = window.stopwatchSeconds || 0;
+  const isRunning = window.isStopwatchRunning || false;
+  const lastSaveTime = Date.now();
+  const state = {
+    notes,
+    stopwatchSeconds,
+    isRunning,
+    lastSaveTime,
+    exercises: workoutExercises
+  };
+  localStorage.setItem('currentWorkout', JSON.stringify(state));
+}
+
+function restoreWorkoutState() {
+  const savedWorkout = localStorage.getItem('currentWorkout');
+  if (savedWorkout) {
+    try {
+      const workoutData = JSON.parse(savedWorkout);
+      const nameEl = document.querySelector('.text-xl.font-bold');
+      if (nameEl && workoutData.name) {
+        nameEl.textContent = workoutData.name;
+      }
+      const notesEl = document.querySelector('textarea');
+      if (notesEl && workoutData.notes) {
+        notesEl.value = workoutData.notes;
+      }
+      const now = Date.now();
+      const lastSaveTime = workoutData.lastSaveTime || now;
+      const elapsedSinceLastSave = Math.floor((now - lastSaveTime) / 1000);
+      stopwatchSeconds = (workoutData.stopwatchSeconds || 0) + elapsedSinceLastSave;
+      updateStopwatchDisplay();
+      if (workoutData.isRunning) {
+        startStopwatch();
+      }
+      // Restore exercises and ensure sets is always an array
+      workoutExercises = Array.isArray(workoutData.exercises) ? workoutData.exercises.map(ex => ({
+        ...ex,
+        sets: Array.isArray(ex.sets) ? ex.sets : []
+      })) : [];
+      renderWorkoutExercises();
+    } catch (e) {
+      console.error('Error restoring workout state:', e);
+    }
+  }
+}
+
+setInterval(() => {
+  if (localStorage.getItem('isWorkoutActive') === '1') saveWorkoutState();
+}, 5000);
+
+if (localStorage.getItem('isWorkoutActive') === '1') {
+  restoreWorkoutState();
+}
+
+function startAutoSave() {
+  setInterval(() => {
+    if (localStorage.getItem('isWorkoutActive') === '1') {
+      saveWorkoutState();
+    }
+  }, 30000);
 }
