@@ -300,7 +300,11 @@ function attachDrawerEvents() {
         }
     });
 }
-document.addEventListener('DOMContentLoaded', attachDrawerEvents);
+// Add this after the drawer event setup
+document.addEventListener('DOMContentLoaded', function() {
+    attachDrawerEvents();
+    setupButtonHandlers(); // Initialize the workout buttons
+});
 
 function showConfirm(message, onYes) {
   const modal = document.getElementById('confirmModal');
