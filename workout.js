@@ -537,8 +537,12 @@ function renderWorkoutExercises() {
               <input type="number" min="1" value="${set.reps}" class="reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
               <input type="checkbox" class="set-complete-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${set.completed ? 'checked' : ''}>
             </div>
-            <div class="rest-timer-container hidden mt-2 text-center">
-              <div class="rest-timer-display text-lg font-bold text-blue-400">00:00</div>
+            <div class="rest-timer-container hidden mt-2 text-center bg-gray-50 rounded p-2">
+              <div class="flex items-center justify-center gap-2">
+                <button class="decrease-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg">-10s</button>
+                <div class="rest-timer-display text-lg font-bold text-blue-400">00:00</div>
+                <button class="increase-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg">+10s</button>
+              </div>
               <button class="skip-rest-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded-lg mt-1">Skip Rest</button>
             </div>
           </div>
@@ -700,15 +704,38 @@ function renderWorkoutExercises() {
   let restTimeSeconds = 0;
   const DEFAULT_REST_TIME = 60; // Default rest time in seconds
 
+  // Add timer adjustment button handlers
+exercisesContainer.querySelectorAll('.decrease-time-btn').forEach(button => {
+  button.onclick = function() {
+    adjustRestTime(-10);
+  };
+});
+
+exercisesContainer.querySelectorAll('.increase-time-btn').forEach(button => {
+  button.onclick = function() {
+    adjustRestTime(10);
+  };
+});
+
   function formatRestTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
-  function startRestTimer(timerDisplayEl, containerEl) {
+  function parseRestTime(restString) {
+    // Parse rest time from template format (e.g., "1-2 min" or "3-5 min")
+    const match = restString.match(/(\d+)-(\d+)\s*min/);
+    if (match) {
+      return parseInt(match[1]) * 60; // Use the lower end of the range in seconds
+    }
+    return DEFAULT_REST_TIME; // Fallback to default
+  }
+
+  function startRestTimer(timerDisplayEl, containerEl, exercise) {
     stopRestTimer(); // Clear any existing timer
-    restTimeSeconds = DEFAULT_REST_TIME;
+    // Get rest time from exercise template if available
+    restTimeSeconds = exercise.rest ? parseRestTime(exercise.rest) : DEFAULT_REST_TIME;
     timerDisplayEl.textContent = formatRestTime(restTimeSeconds);
     containerEl.classList.remove('hidden');
 
@@ -720,6 +747,16 @@ function renderWorkoutExercises() {
         containerEl.classList.add('hidden');
       }
     }, 1000);
+  }
+
+  function adjustRestTime(seconds) {
+    if (restTimerInterval) {
+      restTimeSeconds = Math.max(0, restTimeSeconds + seconds);
+      const displays = document.querySelectorAll('.rest-timer-display');
+      displays.forEach(display => {
+        display.textContent = formatRestTime(restTimeSeconds);
+      });
+    }
   }
 
   function stopRestTimer() {
@@ -756,7 +793,7 @@ function renderWorkoutExercises() {
           input.classList.add('bg-green-100');
           input.disabled = true;
         });
-        startRestTimer(restTimerDisplay, restTimerContainer);
+        startRestTimer(restTimerDisplay, restTimerContainer, workoutExercises[exIdx]);
       } else {
         row.classList.remove('bg-green-100');
         row.classList.add('bg-gray-50');
