@@ -638,13 +638,14 @@ function addExerciseToWorkout(ex) {
   saveWorkoutState();
 }
 
-// --- Update save/restoreWorkoutState to persist sets as arrays ---
 function saveWorkoutState() {
   const notes = document.querySelector('textarea')?.value || '';
   const stopwatchSeconds = window.stopwatchSeconds || 0;
   const isRunning = window.isStopwatchRunning || false;
   const lastSaveTime = Date.now();
+  const name = document.querySelector('#drawerContent .text-xl.font-bold')?.textContent || 'New Workout';
   const state = {
+    name,
     notes,
     stopwatchSeconds,
     isRunning,
@@ -681,6 +682,11 @@ function restoreWorkoutState() {
         sets: Array.isArray(ex.sets) ? ex.sets : []
       })) : [];
       renderWorkoutExercises();
+      
+      // Open the drawer if workout is active
+      if (localStorage.getItem('isWorkoutActive') === '1') {
+        openDrawer();
+      }
     } catch (e) {
       console.error('Error restoring workout state:', e);
     }
