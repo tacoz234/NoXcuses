@@ -88,24 +88,29 @@
             </div>
           </div>
         </div>
-        <div id="drawerContent" class="relative w-full bg-[#101828] rounded-t-3xl shadow-lg p-6 pt-4 flex flex-col transition-transform duration-300" style="box-shadow: 0 -4px 32px rgba(0,0,0,0.5); min-height:98vh; width:100vw; left:0; right:0; margin:0 auto;">
-            <!-- Centered Slider Icon (pull tab) -->
-            <div id="drawerTab" class="absolute left-1/2 -translate-x-1/2 top-2 flex justify-center w-full cursor-pointer z-10">
-                <div class="w-8 h-1.5 bg-gray-500 rounded-full mb-2"></div>
+        <div id="drawerContent" class="fixed bottom-0 w-full bg-[#101828] rounded-t-3xl shadow-lg transition-transform duration-300" style="box-shadow: 0 -4px 32px rgba(0,0,0,0.5); width:100vw; left:0; right:0; margin:0 auto; z-index: 50;">
+            <!-- Fixed tab area -->
+            <div id="drawerTab" class="sticky top-0 left-1/2 -translate-x-1/2 flex justify-center w-full cursor-pointer z-10 pt-4 pb-2 bg-[#101828]">
+                <div class="w-8 h-1.5 bg-gray-500 rounded-full"></div>
             </div>
             
-            <!-- Drawer Content with stopwatch inline -->
-            <div class="flex items-center justify-between mb-4 mt-8">
-                <div id="stopwatch" class="text-white text-lg font-mono font-semibold">00:00</div>
-                <button id="finishWorkoutBtn" class="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold">Finish</button>
+            <!-- Scrollable content area -->
+            <div class="drawer-content p-6 pt-2">
+                <!-- Stopwatch and buttons -->
+                <div class="flex items-center justify-between mb-4">
+                    <div id="stopwatch" class="text-white text-lg font-mono font-semibold">00:00</div>
+                    <button id="finishWorkoutBtn" class="bg-green-500 text-white px-5 py-2 rounded-xl font-semibold">Finish</button>
+                </div>
+                
+                <!-- Rest of the content -->
+                <div class="mb-2">
+                    <h2 class="text-white text-xl font-bold">Morning Workout</h2>
+                    <div class="text-gray-400 text-xs mt-2">Notes</div>
+                    <textarea class="w-full mt-1 p-3 rounded-lg bg-[#1a2233] text-white placeholder-gray-400 focus:outline-none" rows="2" placeholder="Add notes..."></textarea>
+                </div>
+                <button class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl mt-6">Add Exercises</button>
+                <button class="w-full bg-red-500 text-white font-semibold py-3 rounded-xl mt-3">Cancel Workout</button>
             </div>
-            <div class="mb-2">
-                <h2 class="text-white text-xl font-bold">Morning Workout</h2>
-                <div class="text-gray-400 text-xs mt-2">Notes</div>
-                <textarea class="w-full mt-1 p-3 rounded-lg bg-[#1a2233] text-white placeholder-gray-400 focus:outline-none" rows="2" placeholder="Add notes..."></textarea>
-            </div>
-            <button class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl mt-6">Add Exercises</button>
-            <button class="w-full bg-red-500 text-white font-semibold py-3 rounded-xl mt-3">Cancel Workout</button>
         </div>
     </div>
    <!-- Exercise Selection Modal -->

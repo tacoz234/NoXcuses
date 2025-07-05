@@ -75,6 +75,30 @@ fetch('templates.json')
                 chevron.classList.toggle('fa-chevron-up');
             };
             
+            // Move this function before the template click handlers
+            function startWorkoutFromTemplate(template) {
+              // Clear any existing workout data
+              workoutExercises = [];
+              document.querySelector('textarea').value = '';
+              resetStopwatch();
+            
+              // Set workout name
+              const workoutNameEl = document.querySelector('#drawerContent .text-xl.font-bold');
+              if (workoutNameEl) {
+                workoutNameEl.textContent = template.name;
+              }
+            
+              // Add exercises from the template
+              if (template.exercises && template.exercises.length > 0) {
+                template.exercises.forEach(exercise => {
+                  addExerciseToWorkout(exercise);
+                });
+              }
+            
+              // Open the drawer to start the workout
+              openDrawer();
+            }
+
             // Add click handlers for template start buttons within routines
             routineEl.addEventListener('click', (e) => {
                 if (e.target.classList.contains('template-start-btn')) {
@@ -173,6 +197,14 @@ function openDrawer() {
   drawer.style.pointerEvents = 'auto';
   drawer.style.backgroundColor = 'rgba(16,24,40,0.85)';
   drawerContent.style.transform = 'translateY(0)';
+  drawerContent.style.position = 'fixed';
+  drawerContent.style.bottom = '0';
+  drawerContent.style.maxHeight = '95vh';
+  const contentArea = drawerContent.querySelector('.drawer-content');
+  if (contentArea) {
+    contentArea.style.overflowY = 'auto';
+    contentArea.style.maxHeight = 'calc(95vh - 60px)';
+  }
   isOpen = true;
   drawerContent.style.pointerEvents = 'auto';
   drawerTab.style.pointerEvents = 'auto';
@@ -180,58 +212,20 @@ function openDrawer() {
   setTimeout(autoStartStopwatch, 500);
 }
 
-function startWorkoutFromTemplate(template) {
-  // Clear any existing workout data
-  workoutExercises = [];
-  document.querySelector('textarea').value = '';
-  resetStopwatch();
-
-  // Set workout name
-  const workoutNameEl = document.querySelector('#drawerContent .text-xl.font-bold');
-  if (workoutNameEl) {
-    workoutNameEl.textContent = template.name;
-  }
-
-  // Add exercises from the template
-  if (template.exercises && template.exercises.length > 0) {
-    template.exercises.forEach(exercise => {
-      addExerciseToWorkout(exercise);
-    });
-  }
-
-  // Open the drawer to start the workout
-  openDrawer();
-}
-
 function closeDrawer() {
   drawer.style.pointerEvents = 'none';
   drawer.style.backgroundColor = 'transparent';
   drawerContent.style.transform = `translateY(calc(100vh - ${NAVBAR_HEIGHT}px - ${PULL_TAB_HEIGHT}px))`;
+  drawerContent.style.position = 'fixed';
+  drawerContent.style.bottom = '0';
+  const contentArea = drawerContent.querySelector('.drawer-content');
+  if (contentArea) {
+    contentArea.style.overflowY = 'hidden';
+  }
   isOpen = false;
   drawerContent.style.pointerEvents = 'auto';
   drawerTab.style.pointerEvents = 'auto';
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-  attachDrawerEvents();
-  if (localStorage.getItem('isWorkoutActive') === '1') {
-    restoreWorkoutState();
-    setWorkoutActive(true);
-    openDrawer();
-  } else {
-    setWorkoutActive(false);
-  }
-  setupButtonHandlers();
-  startAutoSave();
-  const notesTextarea = document.querySelector('textarea');
-  if (notesTextarea) {
-    notesTextarea.addEventListener('input', () => {
-      if (localStorage.getItem('isWorkoutActive') === '1') {
-        saveWorkoutState();
-      }
-    });
-  }
-});
 
 function attachDrawerEvents() {
     // Combined event listener for all start buttons
@@ -281,15 +275,19 @@ function attachDrawerEvents() {
         if (e.touches.length !== 1) return;
         isDragging = true;
         startY = e.touches[0].clientY;
+        drawerContent.style.overflowY = 'hidden'; // Disable scrolling when starting to drag
     });
+
     drawerTab.addEventListener('touchmove', function(e) {
         if (!isDragging) return;
+        e.preventDefault(); // Prevent scrolling while dragging
         currentY = e.touches[0].clientY;
         let dy = currentY - startY;
         if (dy > 0) {
             drawerContent.style.transform = `translateY(${dy}px)`;
         }
     });
+
     drawerTab.addEventListener('touchend', function(e) {
         if (!isDragging) return;
         isDragging = false;
@@ -298,6 +296,7 @@ function attachDrawerEvents() {
             closeDrawer();
         } else {
             drawerContent.style.transform = 'translateY(0)';
+            drawerContent.style.overflowY = 'auto'; // Re-enable scrolling after drag
         }
     });
 }
