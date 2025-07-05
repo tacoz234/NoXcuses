@@ -535,7 +535,11 @@ function renderWorkoutExercises() {
               <span class="text-gray-400 text-xs">${weightUnit}</span>
               <label class="text-xs text-gray-600 ml-2">Reps</label>
               <input type="number" min="1" value="${set.reps}" class="reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
-              <input type="checkbox" class="ml-2 w-4 h-4 text-blue-600 rounded border-gray-300 set-complete-checkbox" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <input type="checkbox" class="set-complete-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${set.completed ? 'checked' : ''}>
+            </div>
+            <div class="rest-timer-container hidden mt-2 text-center">
+              <div class="rest-timer-display text-lg font-bold text-blue-400">00:00</div>
+              <button class="skip-rest-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded-lg mt-1">Skip Rest</button>
             </div>
           </div>
         `).join('')}
@@ -691,6 +695,89 @@ function renderWorkoutExercises() {
       saveWorkoutState();
     };
   });
+
+  let restTimerInterval = null;
+  let restTimeSeconds = 0;
+  const DEFAULT_REST_TIME = 60; // Default rest time in seconds
+
+  function formatRestTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function startRestTimer(timerDisplayEl, containerEl) {
+    stopRestTimer(); // Clear any existing timer
+    restTimeSeconds = DEFAULT_REST_TIME;
+    timerDisplayEl.textContent = formatRestTime(restTimeSeconds);
+    containerEl.classList.remove('hidden');
+
+    restTimerInterval = setInterval(() => {
+      restTimeSeconds--;
+      timerDisplayEl.textContent = formatRestTime(restTimeSeconds);
+      if (restTimeSeconds <= 0) {
+        stopRestTimer();
+        containerEl.classList.add('hidden');
+      }
+    }, 1000);
+  }
+
+  function stopRestTimer() {
+    if (restTimerInterval) {
+      clearInterval(restTimerInterval);
+      restTimerInterval = null;
+    }
+  }
+
+  // Set completion checkbox handler
+  exercisesContainer.querySelectorAll('.set-complete-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const exIdx = parseInt(this.dataset.exIdx);
+      const setIdx = parseInt(this.dataset.setIdx);
+      const isCompleted = this.checked;
+
+      // Update the workoutExercises data structure
+      if (!workoutExercises[exIdx].sets[setIdx].hasOwnProperty('completed')) {
+        workoutExercises[exIdx].sets[setIdx].completed = false; // Initialize if not present
+      }
+      workoutExercises[exIdx].sets[setIdx].completed = isCompleted;
+      saveWorkoutState();
+
+      const row = this.closest('.set-row');
+      const inputs = row.querySelectorAll('input[type="number"]');
+      const setContainer = row.parentElement;
+      const restTimerContainer = setContainer.querySelector('.rest-timer-container');
+      const restTimerDisplay = restTimerContainer.querySelector('.rest-timer-display');
+      
+      if (isCompleted) {
+        row.classList.add('bg-green-100');
+        row.classList.remove('bg-gray-50');
+        inputs.forEach(input => {
+          input.classList.add('bg-green-100');
+          input.disabled = true;
+        });
+        startRestTimer(restTimerDisplay, restTimerContainer);
+      } else {
+        row.classList.remove('bg-green-100');
+        row.classList.add('bg-gray-50');
+        inputs.forEach(input => {
+          input.classList.remove('bg-green-100');
+          input.disabled = false;
+        });
+        stopRestTimer();
+        restTimerContainer.classList.add('hidden');
+      }
+    });
+  });
+
+  // Skip Rest button handler
+  exercisesContainer.querySelectorAll('.skip-rest-btn').forEach(button => {
+    button.onclick = function() {
+      const restTimerContainer = this.closest('.rest-timer-container');
+      stopRestTimer();
+      restTimerContainer.classList.add('hidden');
+    };
+  });
 }
 
 function addExerciseToWorkout(ex) {
@@ -700,7 +787,8 @@ function addExerciseToWorkout(ex) {
   for (let i = 0; i < numSets; i++) {
     sets.push({
       reps: ex.reps ? parseInt(ex.reps) || 10 : 10,
-      weight: 0
+      weight: 0,
+      completed: false // Initialize completed status for each set
     });
   }
   
@@ -761,7 +849,7 @@ function restoreWorkoutState() {
       // Restore exercises and ensure sets is always an array
       workoutExercises = Array.isArray(workoutData.exercises) ? workoutData.exercises.map(ex => ({
         ...ex,
-        sets: Array.isArray(ex.sets) ? ex.sets : []
+        sets: Array.isArray(ex.sets) ? ex.sets.map(set => ({ ...set, completed: set.hasOwnProperty('completed') ? set.completed : false })) : []
       })) : [];
       renderWorkoutExercises();
       
