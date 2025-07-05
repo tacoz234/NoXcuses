@@ -200,11 +200,7 @@ function openDrawer() {
   drawerContent.style.position = 'fixed';
   drawerContent.style.bottom = '0';
   drawerContent.style.maxHeight = '95vh';
-  const contentArea = drawerContent.querySelector('.drawer-content');
-  if (contentArea) {
-    contentArea.style.overflowY = 'auto';
-    contentArea.style.maxHeight = 'calc(95vh - 60px)';
-  }
+  drawerContent.style.overflowY = 'auto'; // Set overflow on drawerContent instead
   isOpen = true;
   drawerContent.style.pointerEvents = 'auto';
   drawerTab.style.pointerEvents = 'auto';
@@ -218,10 +214,7 @@ function closeDrawer() {
   drawerContent.style.transform = `translateY(calc(100vh - ${NAVBAR_HEIGHT}px - ${PULL_TAB_HEIGHT}px))`;
   drawerContent.style.position = 'fixed';
   drawerContent.style.bottom = '0';
-  const contentArea = drawerContent.querySelector('.drawer-content');
-  if (contentArea) {
-    contentArea.style.overflowY = 'hidden';
-  }
+  drawerContent.style.overflowY = 'hidden'; // Set overflow on drawerContent
   isOpen = false;
   drawerContent.style.pointerEvents = 'auto';
   drawerTab.style.pointerEvents = 'auto';
