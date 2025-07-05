@@ -770,5 +770,22 @@ function startAutoSave() {
     if (localStorage.getItem('isWorkoutActive') === '1') {
       saveWorkoutState();
     }
-  }, 30000);
+  }, 5000);
+}
+
+// Call startAutoSave when the page loads
+startAutoSave();
+
+// Ensure workout state is restored properly on page load
+if (localStorage.getItem('isWorkoutActive') === '1') {
+  restoreWorkoutState();
+  // If the workout was running, restart the stopwatch
+  const savedWorkout = localStorage.getItem('currentWorkout');
+  if (savedWorkout) {
+    const workoutData = JSON.parse(savedWorkout);
+    if (workoutData.isRunning) {
+      startStopwatch();
+    }
+    updateStopwatchDisplay();
+  }
 }
