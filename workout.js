@@ -491,7 +491,12 @@ if (notesTextarea && notesTextarea.parentNode) {
 // --- Replace renderWorkoutExercises with this version ---
 function renderWorkoutExercises() {
   exercisesContainer.innerHTML = '';
-  exercisesContainer.className = 'flex flex-col min-h-[calc(95vh-500px)]'; // Changed to min-height
+  exercisesContainer.className = 'flex flex-col min-h-[calc(95vh-500px)]';
+  
+  // Get user's weight unit preference
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const weightUnit = userData.weightUnit || 'kg';
+  const conversionFactor = weightUnit === 'lb' ? 2.20462 : 1; // kg to lb conversion
   
   if (workoutExercises.length === 0) {
     const placeholderDiv = document.createElement('div');
@@ -507,7 +512,7 @@ function renderWorkoutExercises() {
 
   // Create exercises container
   const exercisesList = document.createElement('div');
-  exercisesList.className = 'flex-shrink-0'; // Don't let exercises shrink
+  exercisesList.className = 'flex-shrink-0';
   
   workoutExercises.forEach((ex, exIdx) => {
     const exDiv = document.createElement('div');
@@ -526,8 +531,8 @@ function renderWorkoutExercises() {
             <div class="flex items-center gap-2 set-row bg-gray-50 rounded transition-all relative" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
               <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
               <label class="text-xs text-gray-600">Weight</label>
-              <input type="number" min="0" value="${set.weight}" class="weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
-              <span class="text-gray-400 text-xs">kg</span>
+              <input type="number" min="0" value="${(set.weight * conversionFactor).toFixed(1)}" class="weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" data-original-unit="kg">
+              <span class="text-gray-400 text-xs">${weightUnit}</span>
               <label class="text-xs text-gray-600 ml-2">Reps</label>
               <input type="number" min="1" value="${set.reps}" class="reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
               <input type="checkbox" class="ml-2 w-4 h-4 text-blue-600 rounded border-gray-300 set-complete-checkbox" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
@@ -540,6 +545,19 @@ function renderWorkoutExercises() {
       </div>
     `;
     exercisesContainer.appendChild(exDiv);
+
+    // Add input change handlers to convert units
+    exDiv.querySelectorAll('.weight-input').forEach(input => {
+      input.addEventListener('change', function() {
+        const exIdx = parseInt(this.dataset.exIdx);
+        const setIdx = parseInt(this.dataset.setIdx);
+        // Convert displayed value back to kg for storage
+        const displayedValue = parseFloat(this.value) || 0;
+        const storedValue = weightUnit === 'lb' ? displayedValue / 2.20462 : displayedValue;
+        workoutExercises[exIdx].sets[setIdx].weight = parseFloat(storedValue.toFixed(1));
+        saveWorkoutState();
+      });
+    });
 
     // Add checkbox handlers
     exDiv.querySelectorAll('.set-complete-checkbox').forEach(checkbox => {

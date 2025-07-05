@@ -35,3 +35,8 @@ fetch('badges.json')
           container.appendChild(span);
         });
       });
+
+// Update the edit button handler
+document.getElementById('editAccountBtn').addEventListener('click', () => {
+    window.location.href = 'settings.html';
+});
