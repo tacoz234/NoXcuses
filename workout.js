@@ -484,10 +484,11 @@ if (notesTextarea && notesTextarea.parentNode) {
 // --- Replace renderWorkoutExercises with this version ---
 function renderWorkoutExercises() {
   exercisesContainer.innerHTML = '';
+  exercisesContainer.className = 'flex flex-col min-h-[calc(95vh-400px)]'; // Changed to min-height
   
   if (workoutExercises.length === 0) {
     const placeholderDiv = document.createElement('div');
-    placeholderDiv.className = 'bg-[#1a2233] rounded-lg p-8 mb-4 text-center min-h-[375px] flex flex-col items-center justify-center';
+    placeholderDiv.className = 'bg-[#1a2233] rounded-lg p-8 mb-4 text-center flex-grow flex flex-col items-center justify-center';
     placeholderDiv.innerHTML = `
       <i class="fas fa-dumbbell text-gray-600 text-4xl mb-4"></i>
       <p class="text-gray-400">No exercises added yet</p>
@@ -496,6 +497,11 @@ function renderWorkoutExercises() {
     exercisesContainer.appendChild(placeholderDiv);
     return;
   }
+
+  // Create exercises container
+  const exercisesList = document.createElement('div');
+  exercisesList.className = 'flex-shrink-0'; // Don't let exercises shrink
+  
   workoutExercises.forEach((ex, exIdx) => {
     const exDiv = document.createElement('div');
     exDiv.className = 'bg-white rounded-lg p-4 mb-4 text-gray-900 shadow';
