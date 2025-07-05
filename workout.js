@@ -232,14 +232,19 @@ function attachDrawerEvents() {
             // Clear previous workout data for an empty session
             workoutExercises = [];
             document.querySelector('textarea').value = '';
+            resetStopwatch();
+            
             const workoutNameEl = document.querySelector('#drawerContent .text-xl.font-bold');
             if (workoutNameEl) {
               workoutNameEl.textContent = 'New Workout';
             }
+            
             renderWorkoutExercises();
-            resetStopwatch();
-            openDrawer();
-        } else {
+            openDrawer(); // Add this line to properly open the drawer
+            setWorkoutActive(true); // Add this line to properly activate the workout
+            autoStartStopwatch(); // Add this line to start the stopwatch
+        }
+        else {
             // Find the template data
             const templateItem = startButton.closest('.template-item, .template-card');
             if (templateItem) {
@@ -479,6 +484,18 @@ if (notesTextarea && notesTextarea.parentNode) {
 // --- Replace renderWorkoutExercises with this version ---
 function renderWorkoutExercises() {
   exercisesContainer.innerHTML = '';
+  
+  if (workoutExercises.length === 0) {
+    const placeholderDiv = document.createElement('div');
+    placeholderDiv.className = 'bg-[#1a2233] rounded-lg p-8 mb-4 text-center min-h-[375px] flex flex-col items-center justify-center';
+    placeholderDiv.innerHTML = `
+      <i class="fas fa-dumbbell text-gray-600 text-4xl mb-4"></i>
+      <p class="text-gray-400">No exercises added yet</p>
+      <p class="text-gray-500 text-sm mt-2">Click "Add Exercises" to start your workout</p>
+    `;
+    exercisesContainer.appendChild(placeholderDiv);
+    return;
+  }
   workoutExercises.forEach((ex, exIdx) => {
     const exDiv = document.createElement('div');
     exDiv.className = 'bg-white rounded-lg p-4 mb-4 text-gray-900 shadow';
