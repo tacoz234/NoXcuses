@@ -491,7 +491,7 @@ if (notesTextarea && notesTextarea.parentNode) {
 // --- Replace renderWorkoutExercises with this version ---
 function renderWorkoutExercises() {
   exercisesContainer.innerHTML = '';
-  exercisesContainer.className = 'flex flex-col min-h-[calc(95vh-400px)]'; // Changed to min-height
+  exercisesContainer.className = 'flex flex-col min-h-[calc(95vh-500px)]'; // Changed to min-height
   
   if (workoutExercises.length === 0) {
     const placeholderDiv = document.createElement('div');
