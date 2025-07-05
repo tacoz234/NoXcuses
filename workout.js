@@ -516,14 +516,14 @@ function renderWorkoutExercises() {
             <div class="absolute inset-0 flex items-center justify-end pr-2 bg-red-500 rounded delete-bg" style="z-index:0;opacity:0;pointer-events:none;transition:opacity 0.2s;">
               <button class="delete-set-btn text-white font-bold px-4 py-2 rounded" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">Delete</button>
             </div>
-            <div class="flex items-center gap-2 set-row bg-gray-50 rounded transition-transform relative" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
+            <div class="flex items-center gap-2 set-row bg-gray-50 rounded transition-all relative" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
               <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
               <label class="text-xs text-gray-600">Weight</label>
-              <input type="number" min="0" value="${set.weight}" class="weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <input type="number" min="0" value="${set.weight}" class="weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
               <span class="text-gray-400 text-xs">kg</span>
               <label class="text-xs text-gray-600 ml-2">Reps</label>
-              <input type="number" min="1" value="${set.reps}" class="reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
-              <input type="checkbox" class="ml-2 w-4 h-4 text-blue-600 rounded border-gray-300" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <input type="number" min="1" value="${set.reps}" class="reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <input type="checkbox" class="ml-2 w-4 h-4 text-blue-600 rounded border-gray-300 set-complete-checkbox" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
             </div>
           </div>
         `).join('')}
@@ -533,6 +533,31 @@ function renderWorkoutExercises() {
       </div>
     `;
     exercisesContainer.appendChild(exDiv);
+
+    // Add checkbox handlers
+    exDiv.querySelectorAll('.set-complete-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function() {
+        const row = this.closest('.set-row');
+        const inputs = row.querySelectorAll('input[type="number"]');
+        
+        if (this.checked) {
+          row.classList.add('bg-green-100');
+          row.classList.remove('bg-gray-50');
+          inputs.forEach(input => {
+            input.classList.add('bg-green-100');
+            input.disabled = true;
+          });
+        } else {
+          row.classList.remove('bg-green-100');
+          row.classList.add('bg-gray-50');
+          inputs.forEach(input => {
+            input.classList.remove('bg-green-100');
+            input.disabled = false;
+          });
+        }
+      });
+    });
+
     // Attach swipe-to-delete handlers for each set-row
     exDiv.querySelectorAll('.set-row').forEach(row => {
       const wrapper = row.parentElement;
