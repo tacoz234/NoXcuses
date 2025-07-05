@@ -317,22 +317,20 @@ function renderWorkoutExercises() {
         <span class="font-semibold">${ex.name}</span>
         <button class="text-red-500 text-xs remove-ex-btn" data-idx="${exIdx}">Remove</button>
       </div>
-      <div class="mb-2">
-        <label class="block text-xs font-bold text-gray-600 mb-1">Sets</label>
-        <button class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs mr-2 add-set-btn" data-idx="${exIdx}">+ Add Set</button>
-      </div>
       <div class="space-y-2">
         ${ex.sets.map((set, setIdx) => `
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-2 mb-1 set-row bg-gray-50 rounded transition-transform" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
             <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
             <label class="text-xs text-gray-600">Reps</label>
             <input type="number" min="1" value="${set.reps}" class="reps-input w-14 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
             <label class="text-xs text-gray-600">Weight</label>
             <input type="number" min="0" value="${set.weight}" class="weight-input w-20 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
             <span class="text-gray-400 text-xs">kg/lbs</span>
-            <button class="text-red-400 text-xs remove-set-btn" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">Remove</button>
           </div>
         `).join('')}
+        <div class="flex justify-center mt-4">
+          <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg text-base shadow add-set-btn" data-idx="${exIdx}">+ Add Set</button>
+        </div>
       </div>
     `;
     exercisesContainer.appendChild(exDiv);
@@ -451,3 +449,60 @@ function startAutoSave() {
     }
   }, 30000);
 }
+
+// Add this after rendering to enable swipe-to-delete for sets:
+exDiv.querySelectorAll('.set-row').forEach(row => {
+  let startX = 0, currentX = 0, swiped = false;
+  row.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    swiped = false;
+  });
+  row.addEventListener('touchmove', e => {
+    currentX = e.touches[0].clientX;
+    const dx = currentX - startX;
+    row.style.transform = `translateX(${dx}px)`;
+    if (Math.abs(dx) > 80) swiped = true;
+  });
+  row.addEventListener('touchend', e => {
+    row.style.transform = '';
+    if (swiped) {
+      const exIdx = parseInt(row.dataset.exIdx);
+      const setIdx = parseInt(row.dataset.setIdx);
+      workoutExercises[exIdx].sets.splice(setIdx, 1);
+      renderWorkoutExercises();
+      saveWorkoutState();
+    }
+  });
+  // Mouse events for desktop
+  let mouseDown = false;
+  row.addEventListener('mousedown', e => {
+    mouseDown = true;
+    startX = e.clientX;
+    swiped = false;
+  });
+  row.addEventListener('mousemove', e => {
+    if (!mouseDown) return;
+    currentX = e.clientX;
+    const dx = currentX - startX;
+    row.style.transform = `translateX(${dx}px)`;
+    if (Math.abs(dx) > 80) swiped = true;
+  });
+  row.addEventListener('mouseup', e => {
+    if (!mouseDown) return;
+    mouseDown = false;
+    row.style.transform = '';
+    if (swiped) {
+      const exIdx = parseInt(row.dataset.exIdx);
+      const setIdx = parseInt(row.dataset.setIdx);
+      workoutExercises[exIdx].sets.splice(setIdx, 1);
+      renderWorkoutExercises();
+      saveWorkoutState();
+    }
+  });
+  row.addEventListener('mouseleave', e => {
+    if (mouseDown) {
+      mouseDown = false;
+      row.style.transform = '';
+    }
+  });
+});
