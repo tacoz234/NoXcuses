@@ -640,16 +640,13 @@ function addExerciseToWorkout(ex) {
 
 function saveWorkoutState() {
   const notes = document.querySelector('textarea')?.value || '';
-  const stopwatchSeconds = window.stopwatchSeconds || 0;
-  const isRunning = window.isStopwatchRunning || false;
-  const lastSaveTime = Date.now();
   const name = document.querySelector('#drawerContent .text-xl.font-bold')?.textContent || 'New Workout';
   const state = {
     name,
     notes,
-    stopwatchSeconds,
-    isRunning,
-    lastSaveTime,
+    stopwatchSeconds,  // Use the actual variable, not window.stopwatchSeconds
+    isRunning: isStopwatchRunning,  // Use the actual variable
+    lastSaveTime: Date.now(),
     exercises: workoutExercises
   };
   localStorage.setItem('currentWorkout', JSON.stringify(state));
@@ -668,14 +665,25 @@ function restoreWorkoutState() {
       if (notesEl && workoutData.notes) {
         notesEl.value = workoutData.notes;
       }
+
+      // Calculate elapsed time correctly
       const now = Date.now();
       const lastSaveTime = workoutData.lastSaveTime || now;
       const elapsedSinceLastSave = Math.floor((now - lastSaveTime) / 1000);
-      stopwatchSeconds = (workoutData.stopwatchSeconds || 0) + elapsedSinceLastSave;
+      
+      // Only add elapsed time if the workout was running
+      stopwatchSeconds = workoutData.stopwatchSeconds || 0;
+      if (workoutData.isRunning) {
+        stopwatchSeconds += elapsedSinceLastSave;
+      }
+      
       updateStopwatchDisplay();
+      
+      // Start the stopwatch if it was running
       if (workoutData.isRunning) {
         startStopwatch();
       }
+
       // Restore exercises and ensure sets is always an array
       workoutExercises = Array.isArray(workoutData.exercises) ? workoutData.exercises.map(ex => ({
         ...ex,
