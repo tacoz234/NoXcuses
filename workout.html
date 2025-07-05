@@ -227,6 +227,15 @@
             <button class="w-full bg-red-500 text-white font-semibold py-3 rounded-xl mt-3">Cancel Workout</button>
         </div>
     </div>
+   <!-- Exercise Selection Modal -->
+   <div id="exerciseModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900 relative">
+       <button id="closeExerciseModal" class="absolute top-2 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+       <h2 class="text-xl font-semibold mb-4">Add Exercise</h2>
+       <input id="exerciseSearch" type="text" placeholder="Search exercises..." class="w-full mb-4 p-2 border rounded">
+       <div id="exerciseList" class="max-h-64 overflow-y-auto space-y-2"></div>
+     </div>
+   </div>
    <script src="workout.js"></script>
 </body>
 </html>

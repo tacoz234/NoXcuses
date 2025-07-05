@@ -291,3 +291,68 @@ function startAutoSave() {
     }
   }, 30000);
 }
+
+// Exercise Modal Logic
+let allExercises = [];
+const exerciseModal = document.getElementById('exerciseModal');
+const closeExerciseModalBtn = document.getElementById('closeExerciseModal');
+const exerciseSearch = document.getElementById('exerciseSearch');
+const exerciseList = document.getElementById('exerciseList');
+
+function openExerciseModal() {
+  exerciseModal.classList.remove('hidden');
+  exerciseSearch.value = '';
+  renderExerciseList(allExercises);
+  exerciseSearch.focus();
+}
+function closeExerciseModal() {
+  exerciseModal.classList.add('hidden');
+}
+closeExerciseModalBtn.onclick = closeExerciseModal;
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeExerciseModal();
+});
+
+function renderExerciseList(exercises) {
+  exerciseList.innerHTML = '';
+  exercises.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100';
+    div.textContent = ex.name;
+    div.onclick = () => {
+      addExerciseToWorkout(ex);
+      closeExerciseModal();
+    };
+    exerciseList.appendChild(div);
+  });
+  if (exercises.length === 0) {
+    exerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
+  }
+}
+
+exerciseSearch.addEventListener('input', function() {
+  const val = exerciseSearch.value.toLowerCase();
+  renderExerciseList(allExercises.filter(ex => ex.name.toLowerCase().includes(val)));
+});
+
+// Fetch exercises.json
+fetch('exercises.json')
+  .then(res => res.json())
+  .then(data => {
+    allExercises = data;
+  });
+
+// Wire up the Add Exercises button in the drawer
+const addExercisesBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Add Exercises');
+if (addExercisesBtn) {
+  addExercisesBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    openExerciseModal();
+  });
+}
+
+// Placeholder: Add selected exercise to workout (replace with your logic)
+function addExerciseToWorkout(ex) {
+  alert('Exercise added: ' + ex.name);
+  // TODO: Actually add the exercise to the workout list in the drawer
+}
