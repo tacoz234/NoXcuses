@@ -319,13 +319,18 @@ function renderWorkoutExercises() {
       </div>
       <div class="space-y-2">
         ${ex.sets.map((set, setIdx) => `
-          <div class="flex items-center gap-2 mb-1 set-row bg-gray-50 rounded transition-transform" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
-            <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
-            <label class="text-xs text-gray-600">Reps</label>
-            <input type="number" min="1" value="${set.reps}" class="reps-input w-14 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
-            <label class="text-xs text-gray-600">Weight</label>
-            <input type="number" min="0" value="${set.weight}" class="weight-input w-20 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
-            <span class="text-gray-400 text-xs">kg/lbs</span>
+          <div class="relative mb-1">
+            <div class="absolute inset-0 flex items-center justify-end pr-2 bg-red-500 rounded delete-bg" style="z-index:0;opacity:0;pointer-events:none;transition:opacity 0.2s;">
+              <button class="delete-set-btn text-white font-bold px-4 py-2 rounded" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">Delete</button>
+            </div>
+            <div class="flex items-center gap-2 set-row bg-gray-50 rounded transition-transform relative" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
+              <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
+              <label class="text-xs text-gray-600">Reps</label>
+              <input type="number" min="1" value="${set.reps}" class="reps-input w-14 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <label class="text-xs text-gray-600">Weight</label>
+              <input type="number" min="0" value="${set.weight}" class="weight-input w-20 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <span class="text-gray-400 text-xs">kg/lbs</span>
+            </div>
           </div>
         `).join('')}
         <div class="flex justify-center mt-4">
@@ -334,6 +339,75 @@ function renderWorkoutExercises() {
       </div>
     `;
     exercisesContainer.appendChild(exDiv);
+    // Attach swipe-to-delete handlers for each set-row
+    exDiv.querySelectorAll('.set-row').forEach(row => {
+      const wrapper = row.parentElement;
+      const deleteBg = wrapper.querySelector('.delete-bg');
+      let startX = 0, currentX = 0, swiped = false, mouseDown = false;
+      function revealDelete() {
+        row.style.transform = 'translateX(-80px)';
+        deleteBg.style.opacity = '1';
+        deleteBg.style.pointerEvents = 'auto';
+      }
+      function hideDelete() {
+        row.style.transform = '';
+        deleteBg.style.opacity = '0';
+        deleteBg.style.pointerEvents = 'none';
+      }
+      row.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        swiped = false;
+      });
+      row.addEventListener('touchmove', e => {
+        currentX = e.touches[0].clientX;
+        const dx = currentX - startX;
+        if (dx < -40) swiped = true;
+      });
+      row.addEventListener('touchend', e => {
+        if (swiped) {
+          revealDelete();
+        } else {
+          hideDelete();
+        }
+      });
+      row.addEventListener('mousedown', e => {
+        mouseDown = true;
+        startX = e.clientX;
+        swiped = false;
+      });
+      row.addEventListener('mousemove', e => {
+        if (!mouseDown) return;
+        currentX = e.clientX;
+        const dx = currentX - startX;
+        if (dx < -40) swiped = true;
+      });
+      row.addEventListener('mouseup', e => {
+        if (!mouseDown) return;
+        mouseDown = false;
+        if (swiped) {
+          revealDelete();
+        } else {
+          hideDelete();
+        }
+      });
+      row.addEventListener('mouseleave', e => {
+        if (mouseDown) {
+          mouseDown = false;
+          hideDelete();
+        }
+      });
+      // Hide delete if clicking elsewhere
+      row.addEventListener('click', hideDelete);
+      // Delete button handler
+      deleteBg.querySelector('.delete-set-btn').onclick = function(e) {
+        e.stopPropagation();
+        const exIdx = parseInt(this.dataset.exIdx);
+        const setIdx = parseInt(this.dataset.setIdx);
+        workoutExercises[exIdx].sets.splice(setIdx, 1);
+        renderWorkoutExercises();
+        saveWorkoutState();
+      };
+    });
   });
   // Remove exercise handlers
   exercisesContainer.querySelectorAll('.remove-ex-btn').forEach(btn => {
@@ -449,60 +523,3 @@ function startAutoSave() {
     }
   }, 30000);
 }
-
-// Add this after rendering to enable swipe-to-delete for sets:
-exDiv.querySelectorAll('.set-row').forEach(row => {
-  let startX = 0, currentX = 0, swiped = false;
-  row.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    swiped = false;
-  });
-  row.addEventListener('touchmove', e => {
-    currentX = e.touches[0].clientX;
-    const dx = currentX - startX;
-    row.style.transform = `translateX(${dx}px)`;
-    if (Math.abs(dx) > 80) swiped = true;
-  });
-  row.addEventListener('touchend', e => {
-    row.style.transform = '';
-    if (swiped) {
-      const exIdx = parseInt(row.dataset.exIdx);
-      const setIdx = parseInt(row.dataset.setIdx);
-      workoutExercises[exIdx].sets.splice(setIdx, 1);
-      renderWorkoutExercises();
-      saveWorkoutState();
-    }
-  });
-  // Mouse events for desktop
-  let mouseDown = false;
-  row.addEventListener('mousedown', e => {
-    mouseDown = true;
-    startX = e.clientX;
-    swiped = false;
-  });
-  row.addEventListener('mousemove', e => {
-    if (!mouseDown) return;
-    currentX = e.clientX;
-    const dx = currentX - startX;
-    row.style.transform = `translateX(${dx}px)`;
-    if (Math.abs(dx) > 80) swiped = true;
-  });
-  row.addEventListener('mouseup', e => {
-    if (!mouseDown) return;
-    mouseDown = false;
-    row.style.transform = '';
-    if (swiped) {
-      const exIdx = parseInt(row.dataset.exIdx);
-      const setIdx = parseInt(row.dataset.setIdx);
-      workoutExercises[exIdx].sets.splice(setIdx, 1);
-      renderWorkoutExercises();
-      saveWorkoutState();
-    }
-  });
-  row.addEventListener('mouseleave', e => {
-    if (mouseDown) {
-      mouseDown = false;
-      row.style.transform = '';
-    }
-  });
-});
