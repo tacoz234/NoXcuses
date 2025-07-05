@@ -327,7 +327,14 @@ function saveWorkoutToHistory() {
     time: new Date().toISOString(),
     duration: formatTime(stopwatchSeconds),
     notes: document.querySelector('textarea')?.value || '',
-    exercises: workoutExercises
+    exercises: workoutExercises.map(ex => ({
+      name: ex.name,
+      sets: ex.sets.filter((_, setIdx) => {
+        const row = document.querySelector(`.set-row[data-ex-idx="${workoutExercises.indexOf(ex)}"][data-set-idx="${setIdx}"]`);
+        const checkbox = row?.querySelector('.set-complete-checkbox');
+        return checkbox?.checked;
+      })
+    })).filter(ex => ex.sets.length > 0) // Only include exercises that have completed sets
   };
   let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
   history.push(workout);
