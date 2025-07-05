@@ -518,11 +518,12 @@ function renderWorkoutExercises() {
             </div>
             <div class="flex items-center gap-2 set-row bg-gray-50 rounded transition-transform relative" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
               <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
-              <label class="text-xs text-gray-600">Reps</label>
-              <input type="number" min="1" value="${set.reps}" class="reps-input w-14 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
               <label class="text-xs text-gray-600">Weight</label>
-              <input type="number" min="0" value="${set.weight}" class="weight-input w-20 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
-              <span class="text-gray-400 text-xs">kg/lbs</span>
+              <input type="number" min="0" value="${set.weight}" class="weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <span class="text-gray-400 text-xs">kg</span>
+              <label class="text-xs text-gray-600 ml-2">Reps</label>
+              <input type="number" min="1" value="${set.reps}" class="reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
+              <input type="checkbox" class="ml-2 w-4 h-4 text-blue-600 rounded border-gray-300" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">
             </div>
           </div>
         `).join('')}
