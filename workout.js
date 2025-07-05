@@ -327,8 +327,9 @@ function saveWorkoutToHistory() {
   const workout = {
     name: document.querySelector('.text-xl.font-bold')?.textContent || 'Workout',
     time: new Date().toISOString(),
+    duration: formatTime(stopwatchSeconds),
     notes: document.querySelector('textarea')?.value || '',
-    exercises: []
+    exercises: workoutExercises
   };
   let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
   history.push(workout);
