@@ -490,6 +490,24 @@ if (notesTextarea && notesTextarea.parentNode) {
 
 // --- Replace renderWorkoutExercises with this version ---
 function renderWorkoutExercises() {
+  // Create skip rest modal if it doesn't exist
+  let skipRestModal = document.getElementById('skipRestModal');
+  if (!skipRestModal) {
+    skipRestModal = document.createElement('div');
+    skipRestModal.id = 'skipRestModal';
+    skipRestModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50';
+    skipRestModal.innerHTML = `
+      <div class="bg-white rounded-lg p-6 max-w-sm mx-4 text-center">
+        <h3 class="text-xl font-semibold mb-4">Skip Rest Timer?</h3>
+        <div class="flex justify-center gap-4">
+          <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded" onclick="this.closest('#skipRestModal').classList.add('hidden')">Cancel</button>
+          <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded confirm-skip-rest">Skip</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(skipRestModal);
+  }
+
   exercisesContainer.innerHTML = '';
   exercisesContainer.className = 'flex flex-col min-h-[calc(95vh-500px)]';
   
@@ -540,10 +558,9 @@ function renderWorkoutExercises() {
             <div class="rest-timer-container hidden mt-2 text-center bg-gray-50 rounded p-2">
               <div class="flex items-center justify-center gap-2">
                 <button class="decrease-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg">-10s</button>
-                <div class="rest-timer-display text-lg font-bold text-blue-400">00:00</div>
+                <div class="rest-timer-display text-lg font-bold text-blue-400 cursor-pointer hover:text-blue-500">00:00</div>
                 <button class="increase-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg">+10s</button>
               </div>
-              <button class="skip-rest-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-3 py-1 rounded-lg mt-1">Skip Rest</button>
             </div>
           </div>
         `).join('')}
@@ -813,6 +830,40 @@ exercisesContainer.querySelectorAll('.increase-time-btn').forEach(button => {
       const restTimerContainer = this.closest('.rest-timer-container');
       stopRestTimer();
       restTimerContainer.classList.add('hidden');
+    };
+  });
+  exercisesContainer.querySelectorAll('.rest-timer-display').forEach(display => {
+    display.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      let skipRestModal = document.getElementById('skipRestModal');
+      if (!skipRestModal) {
+        skipRestModal = document.createElement('div');
+        skipRestModal.id = 'skipRestModal';
+        skipRestModal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 99999;';
+        skipRestModal.innerHTML = `
+          <div style="background: white; border-radius: 0.5rem; padding: 1.5rem; max-width: 24rem; margin: 1rem; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">End Rest Period?</h3>
+            <div style="display: flex; justify-content: center; gap: 1rem;">
+              <button style="background: #6B7280; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; hover:bg-gray-600" onclick="this.closest('#skipRestModal').style.display = 'none'">Continue Rest</button>
+              <button class="confirm-skip-rest" style="background: #3B82F6; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; hover:bg-blue-600">End Rest</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(skipRestModal);
+      }
+      
+      skipRestModal.style.display = 'flex';
+      
+      const confirmBtn = skipRestModal.querySelector('.confirm-skip-rest');
+      const restTimerContainer = this.closest('.rest-timer-container');
+      
+      confirmBtn.onclick = function() {
+        stopRestTimer();
+        restTimerContainer.classList.add('hidden');
+        skipRestModal.style.display = 'none';
+      };
     };
   });
 }
