@@ -209,9 +209,10 @@ function showConfirm(message, onYes) {
 function saveWorkoutToHistory() {
     const workout = {
         name: document.querySelector('.text-xl.font-bold')?.textContent || 'Workout',
-        time: new Date().toISOString(),
+        date: new Date().toISOString(),
         duration: formatTime(stopwatchSeconds),
         notes: document.querySelector('textarea')?.value || '',
+        template: window.currentTemplateName || null, // <-- add this line
         exercises: workoutExercises.map(ex => ({
             name: ex.name,
             sets: ex.sets.filter((_, setIdx) => {
@@ -725,6 +726,7 @@ function addExerciseToWorkout(ex) {
 }
 
 function startWorkoutFromTemplate(template) {
+    window.currentTemplateName = template.name; // <-- add this line
     workoutExercises = [];
     document.querySelector('textarea').value = '';
     resetStopwatch();

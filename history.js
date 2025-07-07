@@ -72,7 +72,8 @@ function renderHistory() {
         }
 
         card.innerHTML = `
-            <div class="flex justify-between items-center mb-2">
+            <div class="flex flex-col mb-2">
+                ${workout.template ? `<div class="font-bold text-lg">${workout.template}</div>` : ''}
                 <div class="font-bold text-base">${formatDate(workout.date)}</div>
                 <div class="text-sm text-gray-600">Duration: ${workout.duration}</div>
             </div>
