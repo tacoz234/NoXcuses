@@ -460,6 +460,65 @@ exerciseSearch.addEventListener('input', function() {
   renderExerciseList(allExercises.filter(ex => ex.name.toLowerCase().includes(val)));
 });
 
+// Modal elements
+const replaceExerciseModal = document.getElementById('replaceExerciseModal');
+const closeReplaceExerciseModalBtn = document.getElementById('closeReplaceExerciseModal');
+const replaceExerciseSearch = document.getElementById('replaceExerciseSearch');
+const replaceExerciseList = document.getElementById('replaceExerciseList');
+let replaceExerciseIdx = null;
+
+function openReplaceExerciseModal(idx) {
+  replaceExerciseIdx = idx;
+  replaceExerciseModal.classList.remove('hidden');
+  replaceExerciseSearch.value = '';
+  renderReplaceExerciseList(allExercises);
+  replaceExerciseSearch.focus();
+}
+function closeReplaceExerciseModal() {
+  replaceExerciseModal.classList.add('hidden');
+  replaceExerciseIdx = null;
+}
+closeReplaceExerciseModalBtn.onclick = closeReplaceExerciseModal;
+window.addEventListener('keydown', function(e) {
+  if (!replaceExerciseModal.classList.contains('hidden') && e.key === 'Escape') closeReplaceExerciseModal();
+});
+replaceExerciseSearch.addEventListener('input', function() {
+  const val = replaceExerciseSearch.value.toLowerCase();
+  renderReplaceExerciseList(allExercises.filter(ex => ex.name.toLowerCase().includes(val)));
+});
+function renderReplaceExerciseList(exercises) {
+  replaceExerciseList.innerHTML = '';
+  exercises.forEach(ex => {
+    const div = document.createElement('div');
+    div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100 mb-1 text-black';
+    div.textContent = ex.name;
+    div.onclick = () => {
+      if (replaceExerciseIdx !== null) {
+        // Build sets array as in addExerciseToWorkout
+        const sets = [];
+        const numSets = ex.working_sets || 1;
+        for (let i = 0; i < numSets; i++) {
+          sets.push({
+            reps: ex.reps ? parseInt(ex.reps) || 10 : 10,
+            weight: 0,
+            completed: false
+          });
+        }
+        workoutExercises[replaceExerciseIdx] = {
+          name: ex.name,
+          sets: sets
+        };
+        renderWorkoutExercises();
+        closeReplaceExerciseModal();
+      }
+    };
+    replaceExerciseList.appendChild(div);
+  });
+  if (exercises.length === 0) {
+    replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
+  }
+}
+
 // Fetch exercises.json
 fetch('exercises.json')
   .then(res => res.json())
@@ -538,7 +597,14 @@ function renderWorkoutExercises() {
     exDiv.innerHTML = `
       <div class="flex justify-between items-center mb-2">
         <span class="font-semibold">${ex.name}</span>
-        <button class="text-red-500 text-xs remove-ex-btn" data-idx="${exIdx}">Remove</button>
+        <div class="relative">
+          <button class="text-gray-500 text-xl ex-menu-btn" data-idx="${exIdx}" style="padding:0 8px;">&#x22EE;</button>
+          <div class="ex-menu hidden absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded shadow-lg z-10">
+            <button class="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 remove-ex-btn" data-idx="${exIdx}">Remove</button>
+            <button class="block w-full text-left px-4 py-2 text-sm text-blue-500 hover:bg-gray-100 replace-ex-btn" data-idx="${exIdx}">Replace</button>
+            <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 edit-ex-btn" data-idx="${exIdx}">Edit</button>
+          </div>
+        </div>
       </div>
       <div class="space-y-2">
         ${ex.sets.map((set, setIdx) => `
@@ -983,3 +1049,37 @@ if (localStorage.getItem('isWorkoutActive') === '1') {
     updateStopwatchDisplay();
   }
 }
+document.querySelectorAll('.ex-menu-btn').forEach(btn => {
+  btn.onclick = function(e) {
+    e.stopPropagation();
+    // Hide any other open menus
+    document.querySelectorAll('.ex-menu').forEach(m => m.classList.add('hidden'));
+    // Show this menu
+    const menu = btn.nextElementSibling;
+    menu.classList.toggle('hidden');
+  };
+});
+// Hide menu when clicking outside
+window.addEventListener('click', () => {
+  document.querySelectorAll('.ex-menu').forEach(m => m.classList.add('hidden'));
+});
+// Add event listeners for Remove, Replace, Edit as needed
+// Example for Remove:
+document.querySelectorAll('.remove-ex-btn').forEach(btn => {
+  btn.onclick = function(e) {
+    e.stopPropagation();
+    const idx = +btn.dataset.idx;
+    workoutExercises.splice(idx, 1);
+    renderWorkoutExercises();
+  };
+});
+// Handler for Replace
+
+document.querySelectorAll('.replace-ex-btn').forEach(btn => {
+  btn.onclick = function(e) {
+    e.stopPropagation();
+    const idx = +btn.dataset.idx;
+    openReplaceExerciseModal(idx);
+  };
+});
+// Implement similar handlers for Edit
