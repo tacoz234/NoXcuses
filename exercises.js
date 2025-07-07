@@ -18,14 +18,48 @@
         })();
 let allExercises = [];
         let exerciseHistory = {}; // For demo, could be loaded from localStorage
+        // After fetching exercises.json
         fetch('exercises.json')
             .then(res => res.json())
             .then(exercises => {
-                allExercises = exercises.slice().sort((a, b) => a.name.localeCompare(b.name));
+                // Load custom exercises from localStorage
+                let customExercises = [];
+                try {
+                    customExercises = JSON.parse(localStorage.getItem('customExercises')) || [];
+                } catch (e) {}
+                allExercises = exercises.concat(customExercises).sort((a, b) => a.name.localeCompare(b.name));
                 renderExerciseList(allExercises);
                 renderAlphaSlider(allExercises);
             });
 
+        // In your create exercise logic:
+        document.getElementById('new-exercise-form').onsubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-ex-name').value.trim();
+            const notes = document.getElementById('new-ex-notes').value.trim();
+            const video = document.getElementById('new-ex-video').value.trim();
+            const image = document.getElementById('new-ex-image').value.trim();
+            if (!name) return;
+            const newEx = { name };
+            if (notes) newEx.notes = notes;
+            if (video) newEx.video = video;
+            if (image) newEx.image = image;
+            // Save to localStorage
+            let customExercises = [];
+            try {
+                customExercises = JSON.parse(localStorage.getItem('customExercises')) || [];
+            } catch (e) {}
+            customExercises.push(newEx);
+            localStorage.setItem('customExercises', JSON.stringify(customExercises));
+            allExercises.push(newEx);
+            renderExerciseList(allExercises);
+            renderAlphaSlider(allExercises);
+            document.getElementById('new-exercise-modal').classList.add('hidden');
+            document.getElementById('new-exercise-form').reset();
+        };
+        document.getElementById('add-exercise-btn').onclick = function() {
+            document.getElementById('new-exercise-modal').classList.remove('hidden');
+        };
         function renderExerciseList(exercises) {
             const list = document.getElementById('exercise-list');
             list.innerHTML = '';

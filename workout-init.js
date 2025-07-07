@@ -10,17 +10,20 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('exercises.json')
         .then(res => res.json())
         .then(data => {
-            allExercises = data;
+            let customExercises = [];
+            try {
+                customExercises = JSON.parse(localStorage.getItem('customExercises')) || [];
+            } catch (e) {}
+            allExercises = data.concat(customExercises).sort((a, b) => a.name.localeCompare(b.name));
+            // Wire up the Add Exercises button in the drawer ONLY after allExercises is ready
+            const addExercisesBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Add Exercises');
+            if (addExercisesBtn) {
+                addExercisesBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openExerciseModal();
+                });
+            }
         });
-
-    // Wire up the Add Exercises button in the drawer
-    const addExercisesBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Add Exercises');
-    if (addExercisesBtn) {
-        addExercisesBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            openExerciseModal();
-        });
-    }
 
     // Event listeners for exercise menu buttons
     document.body.addEventListener('click', function(e) {
