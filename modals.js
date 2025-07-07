@@ -92,24 +92,23 @@ function renderReplaceExerciseList(exercises) {
         div.textContent = ex.name;
         div.onclick = () => {
             if (replaceExerciseIdx !== null) {
-                const prevSets = workoutExercises[replaceExerciseIdx].sets;
-                const sets = prevSets.map(set => ({
-                    reps: set.reps,
-                    weight: set.weight,
-                    completed: set.completed
-                }));
-                const numSets = ex.working_sets || 1;
-                while (sets.length < numSets) {
+                let sets = [];
+                // Always copy reps and rest from the exercise being replaced
+                let oldEx = workoutExercises[replaceExerciseIdx];
+                let reps = oldEx?.sets?.[0]?.reps ?? 10;
+                let rest = oldEx?.rest ?? null;
+                let numSets = oldEx?.sets?.length ?? 1;
+                for (let i = 0; i < numSets; i++) {
                     sets.push({
-                        reps: ex.reps ? parseInt(ex.reps) || 10 : 10,
+                        reps: reps,
                         weight: 0,
                         completed: false
                     });
                 }
-                if (sets.length > numSets) sets.length = numSets;
                 workoutExercises[replaceExerciseIdx] = {
                     name: ex.name,
-                    sets: sets
+                    sets: sets,
+                    rest: rest
                 };
                 renderWorkoutExercises();
                 closeReplaceExerciseModal();

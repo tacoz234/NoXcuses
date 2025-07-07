@@ -123,7 +123,8 @@ function renderWorkoutExercises() {
         if (window.currentTemplateName && window.allTemplates) {
             const template = window.allTemplates.find(t => t.name === window.currentTemplateName);
             if (template && template.exercises) {
-                const templateEx = template.exercises.find(e => e.name === ex.name);
+                // Use the template data from the original slot (by index)
+                const templateEx = template.exercises[exIdx];
                 if (templateEx && templateEx.reps) {
                     repRestRangeText = `<div class=\"text-xs text-gray-500 mt-1\">Rep range: ${templateEx.reps}`;
                     if (templateEx.rest) {
