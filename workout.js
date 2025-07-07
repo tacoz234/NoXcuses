@@ -494,16 +494,24 @@ function renderReplaceExerciseList(exercises) {
     div.textContent = ex.name;
     div.onclick = () => {
       if (replaceExerciseIdx !== null) {
-        // Build sets array as in addExerciseToWorkout
-        const sets = [];
+        // Get the current sets from the exercise being replaced
+        const prevSets = workoutExercises[replaceExerciseIdx].sets;
+        // Build a new sets array, preserving reps/weight/completed if possible
+        const sets = prevSets.map(set => ({
+          reps: set.reps,
+          weight: set.weight,
+          completed: set.completed
+        }));
+        // If the new exercise has fewer sets, trim; if more, add default sets
         const numSets = ex.working_sets || 1;
-        for (let i = 0; i < numSets; i++) {
+        while (sets.length < numSets) {
           sets.push({
             reps: ex.reps ? parseInt(ex.reps) || 10 : 10,
             weight: 0,
             completed: false
           });
         }
+        if (sets.length > numSets) sets.length = numSets;
         workoutExercises[replaceExerciseIdx] = {
           name: ex.name,
           sets: sets
