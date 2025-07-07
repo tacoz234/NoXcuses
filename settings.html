@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoXcuses - Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            padding-bottom: 5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+    <header class="w-full p-4 fixed top-0 z-10 flex justify-between items-center bg-gray-900 shadow-lg">
+        <h1 class="text-2xl font-bold text-white">Settings</h1>
+        <button id="saveSettingsBtn" class="text-gray-300 hover:text-green-400 text-xl p-2 rounded-full focus:outline-none" title="Save Settings">
+            <i class="fas fa-check"></i>
+        </button>
+    </header>
+    <main class="flex-grow container mx-auto p-4 pt-24 flex flex-col items-center">
+        <!-- Profile Picture Section -->
+        <div class="relative group w-32 h-32 mb-4">
+            <div class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center shadow-lg overflow-hidden">
+                <img id="profilePicture" src="https://ui-avatars.com/api/?name=User&background=444&color=fff&size=128" alt="Profile Picture" class="w-full h-full object-cover">
+            </div>
+            <label for="profilePicInput" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                <i class="fas fa-camera text-2xl text-white"></i>
+            </label>
+            <input type="file" id="profilePicInput" accept="image/*" class="hidden">
+        </div>
+        
+        <!-- Username Section -->
+        <div class="mb-8 w-full max-w-md text-center">
+            <input type="text" id="usernameInput" class="text-xl font-semibold text-center bg-transparent border-b border-gray-600 focus:border-blue-500 focus:outline-none px-2 py-1 w-48" placeholder="Username">
+        </div>
+
+        <!-- Settings Section -->
+        <section class="w-full max-w-md bg-white rounded-lg shadow-md p-6 text-gray-900">
+            <h2 class="text-lg font-bold mb-4">Account Settings</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email</label>
+                    <input type="email" id="emailInput" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500" placeholder="your@email.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">New Password</label>
+                    <input type="password" id="passwordInput" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500" placeholder="Leave blank to keep current">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Theme</label>
+                    <select id="themeSelect" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Weight Unit</label>
+                    <select id="weightUnitSelect" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                        <option value="kg">Kilograms (kg)</option>
+                        <option value="lb">Pounds (lb)</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+    </main>
+    <nav class="fixed bottom-0 left-0 w-full bg-gray-800 border-t border-gray-700 shadow-lg md:hidden z-50">
+        <ul class="flex justify-around items-center h-16">
+            <li class="flex-1">
+                <a href="index.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 HOME_ACTIVE">
+                    <i class="fas fa-chart-line text-xl"></i>
+                    <span class="text-xs mt-1">Progress</span>
+                </a>
+            </li>
+            <li class="flex-1">
+                <a href="history.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 HISTORY_ACTIVE">
+                    <i class="fas fa-history text-xl"></i>
+                    <span class="text-xs mt-1">History</span>
+                </a>
+            </li>
+            <li class="flex-1">
+                <a href="workout.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 WORKOUT_ACTIVE">
+                    <i class="fas fa-plus-circle text-3xl"></i>
+                    <span class="text-xs mt-1">Start</span>
+                </a>
+            </li>
+            <li class="flex-1">
+                <a href="social.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 SOCIAL_ACTIVE">
+                    <i class="fas fa-users text-xl"></i>
+                    <span class="text-xs mt-1">Social</span>
+                </a>
+            </li>
+            <li class="flex-1">
+                <a href="exercises.html" class="flex flex-col items-center justify-center transition-colors duration-300 p-2 EXERCISES_ACTIVE">
+                    <i class="fas fa-dumbbell text-xl"></i>
+                    <span class="text-xs mt-1">Exercises</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <script src="settings.js"></script>
+</body>
+</html>
