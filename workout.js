@@ -119,13 +119,17 @@ function renderWorkoutExercises() {
     workoutExercises.forEach((ex, exIdx) => {
         const exDiv = document.createElement('div');
         exDiv.className = 'bg-white rounded-lg p-4 mb-4 text-gray-900 shadow';
-        let repRangeText = '';
+        let repRestRangeText = '';
         if (window.currentTemplateName && window.allTemplates) {
             const template = window.allTemplates.find(t => t.name === window.currentTemplateName);
             if (template && template.exercises) {
                 const templateEx = template.exercises.find(e => e.name === ex.name);
                 if (templateEx && templateEx.reps) {
-                    repRangeText = `<div class=\"text-xs text-gray-500 mt-1\">Rep range: ${templateEx.reps}</div>`;
+                    repRestRangeText = `<div class=\"text-xs text-gray-500 mt-1\">Rep range: ${templateEx.reps}`;
+                    if (templateEx.rest) {
+                        repRestRangeText += ` &nbsp;|&nbsp; Rest range: ${templateEx.rest}`;
+                    }
+                    repRestRangeText += '</div>';
                 }
             }
         }
@@ -141,7 +145,7 @@ function renderWorkoutExercises() {
                     </div>
                 </div>
             </div>
-            ${repRangeText}
+            ${repRestRangeText}
             <div class=\"space-y-2\">
                 ${ex.sets.map((set, setIdx) => `
                     <div class=\"relative mb-1\">
