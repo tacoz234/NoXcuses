@@ -1,20 +1,3 @@
-// Navbar highlight logic
-(function() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('nav');
-    if (!nav) return;
-    let page = '';
-    if (path.endsWith('index.html')) page = 'HOME';
-    else if (path.endsWith('history.html')) page = 'HISTORY';
-    else if (path.endsWith('workout.html')) page = 'WORKOUT';
-    else if (path.endsWith('exercises.html')) page = 'EXERCISES';
-    nav.innerHTML = nav.innerHTML
-        .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
-        .replace('HISTORY_ACTIVE', page==='HISTORY' ? 'text-blue-500' : 'text-gray-400')
-        .replace('WORKOUT_ACTIVE', page==='WORKOUT' ? 'text-blue-500' : 'text-gray-400')
-        .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400');
-})();
-
 function formatDate(isoString) {
     const date = new Date(isoString);
     return date.toLocaleString(undefined, {
@@ -54,7 +37,7 @@ function renderHistory() {
                     setsHtml += `
                     <div class="flex items-center space-x-2 text-sm">
                         <span class="text-gray-600">Set ${i+1}:</span>
-                        <span>${set.weight || '-'} kg/lbs</span>
+                        <span>${set.weight || '-'} lbs</span>
                         <span>x</span>
                         <span>${set.reps || '-'}</span>
                         <span>${set.completed ? '✅' : ''}</span>
@@ -219,8 +202,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!name) return alert('Please enter a template name.');
             const workout = window._workoutToTemplate;
             if (!workout) return;
+            // Always store weights in lbs
+            const exercises = (workout.exercises || []).map(ex => ({
+                ...ex,
+                sets: (ex.sets || []).map(set => {
+                    let weight = parseFloat(set.weight);
+                    return {
+                        ...set,
+                        weight: isNaN(weight) ? '' : weight
+                    };
+                })
+            }));
             let customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
-            customTemplates.push({ name, exercises: workout.exercises });
+            customTemplates.push({ name, exercises });
             localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
             document.getElementById('addTemplateModal').classList.add('hidden');
             alert('Template saved!');

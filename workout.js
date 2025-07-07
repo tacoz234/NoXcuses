@@ -156,7 +156,7 @@ function renderWorkoutExercises() {
                         <div class=\"flex items-center gap-2 set-row bg-gray-50 rounded transition-all relative\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\" style=\"z-index:1;\">
                             <span class=\"text-xs text-gray-500 w-10\">Set ${setIdx+1}</span>
                             <label class=\"text-xs text-gray-600\">Weight</label>
-                            <input type=\"number\" min=\"0\" value=\"${(set.weight * conversionFactor).toFixed(1)}\" class=\"weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border transition-colors\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\" data-original-unit=\"kg\">
+                            <input type=\"number\" min=\"0\" value=\"${set.weight}\" class=\"weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border transition-colors\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\" data-original-unit=\"kg\">
                             <span class=\"text-gray-400 text-xs\">${weightUnit}</span>
                             <label class=\"text-xs text-gray-600 ml-2\">Reps</label>
                             <input type=\"number\" min=\"1\" value=\"${typeof set.reps === 'string' && set.reps.match(/^\d+/) ? set.reps.match(/^\d+/)[0] : set.reps}\" class=\"reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border transition-colors\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\">
@@ -183,8 +183,7 @@ function renderWorkoutExercises() {
                 const exIdx = parseInt(this.dataset.exIdx);
                 const setIdx = parseInt(this.dataset.setIdx);
                 const displayedValue = parseFloat(this.value) || 0;
-                const storedValue = weightUnit === 'lb' ? displayedValue / 2.20462 : displayedValue;
-                workoutExercises[exIdx].sets[setIdx].weight = parseFloat(storedValue.toFixed(1));
+                workoutExercises[exIdx].sets[setIdx].weight = displayedValue;
                 saveWorkoutState();
             });
         });
@@ -423,42 +422,50 @@ function renderWorkoutExercises() {
 }
 
 function addExerciseToWorkout(ex) {
-    const sets = [];
-    const numSets = ex.working_sets || 1;
-    for (let i = 0; i < numSets; i++) {
-        sets.push({
-            reps: ex.reps ? parseInt(ex.reps) || 10 : 10,
-            weight: 0,
-            completed: false
-        });
+    let sets = [];
+    if (Array.isArray(ex.sets) && ex.sets.length > 0) {
+        sets = ex.sets.map(set => ({
+            ...set,
+            completed: false // Always start as not completed
+        }));
+    } else {
+        const numSets = ex.working_sets || 1;
+        for (let i = 0; i < numSets; i++) {
+            sets.push({
+                reps: ex.reps ? parseInt(ex.reps) || 10 : 10,
+                weight: 0,
+                completed: false
+            });
+        }
     }
-    
     workoutExercises.push({
         name: ex.name,
         sets: sets,
-        rest: ex.rest || null // Preserve rest time from template if available
+        rest: ex.rest || null
     });
     renderWorkoutExercises();
     saveWorkoutState();
 }
 
 function startWorkoutFromTemplate(template) {
-    window.currentTemplateName = template.name; // <-- add this line
+    window.currentTemplateName = template.name;
     workoutExercises = [];
     document.querySelector('textarea').value = '';
     resetStopwatch();
-    
     const workoutNameEl = document.querySelector('#drawerContent .text-xl.font-bold');
     if (workoutNameEl) {
         workoutNameEl.textContent = template.name;
     }
-    
     if (template.exercises && template.exercises.length > 0) {
         template.exercises.forEach(exercise => {
-            addExerciseToWorkout(exercise);
+            // Deep copy exercise and its sets
+            const copiedExercise = {
+                ...exercise,
+                sets: exercise.sets ? exercise.sets.map(set => ({ ...set })) : []
+            };
+            addExerciseToWorkout(copiedExercise);
         });
     }
-    
     openDrawer();
 }
 
