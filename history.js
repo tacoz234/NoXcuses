@@ -182,6 +182,19 @@ function renderHistory() {
             }
         });
 
+        // Add after card.innerHTML assignment
+        const moreBtn = document.createElement('button');
+        moreBtn.innerHTML = '<i class="fas fa-ellipsis-h"></i>';
+        moreBtn.className = 'absolute top-2 right-10 text-gray-500 hover:text-gray-700 text-xl p-2';
+        moreBtn.onclick = function(e) {
+            e.stopPropagation();
+            document.getElementById('addTemplateModal').classList.remove('hidden');
+            document.getElementById('addTemplateNameInput').value = workout.template || '';
+            // Store the workout object for saving
+            window._workoutToTemplate = workout;
+        };
+        workoutDiv.appendChild(moreBtn);
+
         workoutDiv.appendChild(card);
         workoutDiv.appendChild(deleteBtn);
         historyList.appendChild(workoutDiv);
@@ -190,19 +203,29 @@ function renderHistory() {
 
 window.onload = renderHistory;
 
-// Navbar highlight logic (again, for redundancy)
-(function() {
-    const path = window.location.pathname;
-    const nav = document.querySelector('nav');
-    if (!nav) return;
-    let page = '';
-    if (path.endsWith('index.html')) page = 'HOME';
-    else if (path.endsWith('history.html')) page = 'HISTORY';
-    else if (path.endsWith('workout.html')) page = 'WORKOUT';
-    else if (path.endsWith('exercises.html')) page = 'EXERCISES';
-    nav.innerHTML = nav.innerHTML
-        .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
-        .replace('HISTORY_ACTIVE', page==='HISTORY' ? 'text-blue-500' : 'text-gray-400')
-        .replace('WORKOUT_ACTIVE', page==='WORKOUT' ? 'text-blue-500' : 'text-gray-400')
-        .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400');
-})();
+// Add this outside renderHistory(), at the end of the file:
+document.addEventListener('DOMContentLoaded', function() {
+    const closeModalBtn = document.getElementById('closeAddTemplateModal');
+    if (closeModalBtn) {
+        closeModalBtn.onclick = function() {
+            document.getElementById('addTemplateModal').classList.add('hidden');
+        };
+    }
+    const confirmAddTemplateBtn = document.getElementById('confirmAddTemplateBtn');
+    if (confirmAddTemplateBtn) {
+        confirmAddTemplateBtn.onclick = function() {
+            console.log('Save Template clicked');
+            const name = document.getElementById('addTemplateNameInput').value.trim();
+            if (!name) return alert('Please enter a template name.');
+            const workout = window._workoutToTemplate;
+            if (!workout) return;
+            let customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+            customTemplates.push({ name, exercises: workout.exercises });
+            localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+            document.getElementById('addTemplateModal').classList.add('hidden');
+            alert('Template saved!');
+        };
+    } else {
+        console.error('Save Template button not found in DOM');
+    }
+});
