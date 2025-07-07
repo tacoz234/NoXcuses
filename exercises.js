@@ -163,7 +163,8 @@ let allExercises = [];
                                     sets.push({
                                         weight: set.weight,
                                         reps: set.reps,
-                                        date: w.date
+                                        date: w.date,
+                                        template: w.template || ''
                                     });
                                 }
                             });
@@ -171,7 +172,7 @@ let allExercises = [];
                     });
                 });
                 if (sets.length > 0) {
-                    modalTabContent.innerHTML = sets.map(s => `<div class='text-gray-800'>${s.weight} x ${s.reps} <span class='text-gray-500 text-xs'>(${new Date(s.date).toLocaleString()})</span></div>`).join('');
+                    modalTabContent.innerHTML = sets.map(s => `<div class='text-gray-800'>${s.weight} x ${s.reps} <span class='text-gray-500 text-xs'>(${new Date(s.date).toLocaleDateString()}${s.template ? ' - ' + s.template : ''})</span></div>`).join('');
                 } else {
                     modalTabContent.innerHTML = '<div class="text-gray-400">No history for this exercise.</div>';
                 }
