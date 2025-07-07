@@ -72,6 +72,7 @@ function attachDrawerEvents() {
                     .then(res => res.json())
                     .then(data => {
                         const allTemplates = Array.isArray(data) ? data : (data.templates || []);
+                        window.allTemplates = allTemplates; // <-- Add this line
                         const template = allTemplates.find(t => t.name === templateName);
                         if (template) {
                             startWorkoutFromTemplate(template);

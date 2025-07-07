@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const templateName = e.target.closest('.template-item').dataset.template;
                             const template = templates.find(t => t.name === templateName);
                             if (template) {
+                                window.allTemplates = templates; // <-- Add this line
                                 startWorkoutFromTemplate(template);
                             } else {
                                 console.error('Template not found:', templateName);
