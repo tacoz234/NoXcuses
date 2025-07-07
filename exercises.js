@@ -140,6 +140,9 @@ let allExercises = [];
                 setActiveTab(this.dataset.tab);
             };
         });
+        function normalizeName(name) {
+            return name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+        }
         function setActiveTab(tab) {
             document.querySelectorAll('.modal-tab').forEach(btn => {
                 btn.classList.remove('border-blue-500', 'text-blue-600');
@@ -149,15 +152,54 @@ let allExercises = [];
             if (tab === 'notes') {
                 modalTabContent.innerHTML = currentExercise.notes ? `<div class='text-gray-800'>${currentExercise.notes}</div>` : '<div class="text-gray-400">No notes for this exercise.</div>';
             } else if (tab === 'history') {
-                // For demo, show lastPerformedSet if available
-                if (currentExercise.lastPerformedSet) {
-                    modalTabContent.innerHTML = `<div class='text-gray-800'>Last Performed: <span class='font-semibold'>${currentExercise.lastPerformedSet.weight} x ${currentExercise.lastPerformedSet.reps} (${currentExercise.lastPerformedSet.date})</span></div>`;
+                let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+                let sets = [];
+                const exNameNorm = normalizeName(currentExercise.name);
+                history.forEach(w => {
+                    (w.exercises || []).forEach(ex => {
+                        if (normalizeName(ex.name) === exNameNorm) {
+                            (ex.sets || []).forEach(set => {
+                                if (set.completed) {
+                                    sets.push({
+                                        weight: set.weight,
+                                        reps: set.reps,
+                                        date: w.date
+                                    });
+                                }
+                            });
+                        }
+                    });
+                });
+                if (sets.length > 0) {
+                    modalTabContent.innerHTML = sets.map(s => `<div class='text-gray-800'>${s.weight} x ${s.reps} <span class='text-gray-500 text-xs'>(${new Date(s.date).toLocaleString()})</span></div>`).join('');
                 } else {
                     modalTabContent.innerHTML = '<div class="text-gray-400">No history for this exercise.</div>';
                 }
             } else if (tab === 'best') {
-                if (currentExercise.highestVolumeSet) {
-                    modalTabContent.innerHTML = `<div class='text-gray-800'>Highest Volume: <span class='font-semibold'>${currentExercise.highestVolumeSet.weight} x ${currentExercise.highestVolumeSet.reps} (${currentExercise.highestVolumeSet.date})</span></div>`;
+                let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+                let bestSet = null;
+                const exNameNorm = normalizeName(currentExercise.name);
+                history.forEach(w => {
+                    (w.exercises || []).forEach(ex => {
+                        if (normalizeName(ex.name) === exNameNorm) {
+                            (ex.sets || []).forEach(set => {
+                                if (set.completed) {
+                                    let volume = (parseFloat(set.weight) || 0) * (parseInt(set.reps) || 0);
+                                    if (!bestSet || volume > bestSet.volume) {
+                                        bestSet = {
+                                            weight: set.weight,
+                                            reps: set.reps,
+                                            date: w.date,
+                                            volume: volume
+                                        };
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+                if (bestSet) {
+                    modalTabContent.innerHTML = `<div class='text-gray-800'>${bestSet.weight} x ${bestSet.reps} <span class='text-gray-500 text-xs'>(${new Date(bestSet.date).toLocaleString()})</span></div>`;
                 } else {
                     modalTabContent.innerHTML = '<div class="text-gray-400">No best set for this exercise.</div>';
                 }
