@@ -46,6 +46,32 @@ function autoStartStopwatch() {
     }
 }
 
+function saveStopwatchState() {
+    const now = Date.now();
+    localStorage.setItem('stopwatchState', JSON.stringify({
+        pausedElapsed,
+        isStopwatchRunning,
+        stopwatchStartTimestamp,
+        lastSaved: now
+    }));
+}
+
+function loadStopwatchState() {
+    const state = JSON.parse(localStorage.getItem('stopwatchState') || '{}');
+    pausedElapsed = state.pausedElapsed || 0;
+    isStopwatchRunning = state.isStopwatchRunning || false;
+    stopwatchStartTimestamp = state.stopwatchStartTimestamp || null;
+    const lastSaved = state.lastSaved || null;
+    if (isStopwatchRunning && lastSaved) {
+        // Add the time elapsed while away
+        pausedElapsed += Math.floor((Date.now() - lastSaved) / 1000);
+        stopwatchStartTimestamp = Date.now();
+        startStopwatch();
+    } else {
+        updateStopwatchDisplay();
+    }
+}
+
 // Make functions accessible globally if needed
 window.formatTime = formatTime;
 window.updateStopwatchDisplay = updateStopwatchDisplay;
