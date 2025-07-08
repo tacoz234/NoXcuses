@@ -492,16 +492,32 @@ function saveWorkoutState() {
         stopwatchSeconds,
         isRunning: isStopwatchRunning,
         lastSaveTime: Date.now(),
-        exercises: workoutExercises
+        exercises: workoutExercises,
+        templateName: window.currentTemplateName || null
     };
     localStorage.setItem('currentWorkout', JSON.stringify(state));
 }
 
-function restoreWorkoutState() {
+async function restoreWorkoutState() {
     const savedWorkout = localStorage.getItem('currentWorkout');
     if (savedWorkout) {
         try {
             const workoutData = JSON.parse(savedWorkout);
+
+            // Restore template context if it exists
+            if (workoutData.templateName) {
+                window.currentTemplateName = workoutData.templateName;
+                // We need to ensure allTemplates is loaded before rendering
+                if (!window.allTemplates) {
+                    const [data, customTemplates] = await Promise.all([
+                        fetch('templates.json').then(res => res.json()).catch(() => ({templates:[],routines:[]})),
+                        Promise.resolve(JSON.parse(localStorage.getItem('custom_templates') || '[]'))
+                    ]);
+                    const templates = Array.isArray(data) ? data : (data.templates || []);
+                    window.allTemplates = templates.concat(customTemplates);
+                }
+            }
+
             const nameEl = document.querySelector('.text-xl.font-bold');
             if (nameEl && workoutData.name) {
                 nameEl.textContent = workoutData.name;
