@@ -149,31 +149,37 @@ function renderWorkoutExercises() {
             </div>
             ${repRestRangeText}
             <div class=\"space-y-2\">
-                ${ex.sets.map((set, setIdx) => `
-                    <div class=\"relative mb-1\">
-                        <div class=\"absolute inset-0 flex items-center justify-end pr-2 bg-red-500 rounded delete-bg\" style=\"z-index:0;opacity:0;pointer-events:none;transition:opacity 0.2s;\">
-                            <button class=\"delete-set-btn text-white font-bold px-4 py-2 rounded\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\">Delete</button>
+                ${ex.sets.map((set, setIdx) => {
+                    const isCompleted = set.completed;
+                    const rowClass = isCompleted ? 'bg-green-100' : 'bg-gray-50';
+                    const inputClass = isCompleted ? 'bg-green-100' : 'bg-gray-100';
+                    const disabled = isCompleted ? 'disabled' : '';
+
+                    return `
+                    <div class="relative mb-1">
+                        <div class="absolute inset-0 flex items-center justify-end pr-2 bg-red-500 rounded delete-bg" style="z-index:0;opacity:0;pointer-events:none;transition:opacity 0.2s;">
+                            <button class="delete-set-btn text-white font-bold px-4 py-2 rounded" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">Delete</button>
                         </div>
-                        <div class=\"flex items-center gap-2 set-row bg-gray-50 rounded transition-all relative\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\" style=\"z-index:1;\">
-                            <span class=\"text-xs text-gray-500 w-10\">Set ${setIdx+1}</span>
-                            <label class=\"text-xs text-gray-600\">Weight</label>
-                            <input type=\"number\" min=\"0\" value=\"${set.weight}\" class=\"weight-input w-16 p-1 rounded bg-gray-100 text-gray-900 border transition-colors\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\" data-original-unit=\"kg\">
-                            <span class=\"text-gray-400 text-xs\">${weightUnit}</span>
-                            <label class=\"text-xs text-gray-600 ml-2\">Reps</label>
-                            <input type=\"number\" min=\"1\" value=\"${typeof set.reps === 'string' && set.reps.match(/^\d+/) ? set.reps.match(/^\d+/)[0] : set.reps}\" class=\"reps-input w-12 p-1 rounded bg-gray-100 text-gray-900 border transition-colors\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\">
-                            <input type=\"checkbox\" class=\"set-complete-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600\" data-ex-idx=\"${exIdx}\" data-set-idx=\"${setIdx}\" ${set.completed ? 'checked' : ''}>
+                        <div class="flex items-center gap-2 set-row ${rowClass} rounded transition-all relative" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
+                            <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
+                            <label class="text-xs text-gray-600">Weight</label>
+                            <input type="number" min="0" value="${set.weight}" class="weight-input w-16 p-1 rounded ${inputClass} text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" data-original-unit="kg" ${disabled}>
+                            <span class="text-gray-400 text-xs">${weightUnit}</span>
+                            <label class="text-xs text-gray-600 ml-2">Reps</label>
+                            <input type="number" min="1" value="${typeof set.reps === 'string' && set.reps.match(/^\d+/) ? set.reps.match(/^\d+/)[0] : set.reps}" class="reps-input w-12 p-1 rounded ${inputClass} text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${disabled}>
+                            <input type="checkbox" class="set-complete-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${isCompleted ? 'checked' : ''}>
                         </div>
-                        <div class=\"rest-timer-container hidden mt-2 text-center bg-gray-50 rounded p-2\">
-                            <div class=\"flex items-center justify-center gap-2\">
-                                <button class=\"decrease-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg\">-10s</button>
-                                <div class=\"rest-timer-display text-lg font-bold text-blue-400 cursor-pointer hover:text-blue-500\">00:00</div>
-                                <button class=\"increase-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg\">+10s</button>
+                        <div class="rest-timer-container hidden mt-2 text-center bg-gray-50 rounded p-2">
+                            <div class="flex items-center justify-center gap-2">
+                                <button class="decrease-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg">-10s</button>
+                                <div class="rest-timer-display text-lg font-bold text-blue-400 cursor-pointer hover:text-blue-500">00:00</div>
+                                <button class="increase-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg">+10s</button>
                             </div>
                         </div>
                     </div>
-                `).join('')}
-                <div class=\"flex justify-center mt-4\">
-                    <button class=\"bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg text-base shadow add-set-btn\" data-idx=\"${exIdx}\">+ Add Set</button>
+                `}).join('')}
+                <div class="flex justify-center mt-4">
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg text-base shadow add-set-btn\" data-idx=\"${exIdx}\">+ Add Set</button>
                 </div>
             </div>
         `;
@@ -193,6 +199,11 @@ function renderWorkoutExercises() {
             checkbox.addEventListener('change', function() {
                 const row = this.closest('.set-row');
                 const inputs = row.querySelectorAll('input[type="number"]');
+                const exIdx = parseInt(this.dataset.exIdx);
+                const setIdx = parseInt(this.dataset.setIdx);
+
+                workoutExercises[exIdx].sets[setIdx].completed = this.checked;
+                saveWorkoutState();
                 
                 if (this.checked) {
                     row.classList.add('bg-green-100');
