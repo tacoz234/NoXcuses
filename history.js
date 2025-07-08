@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Always store weights in lbs
             const exercises = (workout.exercises || []).map(ex => ({
                 ...ex,
+                rest: ex.rest || '', // Save rest time if present
                 sets: (ex.sets || []).map(set => {
                     let weight = parseFloat(set.weight);
                     return {

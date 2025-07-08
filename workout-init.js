@@ -153,15 +153,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 card.innerHTML = `
                     <div class="font-semibold text-sm mb-1">${tpl.name}</div>
                     <div class="flex flex-wrap gap-1 text-xs">${exercises}${more}</div>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm mt-2 self-start template-start-btn">Start</button>
+                    <div class="flex gap-2 mt-2 items-center">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm template-start-btn">Start</button>
+                        ${customTemplates.some(t => t.name === tpl.name) ? `
+                            <div class="relative">
+                                <button class="template-options-btn text-gray-500 hover:text-gray-700 px-2 py-1 rounded-full text-lg font-bold">&#8942;</button>
+                                <div class="template-options-menu absolute right-0 mt-2 w-28 bg-white border border-gray-300 rounded shadow-lg hidden z-10">
+                                    <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 template-delete-btn">Delete</button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
                 `;
-                card.querySelector('button').onclick = (e) => {
+                card.querySelector('.template-start-btn').onclick = (e) => {
                     e.stopPropagation();
                     startWorkoutFromTemplate(tpl);
                 };
-                card.onclick = () => {
-                    startWorkoutFromTemplate(tpl);
-                };
+                // Add options menu logic inside the loop
+                const optionsBtn = card.querySelector('.template-options-btn');
+                const optionsMenu = card.querySelector('.template-options-menu');
+                if (optionsBtn && optionsMenu) {
+                    optionsBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        document.querySelectorAll('.template-options-menu').forEach(menu => {
+                            if (menu !== optionsMenu) menu.classList.add('hidden');
+                        });
+                        optionsMenu.classList.toggle('hidden');
+                    };
+                    document.addEventListener('click', function hideMenu(e) {
+                        if (!optionsMenu.contains(e.target) && e.target !== optionsBtn) {
+                            optionsMenu.classList.add('hidden');
+                            document.removeEventListener('click', hideMenu);
+                        }
+                    });
+                    const deleteBtn = optionsMenu.querySelector('.template-delete-btn');
+                    if (deleteBtn) {
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            let customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                            customTemplates = customTemplates.filter(t => t.name !== tpl.name);
+                            localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+                            card.remove();
+                        };
+                    }
+                }
                 templateList.appendChild(card);
             });
         }

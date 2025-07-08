@@ -25,6 +25,7 @@ function saveWorkoutToHistory() {
         template: window.currentTemplateName || null, // <-- add this line
         exercises: workoutExercises.map(ex => ({
             name: ex.name,
+            rest: ex.rest || '', // <-- Add this line to save rest
             sets: ex.sets.filter((_, setIdx) => {
                 const row = document.querySelector(`.set-row[data-ex-idx="${workoutExercises.indexOf(ex)}"][data-set-idx="${setIdx}"]`);
                 const checkbox = row?.querySelector('.set-complete-checkbox');
