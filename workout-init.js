@@ -143,61 +143,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Render Individual Templates in 2-column grid (only templates NOT in routines)
         if (templateList) {
+            // After rendering routines:
+            let routinelessContainer = document.getElementById('routineless-templates');
+            if (!routinelessContainer) {
+                routinelessContainer = document.createElement('div');
+                routinelessContainer.id = 'routineless-templates';
+                routinelessContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 mt-6'; // Make it visible and styled
+                templateList.appendChild(routinelessContainer);
+            }
+            
             const standaloneTemplates = allTemplates.filter(tpl => !templatesInRoutines.has(tpl.name));
-            standaloneTemplates.forEach((tpl, idx) => {
-                let exercises = tpl.exercises.slice(0, 2).map(ex => `<span class='inline-block bg-gray-100 text-gray-800 rounded-lg px-2 py-1 text-xs font-medium'>${ex.name}</span>`).join('');
-                let more = tpl.exercises.length > 2 ? `<span class='inline-block bg-gray-200 text-gray-700 rounded-lg px-2 py-1 text-xs font-medium'>+${tpl.exercises.length-2} more</span>` : '';
-                let card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl shadow-lg p-4 text-gray-900 flex flex-col gap-2 cursor-pointer border border-gray-200 hover:shadow-xl transition-all template-card';
-                card.dataset.template = tpl.name;
+            standaloneTemplates.forEach((tpl) => {
+                const exerciseCount = tpl.exercises ? tpl.exercises.length : 0;
+                const card = document.createElement('div');
+                card.className = 'bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors cursor-pointer template-item';
                 card.innerHTML = `
-                    <div class="font-semibold text-sm mb-1">${tpl.name}</div>
-                    <div class="flex flex-wrap gap-1 text-xs">${exercises}${more}</div>
-                    <div class="flex gap-2 mt-2 items-center">
-                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-sm template-start-btn">Start</button>
-                        ${customTemplates.some(t => t.name === tpl.name) ? `
-                            <div class="relative">
-                                <button class="template-options-btn text-gray-500 hover:text-gray-700 px-2 py-1 rounded-full text-lg font-bold">&#8942;</button>
-                                <div class="template-options-menu absolute right-0 mt-2 w-28 bg-white border border-gray-300 rounded shadow-lg hidden z-10">
-                                    <button class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 template-delete-btn">Delete</button>
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
+                    <div class="font-medium text-sm">${tpl.name}</div>
+                    <div class="text-xs text-gray-300 mt-1">${exerciseCount} exercises</div>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold mt-2 template-start-btn">Start</button>
                 `;
-                card.querySelector('.template-start-btn').onclick = (e) => {
-                    e.stopPropagation();
-                    startWorkoutFromTemplate(tpl);
-                };
-                // Add options menu logic inside the loop
-                const optionsBtn = card.querySelector('.template-options-btn');
-                const optionsMenu = card.querySelector('.template-options-menu');
-                if (optionsBtn && optionsMenu) {
-                    optionsBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        document.querySelectorAll('.template-options-menu').forEach(menu => {
-                            if (menu !== optionsMenu) menu.classList.add('hidden');
-                        });
-                        optionsMenu.classList.toggle('hidden');
-                    };
-                    document.addEventListener('click', function hideMenu(e) {
-                        if (!optionsMenu.contains(e.target) && e.target !== optionsBtn) {
-                            optionsMenu.classList.add('hidden');
-                            document.removeEventListener('click', hideMenu);
-                        }
-                    });
-                    const deleteBtn = optionsMenu.querySelector('.template-delete-btn');
-                    if (deleteBtn) {
-                        deleteBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            let customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
-                            customTemplates = customTemplates.filter(t => t.name !== tpl.name);
-                            localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
-                            card.remove();
-                        };
-                    }
-                }
-                templateList.appendChild(card);
+                card.querySelector('.template-start-btn').onclick = () => startWorkoutFromTemplate(tpl);
+                routinelessContainer.appendChild(card);
             });
         }
     }).catch(error => {
