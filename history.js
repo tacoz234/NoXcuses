@@ -55,133 +55,73 @@ function renderHistory() {
         }
 
         card.innerHTML = `
-            <div class="flex flex-col mb-2">
-                ${workout.template ? `<div class="font-bold text-lg">${workout.template}</div>` : ''}
-                <div class="font-bold text-base">${formatDate(workout.date)}</div>
-                <div class="text-sm text-gray-600">Duration: ${workout.duration}</div>
+            <div class="flex justify-between items-start">
+                <div class="flex-grow">
+                    ${workout.template ? `<div class="font-bold text-lg">${workout.template}</div>` : ''}
+                    <div class="font-bold text-base">${formatDate(workout.date)}</div>
+                    <div class="text-sm text-gray-600">Duration: ${workout.duration}</div>
+                </div>
+                <button class="more-btn text-gray-500 hover:text-gray-700 p-2" data-idx="${idx}">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
             </div>
-            <div class="divide-y divide-gray-200">
+            <div class="divide-y divide-gray-200 mt-2">
                 ${exercisesHtml}
             </div>
         `;
 
-        // Delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = "Delete";
-        deleteBtn.className = "absolute top-0 right-0 h-full w-24 bg-red-600 text-white font-bold rounded-lg transition-all duration-200 translate-x-full group-[.show-delete]:translate-x-0";
-        deleteBtn.style.zIndex = 10;
-        deleteBtn.onclick = function() {
-            // Remove from localStorage
-            let all = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-            all.splice(all.length - 1 - idx, 1); // Because we reversed
-            localStorage.setItem('workoutHistory', JSON.stringify(all));
-            renderHistory();
-        };
-
-        // Swipe logic
-        let startX = 0, currentX = 0, swiped = false;
-        card.addEventListener('touchstart', function(e) {
-            startX = e.touches[0].clientX;
-            card.style.transition = '';
-        });
-        card.addEventListener('touchmove', function(e) {
-            currentX = e.touches[0].clientX;
-            let dx = currentX - startX;
-            // If already swiped and user swipes right, allow to swipe back
-            if (swiped && dx > 0) {
-                card.style.transform = `translateX(${dx - 80}px)`;
-            } else if (!swiped) {
-                card.style.transform = `translateX(${dx}px)`;
-            }
-        });
-        card.addEventListener('touchend', function(e) {
-            let dx = currentX - startX;
-            card.style.transition = 'transform 0.2s';
-            if (!swiped && dx < -60) {
-                // Swipe left to show delete
-                card.style.transform = 'translateX(-80px)';
-                workoutDiv.classList.add('show-delete');
-                swiped = true;
-            } else if (swiped && dx > 40) {
-                // Swipe right to hide delete
-                card.style.transform = '';
-                workoutDiv.classList.remove('show-delete');
-                swiped = false;
-            } else if (swiped) {
-                // Stay in delete state
-                card.style.transform = 'translateX(-80px)';
-            } else {
-                // Return to normal
-                card.style.transform = '';
-                workoutDiv.classList.remove('show-delete');
-                swiped = false;
-            }
-            startX = 0; currentX = 0;
-        });
-
-        // Also allow mouse for desktop
-        let mouseDown = false, mouseStartX = 0, mouseCurrentX = 0;
-        card.addEventListener('mousedown', function(e) {
-            mouseDown = true;
-            mouseStartX = e.clientX;
-            card.style.transition = '';
-        });
-        card.addEventListener('mousemove', function(e) {
-            if (!mouseDown) return;
-            mouseCurrentX = e.clientX;
-            let dx = mouseCurrentX - mouseStartX;
-            if (Math.abs(dx) > 0) {
-                card.style.transform = `translateX(${dx}px)`;
-            }
-        });
-        card.addEventListener('mouseup', function(e) {
-            if (!mouseDown) return;
-            let dx = mouseCurrentX - mouseStartX;
-            card.style.transition = 'transform 0.2s';
-            if (Math.abs(dx) > 60) {
-                card.style.transform = 'translateX(-80px)';
-                workoutDiv.classList.add('show-delete');
-                swiped = true;
-            } else {
-                card.style.transform = '';
-                workoutDiv.classList.remove('show-delete');
-                swiped = false;
-            }
-            mouseDown = false;
-            mouseStartX = 0; mouseCurrentX = 0;
-        });
-        card.addEventListener('mouseleave', function(e) {
-            if (mouseDown) {
-                card.dispatchEvent(new MouseEvent('mouseup'));
-            }
-        });
-
-        // Hide delete if card is tapped again
-        card.addEventListener('click', function() {
-            if (swiped) {
-                card.style.transform = '';
-                workoutDiv.classList.remove('show-delete');
-                swiped = false;
-            }
-        });
-
-        // Add after card.innerHTML assignment
-        const moreBtn = document.createElement('button');
-        moreBtn.innerHTML = '<i class="fas fa-ellipsis-h"></i>';
-        moreBtn.className = 'absolute top-2 right-10 text-gray-500 hover:text-gray-700 text-xl p-2';
-        moreBtn.onclick = function(e) {
-            e.stopPropagation();
-            document.getElementById('addTemplateModal').classList.remove('hidden');
-            document.getElementById('addTemplateNameInput').value = workout.template || '';
-            // Store the workout object for saving
-            window._workoutToTemplate = workout;
-        };
-        workoutDiv.appendChild(moreBtn);
-
         workoutDiv.appendChild(card);
-        workoutDiv.appendChild(deleteBtn);
         historyList.appendChild(workoutDiv);
     });
+
+    // Add event listeners for the new modals
+    document.querySelectorAll('.more-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = e.currentTarget.dataset.idx;
+            const workout = history[idx];
+            openWorkoutActionsModal(workout, idx);
+        });
+    });
+}
+
+function openWorkoutActionsModal(workout, idx) {
+    const modal = document.getElementById('workoutActionsModal');
+    modal.classList.remove('hidden');
+
+    // Store workout data for later use
+    modal.dataset.workoutIdx = idx;
+    modal.dataset.workout = JSON.stringify(workout);
+
+    document.getElementById('closeWorkoutActionsModal').onclick = () => modal.classList.add('hidden');
+    document.getElementById('saveAsTemplateBtn').onclick = () => saveAsTemplate(workout);
+    document.getElementById('deleteWorkoutBtn').onclick = () => openDeleteConfirmModal(idx);
+}
+
+function openDeleteConfirmModal(idx) {
+    const modal = document.getElementById('deleteConfirmModal');
+    modal.classList.remove('hidden');
+
+    document.getElementById('cancelDeleteBtn').onclick = () => modal.classList.add('hidden');
+    document.getElementById('confirmDeleteBtn').onclick = () => {
+        deleteWorkout(idx);
+        modal.classList.add('hidden');
+        document.getElementById('workoutActionsModal').classList.add('hidden');
+    };
+}
+
+function deleteWorkout(idx) {
+    let all = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+    all.splice(all.length - 1 - idx, 1); // Because we reversed for display
+    localStorage.setItem('workoutHistory', JSON.stringify(all));
+    renderHistory();
+}
+
+function saveAsTemplate(workout) {
+    document.getElementById('workoutActionsModal').classList.add('hidden');
+    const addTemplateModal = document.getElementById('addTemplateModal');
+    addTemplateModal.classList.remove('hidden');
+    document.getElementById('addTemplateNameInput').value = workout.template || `Workout from ${formatDate(workout.date).split(',')[0]}`;
+    window._workoutToTemplate = workout;
 }
 
 window.onload = renderHistory;

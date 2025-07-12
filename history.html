@@ -74,6 +74,29 @@
         </li>
     </ul>
 </nav>
+
+<!-- Workout Actions Modal -->
+<div id="workoutActionsModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900 relative">
+    <button id="closeWorkoutActionsModal" class="absolute top-2 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+    <h2 class="text-xl font-semibold mb-4">Workout Actions</h2>
+    <button id="saveAsTemplateBtn" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl mb-2">Save as Template</button>
+    <button id="deleteWorkoutBtn" class="w-full bg-red-600 text-white font-semibold py-3 rounded-xl">Delete Workout</button>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900">
+        <h2 class="text-xl font-semibold mb-4">Are you sure?</h2>
+        <p class="mb-6">This action cannot be undone.</p>
+        <div class="flex justify-end space-x-4">
+            <button id="cancelDeleteBtn" class="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg">Cancel</button>
+            <button id="confirmDeleteBtn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg">Delete</button>
+        </div>
+    </div>
+</div>
+
 <script src="history.js"></script>
 <script src="navbar.js"></script>
 <!-- Add before </body> -->
