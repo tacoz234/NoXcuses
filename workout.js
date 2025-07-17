@@ -100,7 +100,6 @@ function renderWorkoutExercises() {
     
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const weightUnit = userData.weightUnit || 'kg';
-    const conversionFactor = weightUnit === 'lb' ? 2.20462 : 1;
     
     if (workoutExercises.length === 0) {
         const placeholderDiv = document.createElement('div');
@@ -120,6 +119,10 @@ function renderWorkoutExercises() {
     workoutExercises.forEach((ex, exIdx) => {
         const exDiv = document.createElement('div');
         exDiv.className = 'bg-white rounded-lg p-4 mb-4 text-gray-900 shadow';
+        
+        // Get last workout data for this exercise
+        let lastWorkoutData = '';
+        
         let repRestRangeText = '';
         if (window.currentTemplateName && window.allTemplates) {
             const template = window.allTemplates.find(t => t.name === window.currentTemplateName);
@@ -148,6 +151,7 @@ function renderWorkoutExercises() {
                 </div>
             </div>
             ${repRestRangeText}
+            ${lastWorkoutData}
             <div class=\"space-y-2\">
                 ${ex.sets.map((set, setIdx) => {
                     const isCompleted = set.completed;
@@ -160,14 +164,18 @@ function renderWorkoutExercises() {
                         <div class="absolute inset-0 flex items-center justify-end pr-2 bg-red-500 rounded delete-bg" style="z-index:0;opacity:0;pointer-events:none;transition:opacity 0.2s;">
                             <button class="delete-set-btn text-white font-bold px-4 py-2 rounded" data-ex-idx="${exIdx}" data-set-idx="${setIdx}">Delete</button>
                         </div>
-                        <div class="flex items-center gap-2 set-row ${rowClass} rounded transition-all relative" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
-                            <span class="text-xs text-gray-500 w-10">Set ${setIdx+1}</span>
-                            <label class="text-xs text-gray-600">Weight</label>
-                            <input type="number" min="0" value="${set.weight}" class="weight-input w-16 p-1 rounded ${inputClass} text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" data-original-unit="kg" ${disabled}>
-                            <span class="text-gray-400 text-xs">${weightUnit}</span>
-                            <label class="text-xs text-gray-600 ml-2">Reps</label>
-                            <input type="number" min="1" value="${typeof set.reps === 'string' && set.reps.match(/^\d+/) ? set.reps.match(/^\d+/)[0] : set.reps}" class="reps-input w-12 p-1 rounded ${inputClass} text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${disabled}>
-                            <input type="checkbox" class="set-complete-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${isCompleted ? 'checked' : ''}>
+                        <div class="flex items-center gap-2 set-row ${rowClass} rounded transition-all relative p-3 w-full" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" style="z-index:1;">
+                            <div class="flex items-center gap-2 w-[140px]">
+                                <span class="text-sm text-gray-500">Set ${setIdx+1}</span>
+                                <span class="text-sm text-gray-400 truncate">(${getLastWorkoutSet(ex.name, setIdx)})</span>
+                            </div>
+                            <div class="flex items-center gap-2 ml-auto">
+                                <input type="number" min="0" value="${set.weight}" class="weight-input w-14 p-1.5 text-base rounded ${inputClass} text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" data-original-unit="kg" ${disabled}>
+                                <span class="text-gray-400 text-sm">${weightUnit}</span>
+                                <span class="text-gray-400 text-sm">×</span>
+                                <input type="number" min="1" value="${typeof set.reps === 'string' && set.reps.match(/^\d+/) ? set.reps.match(/^\d+/)[0] : set.reps}" class="reps-input w-12 p-1.5 text-base rounded ${inputClass} text-gray-900 border transition-colors" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${disabled}>
+                                <input type="checkbox" class="set-complete-checkbox w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" data-ex-idx="${exIdx}" data-set-idx="${setIdx}" ${isCompleted ? 'checked' : ''}>
+                            </div>
                         </div>
                         <div class="rest-timer-container hidden mt-2 text-center bg-gray-50 rounded p-2">
                             <div class="flex items-center justify-center gap-2">
@@ -565,3 +573,21 @@ function startAutoSave() {
     }, 5000);
 }
 
+// Add this helper function at the top of the file
+function getLastWorkoutSet(exerciseName, setIndex) {
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const localWeightUnit = userData.weightUnit || 'lb';
+    
+    const history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+    for (let i = history.length - 1; i >= 0; i--) {
+        const workout = history[i];
+        const lastExercise = workout.exercises.find(e => e.name === exerciseName);
+        if (lastExercise && lastExercise.sets && lastExercise.sets[setIndex]) {
+            const set = lastExercise.sets[setIndex];
+            return `${set.weight}${localWeightUnit}×${set.reps}`;
+        }
+    }
+    return '-';
+}
+
+ 
