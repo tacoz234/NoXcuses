@@ -4,6 +4,82 @@ let allExercises = []; // To store exercises from exercises.json
 let replaceExerciseIdx = null; // Used for replacing exercises in the workout
 const DEFAULT_REST_TIME = 60; // Default rest time in seconds
 
+// --- Rest Timer Persistence ---
+let activeRestTimer = null; // Store active timer info for persistence
+let restTimerInterval = null;
+let restTimeSeconds = 0;
+
+function saveRestTimerState() {
+    if (activeRestTimer) {
+        const restTimerState = {
+            ...activeRestTimer,
+            remainingSeconds: restTimeSeconds,
+            lastUpdateTime: Date.now()
+        };
+        localStorage.setItem('activeRestTimer', JSON.stringify(restTimerState));
+    } else {
+        localStorage.removeItem('activeRestTimer');
+    }
+}
+
+function restoreRestTimerState() {
+    const savedTimer = localStorage.getItem('activeRestTimer');
+    if (savedTimer) {
+        try {
+            const timerData = JSON.parse(savedTimer);
+            const now = Date.now();
+            const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
+            const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
+            
+            if (remainingTime > 0) {
+                // Find the corresponding timer display and container
+                const exerciseIndex = timerData.exerciseIndex;
+                const setIndex = timerData.setIndex;
+                
+                // Wait for DOM to be ready, then restore timer
+                setTimeout(() => {
+                    const setRow = document.querySelector(`.set-row[data-ex-idx="${exerciseIndex}"][data-set-idx="${setIndex}"]`);
+                    if (setRow) {
+                        const setContainer = setRow.parentElement;
+                        const restTimerContainer = setContainer.querySelector('.rest-timer-container');
+                        const restTimerDisplay = restTimerContainer.querySelector('.rest-timer-display');
+                        
+                        if (restTimerContainer && restTimerDisplay) {
+                            activeRestTimer = {
+                                exerciseIndex: exerciseIndex,
+                                setIndex: setIndex,
+                                timerDisplay: restTimerDisplay,
+                                timerContainer: restTimerContainer
+                            };
+                            
+                            restTimeSeconds = remainingTime;
+                            restTimerDisplay.textContent = formatTime(restTimeSeconds);
+                            restTimerContainer.classList.remove('hidden');
+                            
+                            restTimerInterval = setInterval(() => {
+                                restTimeSeconds--;
+                                restTimerDisplay.textContent = formatTime(restTimeSeconds);
+                                saveRestTimerState(); // Save state on each tick
+                                
+                                if (restTimeSeconds <= 0) {
+                                    stopRestTimer();
+                                    restTimerContainer.classList.add('hidden');
+                                }
+                            }, 1000);
+                        }
+                    }
+                }, 100);
+            } else {
+                // Timer has expired while away
+                localStorage.removeItem('activeRestTimer');
+            }
+        } catch (e) {
+            console.error('Error restoring rest timer state:', e);
+            localStorage.removeItem('activeRestTimer');
+        }
+    }
+}
+
 // --- Utility Functions ---
 
 function parseRestTime(restString) {
@@ -331,9 +407,6 @@ function renderWorkoutExercises() {
         };
     });
 
-    let restTimerInterval = null;
-    let restTimeSeconds = 0;
-
     function adjustRestTime(seconds) {
         if (restTimerInterval) {
             restTimeSeconds = Math.max(0, restTimeSeconds + seconds);
@@ -341,30 +414,47 @@ function renderWorkoutExercises() {
             displays.forEach(display => {
                 display.textContent = formatTime(restTimeSeconds);
             });
+            saveRestTimerState(); // Save state when time is adjusted
         }
     }
 
-    function startRestTimer(timerDisplayEl, containerEl, exercise) {
+    function startRestTimer(timerDisplayEl, containerEl, exercise, exerciseIndex, setIndex) {
         stopRestTimer();
         restTimeSeconds = exercise.rest ? parseRestTime(exercise.rest) : DEFAULT_REST_TIME;
         timerDisplayEl.textContent = formatTime(restTimeSeconds);
         containerEl.classList.remove('hidden');
 
+        // Store active timer info for persistence
+        activeRestTimer = {
+            exerciseIndex: exerciseIndex,
+            setIndex: setIndex,
+            timerDisplay: timerDisplayEl,
+            timerContainer: containerEl
+        };
+
         restTimerInterval = setInterval(() => {
             restTimeSeconds--;
             timerDisplayEl.textContent = formatTime(restTimeSeconds);
+            saveRestTimerState(); // Save state on each tick
+            
             if (restTimeSeconds <= 0) {
                 stopRestTimer();
                 containerEl.classList.add('hidden');
             }
         }, 1000);
+        
+        saveRestTimerState(); // Save initial state
     }
 
     function stopRestTimer() {
         if (restTimerInterval) {
             clearInterval(restTimerInterval);
-            restTimerInterval = null;
+            // Remove these lines (around line 408-409):
+            // let restTimerInterval = null;
+            // let restTimeSeconds = 0;
         }
+        activeRestTimer = null;
+        saveRestTimerState(); // Clear saved state
     }
 
     // Add timer adjustment button handlers
@@ -406,7 +496,7 @@ function renderWorkoutExercises() {
                     input.classList.add('bg-green-100');
                     input.disabled = true;
                 });
-                startRestTimer(restTimerDisplay, restTimerContainer, workoutExercises[exIdx]);
+                startRestTimer(restTimerDisplay, restTimerContainer, workoutExercises[exIdx], exIdx, setIdx);
             } else {
                 row.classList.remove('bg-green-100');
                 row.classList.add('bg-gray-50');
@@ -504,6 +594,9 @@ function saveWorkoutState() {
         templateName: window.currentTemplateName || null
     };
     localStorage.setItem('currentWorkout', JSON.stringify(state));
+    
+    // Also save rest timer state when saving workout
+    saveRestTimerState();
 }
 
 async function restoreWorkoutState() {
@@ -555,6 +648,9 @@ async function restoreWorkoutState() {
                 sets: Array.isArray(ex.sets) ? ex.sets.map(set => ({ ...set, completed: set.hasOwnProperty('completed') ? set.completed : false })) : []
             })) : [];
             renderWorkoutExercises();
+            
+            // Restore rest timer after rendering exercises
+            restoreRestTimerState();
             
             if (localStorage.getItem('isWorkoutActive') === '1') {
                 openDrawer();
