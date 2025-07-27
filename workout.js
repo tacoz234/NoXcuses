@@ -418,6 +418,49 @@ function renderWorkoutExercises() {
         }
     }
 
+    // --- Notification Functions ---
+    async function requestNotificationPermission() {
+        if ('Notification' in window) {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        }
+        return false;
+    }
+    
+    function sendRestTimerNotification() {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            const exerciseName = activeRestTimer ? 
+                workoutExercises[activeRestTimer.exerciseIndex]?.name || 'Exercise' : 
+                'Exercise';
+            
+            const notification = new Notification('Rest Timer Complete! 💪', {
+                body: `Time to get back to ${exerciseName}!`,
+                icon: 'icon-192.png',
+                badge: 'icon-192.png',
+                tag: 'rest-timer', // This prevents multiple notifications from stacking
+                requireInteraction: true, // Keeps notification visible until user interacts
+                vibrate: [200, 100, 200], // Vibration pattern for mobile
+                actions: [
+                    {
+                        action: 'dismiss',
+                        title: 'Dismiss'
+                    }
+                ]
+            });
+    
+            // Auto-close notification after 10 seconds if user doesn't interact
+            setTimeout(() => {
+                notification.close();
+            }, 10000);
+    
+            // Handle notification click - bring app to foreground
+            notification.onclick = function() {
+                window.focus();
+                notification.close();
+            };
+        }
+    }
+
     function startRestTimer(timerDisplayEl, containerEl, exercise, exerciseIndex, setIndex) {
         stopRestTimer();
         restTimeSeconds = exercise.rest ? parseRestTime(exercise.rest) : DEFAULT_REST_TIME;
@@ -438,6 +481,8 @@ function renderWorkoutExercises() {
             saveRestTimerState(); // Save state on each tick
             
             if (restTimeSeconds <= 0) {
+                // Send notification when timer completes
+                sendRestTimerNotification();
                 stopRestTimer();
                 containerEl.classList.add('hidden');
             }
