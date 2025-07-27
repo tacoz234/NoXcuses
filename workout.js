@@ -449,10 +449,20 @@ function renderWorkoutExercises() {
     function stopRestTimer() {
         if (restTimerInterval) {
             clearInterval(restTimerInterval);
-            // Remove these lines (around line 408-409):
-            // let restTimerInterval = null;
-            // let restTimeSeconds = 0;
+            restTimerInterval = null;
         }
+        
+        // Hide the previously active timer container if it exists
+        if (activeRestTimer && activeRestTimer.timerContainer) {
+            activeRestTimer.timerContainer.classList.add('hidden');
+        }
+        
+        // Also hide any other visible timer containers to ensure only one timer is visible
+        const allTimerContainers = document.querySelectorAll('.rest-timer-container');
+        allTimerContainers.forEach(container => {
+            container.classList.add('hidden');
+        });
+        
         activeRestTimer = null;
         saveRestTimerState(); // Clear saved state
     }
