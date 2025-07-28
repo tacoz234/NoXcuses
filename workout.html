@@ -108,6 +108,39 @@
       </div>
     </div>
 
+    <!-- Template Exercise Configuration Modal -->
+    <div id="templateExerciseConfigModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[75] hidden">
+      <div class="bg-gray-800 rounded-lg shadow-lg w-full max-w-md mx-4 text-white relative">
+        <button id="closeTemplateExerciseConfigModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl z-10">&times;</button>
+        
+        <div class="p-6">
+          <h2 class="text-xl font-bold mb-4">Configure Exercise</h2>
+          <div id="configExerciseName" class="text-lg font-semibold mb-4"></div>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Sets</label>
+              <input id="configSets" type="number" min="1" max="20" value="3" class="w-full p-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium mb-2">Rep Range</label>
+              <div class="flex items-center gap-2">
+                <input id="configMinReps" type="number" min="1" max="100" value="8" placeholder="Min" class="flex-1 p-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <span class="text-gray-400">-</span>
+                <input id="configMaxReps" type="number" min="1" max="100" value="12" placeholder="Max" class="flex-1 p-2 rounded-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex gap-3 mt-6">
+            <button id="saveExerciseConfig" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">Add Exercise</button>
+            <button id="cancelExerciseConfig" class="px-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded-lg transition">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Template Exercise Selection Modal -->
     <div id="templateExerciseModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70] hidden">
       <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 text-gray-900 relative max-h-[80vh] overflow-hidden">
@@ -127,7 +160,9 @@
         
         <!-- Header -->
         <div class="p-6 border-b border-gray-700">
-          <h2 id="templatePreviewTitle" class="text-xl font-bold mb-2"></h2>
+          <div class="flex items-center justify-between mb-2">
+            <h2 id="templatePreviewTitle" class="text-xl font-bold"></h2>
+          </div>
           <div id="templatePreviewSummary" class="text-gray-300 text-sm"></div>
         </div>
         
@@ -140,7 +175,21 @@
         <!-- Footer -->
         <div class="p-6 border-t border-gray-700 flex gap-3">
           <button id="startTemplateFromPreview" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">Start Workout</button>
-          <button id="cancelTemplatePreview" class="px-6 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition">Cancel</button>
+          <div class="relative">
+            <button id="editTemplateBtn" class="px-6 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition flex items-center gap-2">
+              <i class="fas fa-edit"></i> Edit
+              <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <!-- Dropdown Menu -->
+            <div id="editTemplateDropdown" class="absolute bottom-full mb-2 right-0 bg-gray-700 rounded-lg shadow-lg border border-gray-600 min-w-[140px] hidden z-10">
+              <button id="editTemplateOption" class="w-full text-left px-4 py-2 text-white hover:bg-gray-600 rounded-t-lg flex items-center gap-2">
+                <i class="fas fa-edit text-sm"></i> Edit Template
+              </button>
+              <button id="deleteTemplateOption" class="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-600 rounded-b-lg flex items-center gap-2">
+                <i class="fas fa-trash text-sm"></i> Delete Template
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

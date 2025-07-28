@@ -39,16 +39,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     const exerciseDiv = document.createElement('div');
                     exerciseDiv.className = 'bg-gray-700 rounded-lg p-4';
                     
-                    const sets = exercise.working_sets || 'N/A';
-                    const reps = exercise.reps || 'N/A';
-                    const rest = exercise.rest || 'N/A';
+                    // Handle both old and new template formats
+                    let setsDisplay, repsDisplay, restDisplay;
+                    
+                    if (exercise.sets && (exercise.minReps || exercise.maxReps)) {
+                        // New format with sets and rep ranges
+                        setsDisplay = exercise.sets;
+                        if (exercise.minReps === exercise.maxReps) {
+                            repsDisplay = `${exercise.minReps}`;
+                        } else {
+                            repsDisplay = `${exercise.minReps}-${exercise.maxReps}`;
+                        }
+                        restDisplay = exercise.rest || '60-90s';
+                    } else {
+                        // Old format fallback
+                        setsDisplay = exercise.working_sets || exercise.sets || '3';
+                        repsDisplay = exercise.reps || '8-12';
+                        restDisplay = exercise.rest || '60-90s';
+                    }
                     
                     exerciseDiv.innerHTML = `
                         <div class="font-medium text-white mb-2">${exercise.name}</div>
                         <div class="text-sm text-gray-300 space-y-1">
-                            <div><span class="text-gray-400">Sets:</span> ${sets}</div>
-                            <div><span class="text-gray-400">Reps:</span> ${reps}</div>
-                            <div><span class="text-gray-400">Rest:</span> ${rest}</div>
+                            <div><span class="text-gray-400">Sets:</span> ${setsDisplay}</div>
+                            <div><span class="text-gray-400">Reps:</span> ${repsDisplay}</div>
+                            <div><span class="text-gray-400">Rest:</span> ${restDisplay}</div>
+                            ${exercise.muscle ? `<div class="text-xs text-gray-400 mt-2"><span class="text-gray-500">Target:</span> ${exercise.muscle}</div>` : ''}
                             ${exercise.notes ? `<div class="text-xs text-gray-400 mt-2 italic">${exercise.notes}</div>` : ''}
                         </div>
                     `;
@@ -293,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Template Creation Modal functionality
     let templateExercises = [];
+    let currentConfigExercise = null;
     
     const createTemplateBtn = document.getElementById('createTemplateBtn');
     const templateCreationModal = document.getElementById('templateCreationModal');
@@ -307,6 +324,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeTemplateExerciseModal = document.getElementById('closeTemplateExerciseModal');
     const templateExerciseSearch = document.getElementById('templateExerciseSearch');
     const templateExerciseList = document.getElementById('templateExerciseList');
+
+    // Exercise configuration modal elements
+    const templateExerciseConfigModal = document.getElementById('templateExerciseConfigModal');
+    const closeTemplateExerciseConfigModal = document.getElementById('closeTemplateExerciseConfigModal');
+    const cancelExerciseConfig = document.getElementById('cancelExerciseConfig');
+    const saveExerciseConfig = document.getElementById('saveExerciseConfig');
+    const configExerciseName = document.getElementById('configExerciseName');
+    const configSets = document.getElementById('configSets');
+    const configMinReps = document.getElementById('configMinReps');
+    const configMaxReps = document.getElementById('configMaxReps');
+
+    // Template deletion
+    const deleteTemplateBtn = document.getElementById('deleteTemplateBtn');
 
     function openTemplateCreationModal() {
         templateExercises = [];
@@ -330,17 +360,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
         } else {
-            templateExercisesList.innerHTML = templateExercises.map((exercise, index) => `
-                <div class="bg-gray-700 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                        <div class="font-medium text-sm">${exercise.name}</div>
+            templateExercisesList.innerHTML = templateExercises.map((exercise, index) => {
+                // Add fallback values for exercises that might not have sets/reps configured
+                const sets = exercise.sets || 3;
+                const minReps = exercise.minReps || 8;
+                const maxReps = exercise.maxReps || 12;
+                
+                const repRange = minReps === maxReps ? 
+                    `${minReps} reps` : 
+                    `${minReps}-${maxReps} reps`;
+                
+                return `
+                    <div class="bg-gray-700 rounded-lg p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="font-medium text-sm">${exercise.name}</div>
+                            <button class="text-red-400 hover:text-red-300 text-sm" onclick="removeTemplateExercise(${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                         <div class="text-xs text-gray-300">${exercise.muscle || 'Unknown muscle'}</div>
+                        <div class="text-xs text-blue-400 mt-1">${sets} sets × ${repRange}</div>
                     </div>
-                    <button class="text-red-400 hover:text-red-300 text-sm" onclick="removeTemplateExercise(${index})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
     }
 
@@ -360,6 +402,56 @@ document.addEventListener('DOMContentLoaded', function() {
         templateExerciseModal.classList.add('hidden');
     }
 
+    function openExerciseConfigModal(exercise) {
+        currentConfigExercise = exercise;
+        configExerciseName.textContent = exercise.name;
+        configSets.value = 3;
+        configMinReps.value = 8;
+        configMaxReps.value = 12;
+        
+        templateExerciseConfigModal.style.display = 'flex';
+        templateExerciseConfigModal.classList.remove('hidden');
+    }
+
+    function closeExerciseConfigModalFunc() {
+        templateExerciseConfigModal.style.display = 'none';
+        templateExerciseConfigModal.classList.add('hidden');
+        currentConfigExercise = null;
+    }
+
+    function saveExerciseConfigFunc() {
+        if (!currentConfigExercise) return;
+        
+        const sets = parseInt(configSets.value);
+        const minReps = parseInt(configMinReps.value);
+        const maxReps = parseInt(configMaxReps.value);
+        
+        if (sets < 1 || minReps < 1 || maxReps < 1) {
+            alert('Please enter valid numbers for sets and reps');
+            return;
+        }
+        
+        if (minReps > maxReps) {
+            alert('Minimum reps cannot be greater than maximum reps');
+            return;
+        }
+
+        const configuredExercise = {
+            ...currentConfigExercise,
+            sets: sets,
+            minReps: minReps,
+            maxReps: maxReps
+        };
+
+        if (!templateExercises.find(ex => ex.name === configuredExercise.name)) {
+            templateExercises.push(configuredExercise);
+            renderTemplateExercises();
+        }
+        
+        closeExerciseConfigModalFunc();
+        closeTemplateExerciseModalFunc();
+    }
+
     function renderTemplateExerciseList(searchTerm = '') {
         const filteredExercises = allExercises.filter(ex => 
             ex.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -377,10 +469,10 @@ document.addEventListener('DOMContentLoaded', function() {
             item.addEventListener('click', () => {
                 const exercise = JSON.parse(item.dataset.exercise);
                 if (!templateExercises.find(ex => ex.name === exercise.name)) {
-                    templateExercises.push(exercise);
-                    renderTemplateExercises();
+                    openExerciseConfigModal(exercise);
+                } else {
+                    alert('This exercise is already in your template');
                 }
-                closeTemplateExerciseModalFunc();
             });
         });
     }
@@ -403,8 +495,9 @@ document.addEventListener('DOMContentLoaded', function() {
             exercises: templateExercises.map(ex => ({
                 name: ex.name,
                 muscle: ex.muscle,
-                sets: 3,
-                reps: 10,
+                sets: ex.sets,
+                minReps: ex.minReps,
+                maxReps: ex.maxReps,
                 weight: 0
             }))
         };
@@ -430,6 +523,35 @@ document.addEventListener('DOMContentLoaded', function() {
         closeTemplateCreationModalFunc();
         
         // Refresh the page to show the new template
+        window.location.reload();
+    }
+
+    function deleteTemplate(templateName) {
+        if (!confirm(`Are you sure you want to delete the template "${templateName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        // Only allow deletion of custom templates
+        let customTemplates = [];
+        try {
+            customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+        } catch (e) {
+            customTemplates = [];
+        }
+
+        const templateIndex = customTemplates.findIndex(t => t.name === templateName);
+        if (templateIndex === -1) {
+            alert('This template cannot be deleted (it may be a built-in template)');
+            return;
+        }
+
+        customTemplates.splice(templateIndex, 1);
+        localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+
+        alert('Template deleted successfully!');
+        closeTemplatePreviewModal();
+        
+        // Refresh the page to update the template list
         window.location.reload();
     }
 
@@ -464,24 +586,181 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Close modals when clicking outside
-    if (templateCreationModal) {
-        templateCreationModal.addEventListener('click', (e) => {
-            if (e.target.id === 'templateCreationModal') {
-                closeTemplateCreationModalFunc();
-            }
+    // Exercise configuration modal event listeners
+    if (closeTemplateExerciseConfigModal) {
+        closeTemplateExerciseConfigModal.addEventListener('click', closeExerciseConfigModalFunc);
+    }
+    
+    if (cancelExerciseConfig) {
+        cancelExerciseConfig.addEventListener('click', closeExerciseConfigModalFunc);
+    }
+    
+    if (saveExerciseConfig) {
+        saveExerciseConfig.addEventListener('click', saveExerciseConfigFunc);
+    }
+
+    // Template deletion event listener
+    // Template edit dropdown functionality
+    const editTemplateBtn = document.getElementById('editTemplateBtn');
+    const editTemplateDropdown = document.getElementById('editTemplateDropdown');
+    const editTemplateOption = document.getElementById('editTemplateOption');
+    const deleteTemplateOption = document.getElementById('deleteTemplateOption');
+
+    // Toggle dropdown when edit button is clicked
+    if (editTemplateBtn) {
+        editTemplateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            editTemplateDropdown.classList.toggle('hidden');
         });
     }
 
-    if (templateExerciseModal) {
-        templateExerciseModal.addEventListener('click', (e) => {
-            if (e.target.id === 'templateExerciseModal') {
-                closeTemplateExerciseModalFunc();
+    // Edit template functionality
+    if (editTemplateOption) {
+        editTemplateOption.addEventListener('click', () => {
+            if (currentPreviewTemplate) {
+                editTemplate(currentPreviewTemplate);
             }
+            editTemplateDropdown.classList.add('hidden');
         });
     }
 
-    // Make removeTemplateExercise globally accessible
-    window.removeTemplateExercise = removeTemplateExercise;
+    // Delete template functionality
+    if (deleteTemplateOption) {
+        deleteTemplateOption.addEventListener('click', () => {
+            if (currentPreviewTemplate) {
+                deleteTemplate(currentPreviewTemplate.name);
+            }
+            editTemplateDropdown.classList.add('hidden');
+        });
+    }
 
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (editTemplateDropdown && !editTemplateBtn.contains(e.target)) {
+            editTemplateDropdown.classList.add('hidden');
+        }
+    });
+
+    // Edit template function
+    function editTemplate(template) {
+        // Close the preview modal
+        closeTemplatePreviewModal();
+        
+        // Populate the creation modal with existing template data
+        templateNameInput.value = template.name;
+        templateExercises = template.exercises.map(ex => ({
+            name: ex.name,
+            muscle: ex.muscle,
+            sets: ex.sets || 3,
+            minReps: ex.minReps || 8,
+            maxReps: ex.maxReps || 12
+        }));
+        
+        renderTemplateExercises();
+        
+        // Open the creation modal
+        templateCreationModal.style.display = 'flex';
+        templateCreationModal.classList.remove('hidden');
+        
+        // Update the save function to handle editing
+        isEditingTemplate = true;
+        originalTemplateName = template.name;
+    }
+
+    // Add variables to track editing state
+    let isEditingTemplate = false;
+    let originalTemplateName = '';
+
+    // Update the save template function to handle editing
+    function saveTemplateFunc() {
+        const templateName = templateNameInput.value.trim();
+        
+        if (!templateName) {
+            alert('Please enter a template name');
+            return;
+        }
+        
+        if (templateExercises.length === 0) {
+            alert('Please add at least one exercise to the template');
+            return;
+        }
+
+        const newTemplate = {
+            name: templateName,
+            exercises: templateExercises.map(ex => ({
+                name: ex.name,
+                muscle: ex.muscle,
+                sets: ex.sets,
+                minReps: ex.minReps,
+                maxReps: ex.maxReps,
+                weight: 0
+            }))
+        };
+
+        // Save to localStorage
+        let customTemplates = [];
+        try {
+            customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+        } catch (e) {
+            customTemplates = [];
+        }
+
+        if (isEditingTemplate) {
+            // Find and update the existing template
+            const templateIndex = customTemplates.findIndex(t => t.name === originalTemplateName);
+            if (templateIndex !== -1) {
+                customTemplates[templateIndex] = newTemplate;
+            } else {
+                // If not found in custom templates, it might be a built-in template being "edited" as new
+                if (customTemplates.find(t => t.name === templateName) || allTemplates.find(t => t.name === templateName)) {
+                    alert('A template with this name already exists');
+                    return;
+                }
+                customTemplates.push(newTemplate);
+            }
+            
+            // Reset editing state
+            isEditingTemplate = false;
+            originalTemplateName = '';
+        } else {
+            // Check if template name already exists for new templates
+            if (customTemplates.find(t => t.name === templateName) || allTemplates.find(t => t.name === templateName)) {
+                alert('A template with this name already exists');
+                return;
+            }
+            customTemplates.push(newTemplate);
+        }
+
+        localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+
+        alert(isEditingTemplate ? 'Template updated successfully!' : 'Template saved successfully!');
+        closeTemplateCreationModalFunc();
+        
+        // Refresh the page to show the updated template
+        window.location.reload();
+    }
+
+    // Update the close template creation modal function to reset editing state
+    function closeTemplateCreationModalFunc() {
+        templateCreationModal.style.display = 'none';
+        templateCreationModal.classList.add('hidden');
+        templateExercises = [];
+        isEditingTemplate = false;
+        originalTemplateName = '';
+    }
+
+    // Remove the old event listeners and update them
+    // Template deletion event listener (remove this)
+    // if (deleteTemplateBtn) {
+    //     deleteTemplateBtn.addEventListener('click', () => {
+    //         if (currentPreviewTemplate) {
+    //             deleteTemplate(currentPreviewTemplate.name);
+    //         }
+    //     });
+    // }
+
+    // Cancel template preview event listener (remove this)
+    // if (cancelBtn) {
+    //     cancelBtn.addEventListener('click', closeTemplatePreviewModal);
+    // }
 });
