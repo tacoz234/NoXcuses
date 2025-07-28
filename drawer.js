@@ -44,45 +44,22 @@ function closeDrawer() {
 }
 
 function attachDrawerEvents() {
-    document.body.addEventListener('click', function(e) {
-        const startButton = e.target.closest('.template-start-btn, #emptyWorkoutBtn');
-        if (!startButton) return;
-
+    // Only handle empty workout button - completely ignore all template interactions
+    document.getElementById('emptyWorkoutBtn')?.addEventListener('click', function(e) {
         e.preventDefault();
-
-        if (startButton.id === 'emptyWorkoutBtn') {
-            workoutExercises = [];
-            document.querySelector('textarea').value = '';
-            resetStopwatch();
-            
-            const workoutNameEl = document.querySelector('#drawerContent .text-xl.font-bold');
-            if (workoutNameEl) {
-                workoutNameEl.textContent = 'New Workout';
-            }
-            
-            renderWorkoutExercises();
-            openDrawer();
-            setWorkoutActive(true);
-            autoStartStopwatch();
-        } else {
-            const templateItem = startButton.closest('.template-item, .template-card');
-            if (templateItem) {
-                const templateName = templateItem.dataset.template;
-                fetch('templates.json')
-                    .then(res => res.json())
-                    .then(data => {
-                        const allTemplates = Array.isArray(data) ? data : (data.templates || []);
-                        window.allTemplates = allTemplates; // <-- Add this line
-                        const template = allTemplates.find(t => t.name === templateName);
-                        if (template) {
-                            startWorkoutFromTemplate(template);
-                        } else {
-                            console.error('Template not found:', templateName);
-                            alert('Could not start workout. Template data not found.');
-                        }
-                    });
-            }
+        workoutExercises = [];
+        document.querySelector('textarea').value = '';
+        resetStopwatch();
+        
+        const workoutNameEl = document.querySelector('#drawerContent .text-xl.font-bold');
+        if (workoutNameEl) {
+            workoutNameEl.textContent = 'New Workout';
         }
+        
+        renderWorkoutExercises();
+        openDrawer();
+        setWorkoutActive(true);
+        autoStartStopwatch();
     });
 
     drawerTab.addEventListener('click', function() {

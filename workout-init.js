@@ -6,6 +6,118 @@ document.addEventListener('DOMContentLoaded', function() {
     startAutoSave(); // Start auto-saving
     restoreWorkoutState(); // Attempt to restore workout state on load
 
+    // Template Preview Modal functionality
+    let currentPreviewTemplate = null;
+    let allTemplates = []; // Move this to a broader scope
+
+    function openTemplatePreviewModal(template) {
+        console.log('Opening template preview for:', template.name);
+        currentPreviewTemplate = template;
+        const modal = document.getElementById('templatePreviewModal');
+        const title = document.getElementById('templatePreviewTitle');
+        const summary = document.getElementById('templatePreviewSummary');
+        const exercisesList = document.getElementById('templatePreviewExercises');
+        
+        console.log('Modal element found:', !!modal);
+        if (!modal) {
+            console.error('Template preview modal not found');
+            return;
+        }
+        
+        // Set title
+        if (title) title.textContent = template.name;
+        
+        // Set summary
+        const exerciseCount = template.exercises ? template.exercises.length : 0;
+        if (summary) summary.textContent = `${exerciseCount} exercises`;
+        
+        // Render exercises
+        if (exercisesList) {
+            exercisesList.innerHTML = '';
+            if (template.exercises && template.exercises.length > 0) {
+                template.exercises.forEach((exercise, index) => {
+                    const exerciseDiv = document.createElement('div');
+                    exerciseDiv.className = 'bg-gray-700 rounded-lg p-4';
+                    
+                    const sets = exercise.working_sets || 'N/A';
+                    const reps = exercise.reps || 'N/A';
+                    const rest = exercise.rest || 'N/A';
+                    
+                    exerciseDiv.innerHTML = `
+                        <div class="font-medium text-white mb-2">${exercise.name}</div>
+                        <div class="text-sm text-gray-300 space-y-1">
+                            <div><span class="text-gray-400">Sets:</span> ${sets}</div>
+                            <div><span class="text-gray-400">Reps:</span> ${reps}</div>
+                            <div><span class="text-gray-400">Rest:</span> ${rest}</div>
+                            ${exercise.notes ? `<div class="text-xs text-gray-400 mt-2 italic">${exercise.notes}</div>` : ''}
+                        </div>
+                    `;
+                    exercisesList.appendChild(exerciseDiv);
+                });
+            } else {
+                exercisesList.innerHTML = '<div class="text-gray-400 text-center py-4">No exercises in this template</div>';
+            }
+        }
+        
+        // Force show modal with multiple approaches
+        console.log('Before showing modal - classes:', modal.className);
+        console.log('Before showing modal - display:', modal.style.display);
+        
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+        
+        console.log('After showing modal - classes:', modal.className);
+        console.log('After showing modal - display:', modal.style.display);
+        console.log('Modal should now be visible!');
+    }
+
+    function closeTemplatePreviewModal() {
+        const modal = document.getElementById('templatePreviewModal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
+        }
+        
+        currentPreviewTemplate = null;
+    }
+
+    // Set up modal event listeners immediately
+    const closeBtn = document.getElementById('closeTemplatePreviewModal');
+    const cancelBtn = document.getElementById('cancelTemplatePreview');
+    const startBtn = document.getElementById('startTemplateFromPreview');
+    const modal = document.getElementById('templatePreviewModal');
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeTemplatePreviewModal);
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeTemplatePreviewModal);
+    }
+    if (startBtn) {
+        startBtn.addEventListener('click', () => {
+            if (currentPreviewTemplate) {
+                window.allTemplates = allTemplates;
+                startWorkoutFromTemplate(currentPreviewTemplate);
+                closeTemplatePreviewModal();
+            }
+        });
+    }
+    if (modal) {
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'templatePreviewModal') {
+                closeTemplatePreviewModal();
+            }
+        });
+    }
+
+    // Close modal with Escape key
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            closeTemplatePreviewModal();
+        }
+    });
+
     // Load exercises.json
     fetch('exercises.json')
         .then(res => res.json())
@@ -80,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const templates = Array.isArray(data) ? data : (data.templates || []);
         const routines = Array.isArray(data) ? [] : (data.routines || []);
         // Merge built-in and custom templates
-        const allTemplates = templates.concat(customTemplates);
+        allTemplates = templates.concat(customTemplates);
 
         const templatesInRoutines = new Set();
         routines.forEach(routine => {
@@ -108,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors cursor-pointer template-item" data-template="${tplName}">
                                     <div class="font-medium text-sm">${tplName}</div>
                                     <div class="text-xs text-gray-300 mt-1">${exerciseCount} exercises</div>
-                                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold mt-2 template-start-btn">Start</button>
+                                    <div class="text-xs text-blue-400 mt-2 italic">Tap to preview</div>
                                 </div>
                             `;
                         }).join('')}
@@ -116,7 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 const header = routineEl.querySelector('.flex.justify-between');
                 header.onclick = (e) => {
-                    if (e.target.closest('.template-start-btn')) return;
                     const templatesDiv = routineEl.querySelector('.routine-templates');
                     const chevron = routineEl.querySelector('.fa-chevron-down, .fa-chevron-up');
                     templatesDiv.classList.toggle('hidden');
@@ -124,16 +235,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     chevron.classList.toggle('fa-chevron-up');
                 };
                 routineEl.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('template-start-btn')) {
+                    if (e.target.closest('.template-item')) {
+                        // Show preview when clicking anywhere on template
                         e.stopPropagation();
                         const templateName = e.target.closest('.template-item').dataset.template;
                         const template = allTemplates.find(t => t.name === templateName);
                         if (template) {
-                            window.allTemplates = allTemplates;
-                            startWorkoutFromTemplate(template);
-                        } else {
-                            console.error('Template not found:', templateName);
-                            alert('Could not start workout. Template data not found.');
+                            console.log('Template clicked, opening preview:', template.name);
+                            openTemplatePreviewModal(template);
                         }
                     }
                 });
@@ -158,14 +267,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 const card = document.createElement('div');
                 card.className = 'bg-gray-700 rounded-lg p-3 hover:bg-gray-600 transition-colors cursor-pointer template-item';
                 card.innerHTML = `
-                    <div class="font-medium text-sm">${tpl.name}</div>
-                    <div class="text-xs text-gray-300 mt-1">${exerciseCount} exercises</div>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold mt-2 template-start-btn">Start</button>
+                    <div class="font-medium text-sm template-name">${tpl.name}</div>
+                    <div class="text-xs text-gray-300 mt-1 template-count">${exerciseCount} exercises</div>
+                    <div class="text-xs text-blue-400 mt-2 italic">Tap to preview</div>
                 `;
-                card.querySelector('.template-start-btn').onclick = () => startWorkoutFromTemplate(tpl);
+                
+                // Make entire card clickable to open preview
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('Standalone template clicked:', tpl.name);
+                    openTemplatePreviewModal(tpl);
+                });
+                
                 routinelessContainer.appendChild(card);
             });
         }
+
     }).catch(error => {
         console.error('Error loading templates:', error);
         const templateList = document.getElementById('template-list');

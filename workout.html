@@ -74,6 +74,31 @@
         </ul>
     </nav>
 
+    <!-- Template Preview Modal - Moved outside drawer container -->
+    <div id="templatePreviewModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] hidden">
+      <div class="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 text-white relative max-h-[90vh] overflow-hidden">
+        <button id="closeTemplatePreviewModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl z-10">&times;</button>
+        
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-700">
+          <h2 id="templatePreviewTitle" class="text-xl font-bold mb-2"></h2>
+          <div id="templatePreviewSummary" class="text-gray-300 text-sm"></div>
+        </div>
+        
+        <!-- Exercise List -->
+        <div class="p-6 overflow-y-auto max-h-96">
+          <h3 class="text-lg font-semibold mb-4">Exercises</h3>
+          <div id="templatePreviewExercises" class="space-y-4"></div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-6 border-t border-gray-700 flex gap-3">
+          <button id="startTemplateFromPreview" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">Start Workout</button>
+          <button id="cancelTemplatePreview" class="px-6 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <div id="drawerTabContainer" style="display:none;">
     <div id="workoutDrawer" class="fixed inset-0 z-40 flex items-end justify-center transition-opacity duration-300" style="pointer-events: none;">
     <!-- Navbar -->
