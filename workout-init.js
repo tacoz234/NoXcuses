@@ -290,4 +290,198 @@ document.addEventListener('DOMContentLoaded', function() {
             templateList.innerHTML = '<div class="text-red-400 text-center col-span-2">Error loading templates.</div>';
         }
     });
+
+    // Template Creation Modal functionality
+    let templateExercises = [];
+    
+    const createTemplateBtn = document.getElementById('createTemplateBtn');
+    const templateCreationModal = document.getElementById('templateCreationModal');
+    const closeTemplateCreationModal = document.getElementById('closeTemplateCreationModal');
+    const cancelTemplateCreation = document.getElementById('cancelTemplateCreation');
+    const templateNameInput = document.getElementById('templateNameInput');
+    const addExerciseToTemplate = document.getElementById('addExerciseToTemplate');
+    const saveTemplate = document.getElementById('saveTemplate');
+    const templateExercisesList = document.getElementById('templateExercisesList');
+    
+    const templateExerciseModal = document.getElementById('templateExerciseModal');
+    const closeTemplateExerciseModal = document.getElementById('closeTemplateExerciseModal');
+    const templateExerciseSearch = document.getElementById('templateExerciseSearch');
+    const templateExerciseList = document.getElementById('templateExerciseList');
+
+    function openTemplateCreationModal() {
+        templateExercises = [];
+        templateNameInput.value = '';
+        renderTemplateExercises();
+        templateCreationModal.style.display = 'flex';
+        templateCreationModal.classList.remove('hidden');
+    }
+
+    function closeTemplateCreationModalFunc() {
+        templateCreationModal.style.display = 'none';
+        templateCreationModal.classList.add('hidden');
+        templateExercises = [];
+    }
+
+    function renderTemplateExercises() {
+        if (templateExercises.length === 0) {
+            templateExercisesList.innerHTML = `
+                <div class="text-gray-400 text-center py-8">
+                    No exercises added yet. Click "Add Exercise" to get started.
+                </div>
+            `;
+        } else {
+            templateExercisesList.innerHTML = templateExercises.map((exercise, index) => `
+                <div class="bg-gray-700 rounded-lg p-3 flex items-center justify-between">
+                    <div>
+                        <div class="font-medium text-sm">${exercise.name}</div>
+                        <div class="text-xs text-gray-300">${exercise.muscle || 'Unknown muscle'}</div>
+                    </div>
+                    <button class="text-red-400 hover:text-red-300 text-sm" onclick="removeTemplateExercise(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+    }
+
+    function removeTemplateExercise(index) {
+        templateExercises.splice(index, 1);
+        renderTemplateExercises();
+    }
+
+    function openTemplateExerciseModal() {
+        templateExerciseModal.style.display = 'flex';
+        templateExerciseModal.classList.remove('hidden');
+        renderTemplateExerciseList();
+    }
+
+    function closeTemplateExerciseModalFunc() {
+        templateExerciseModal.style.display = 'none';
+        templateExerciseModal.classList.add('hidden');
+    }
+
+    function renderTemplateExerciseList(searchTerm = '') {
+        const filteredExercises = allExercises.filter(ex => 
+            ex.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        templateExerciseList.innerHTML = filteredExercises.map(exercise => `
+            <div class="p-2 border rounded hover:bg-gray-100 cursor-pointer exercise-item" data-exercise='${JSON.stringify(exercise)}'>
+                <div class="font-medium">${exercise.name}</div>
+                <div class="text-sm text-gray-600">${exercise.muscle || 'Unknown muscle'}</div>
+            </div>
+        `).join('');
+
+        // Add click listeners to exercise items
+        templateExerciseList.querySelectorAll('.exercise-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const exercise = JSON.parse(item.dataset.exercise);
+                if (!templateExercises.find(ex => ex.name === exercise.name)) {
+                    templateExercises.push(exercise);
+                    renderTemplateExercises();
+                }
+                closeTemplateExerciseModalFunc();
+            });
+        });
+    }
+
+    function saveTemplateFunc() {
+        const templateName = templateNameInput.value.trim();
+        
+        if (!templateName) {
+            alert('Please enter a template name');
+            return;
+        }
+        
+        if (templateExercises.length === 0) {
+            alert('Please add at least one exercise to the template');
+            return;
+        }
+
+        const newTemplate = {
+            name: templateName,
+            exercises: templateExercises.map(ex => ({
+                name: ex.name,
+                muscle: ex.muscle,
+                sets: 3,
+                reps: 10,
+                weight: 0
+            }))
+        };
+
+        // Save to localStorage
+        let customTemplates = [];
+        try {
+            customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+        } catch (e) {
+            customTemplates = [];
+        }
+
+        // Check if template name already exists
+        if (customTemplates.find(t => t.name === templateName) || allTemplates.find(t => t.name === templateName)) {
+            alert('A template with this name already exists');
+            return;
+        }
+
+        customTemplates.push(newTemplate);
+        localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+
+        alert('Template saved successfully!');
+        closeTemplateCreationModalFunc();
+        
+        // Refresh the page to show the new template
+        window.location.reload();
+    }
+
+    // Event listeners for template creation
+    if (createTemplateBtn) {
+        createTemplateBtn.addEventListener('click', openTemplateCreationModal);
+    }
+    
+    if (closeTemplateCreationModal) {
+        closeTemplateCreationModal.addEventListener('click', closeTemplateCreationModalFunc);
+    }
+    
+    if (cancelTemplateCreation) {
+        cancelTemplateCreation.addEventListener('click', closeTemplateCreationModalFunc);
+    }
+    
+    if (addExerciseToTemplate) {
+        addExerciseToTemplate.addEventListener('click', openTemplateExerciseModal);
+    }
+    
+    if (saveTemplate) {
+        saveTemplate.addEventListener('click', saveTemplateFunc);
+    }
+    
+    if (closeTemplateExerciseModal) {
+        closeTemplateExerciseModal.addEventListener('click', closeTemplateExerciseModalFunc);
+    }
+    
+    if (templateExerciseSearch) {
+        templateExerciseSearch.addEventListener('input', (e) => {
+            renderTemplateExerciseList(e.target.value);
+        });
+    }
+
+    // Close modals when clicking outside
+    if (templateCreationModal) {
+        templateCreationModal.addEventListener('click', (e) => {
+            if (e.target.id === 'templateCreationModal') {
+                closeTemplateCreationModalFunc();
+            }
+        });
+    }
+
+    if (templateExerciseModal) {
+        templateExerciseModal.addEventListener('click', (e) => {
+            if (e.target.id === 'templateExerciseModal') {
+                closeTemplateExerciseModalFunc();
+            }
+        });
+    }
+
+    // Make removeTemplateExercise globally accessible
+    window.removeTemplateExercise = removeTemplateExercise;
+
 });

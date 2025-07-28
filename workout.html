@@ -29,7 +29,7 @@
         <!-- Templates Section -->
         <div class="mb-3 flex items-center justify-between">
             <h2 class="text-lg font-semibold">Templates</h2>
-            <button class="bg-gray-700 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-plus"></i> Template</button>
+            <button id="createTemplateBtn" class="bg-gray-700 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"><i class="fas fa-plus"></i> Template</button>
         </div>
         <div id="routines-list" class="flex flex-col gap-5 mb-5">
             <!-- Routines will be injected here -->
@@ -74,9 +74,55 @@
         </ul>
     </nav>
 
+    <!-- Template Creation Modal -->
+    <div id="templateCreationModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] hidden">
+      <div class="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 text-white relative max-h-[95vh] overflow-hidden">
+        <button id="closeTemplateCreationModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl z-10">&times;</button>
+        
+        <!-- Header -->
+        <div class="p-6 border-b border-gray-700">
+          <h2 class="text-xl font-bold mb-4">Create New Template</h2>
+          <input id="templateNameInput" type="text" placeholder="Template Name" class="w-full p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <!-- Exercise List -->
+        <div class="p-6 overflow-y-auto max-h-[50vh]">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Exercises</h3>
+            <button id="addExerciseToTemplate" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1">
+              <i class="fas fa-plus"></i> Add Exercise
+            </button>
+          </div>
+          <div id="templateExercisesList" class="space-y-3">
+            <div class="text-gray-400 text-center py-8">
+              No exercises added yet. Click "Add Exercise" to get started.
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-6 border-t border-gray-700 flex gap-3">
+          <button id="saveTemplate" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">Save Template</button>
+          <button id="cancelTemplateCreation" class="px-6 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Template Exercise Selection Modal -->
+    <div id="templateExerciseModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[70] hidden">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 text-gray-900 relative max-h-[80vh] overflow-hidden">
+        <button id="closeTemplateExerciseModal" class="absolute top-2 right-3 text-gray-400 hover:text-gray-700 text-2xl z-10">&times;</button>
+        <div class="p-6">
+          <h2 class="text-xl font-semibold mb-4">Add Exercise to Template</h2>
+          <input id="templateExerciseSearch" type="text" placeholder="Search exercises..." class="w-full mb-4 p-2 border rounded">
+          <div id="templateExerciseList" class="max-h-64 overflow-y-auto space-y-2"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Template Preview Modal - Moved outside drawer container -->
     <div id="templatePreviewModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] hidden">
-      <div class="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 text-white relative max-h-[90vh] overflow-hidden">
+      <div class="bg-gray-800 rounded-lg shadow-lg w-full max-w-lg mx-4 text-white relative max-h-[95vh] overflow-hidden">
         <button id="closeTemplatePreviewModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl z-10">&times;</button>
         
         <!-- Header -->
@@ -86,7 +132,7 @@
         </div>
         
         <!-- Exercise List -->
-        <div class="p-6 overflow-y-auto max-h-96">
+        <div class="p-6 overflow-y-auto max-h-[60vh]">
           <h3 class="text-lg font-semibold mb-4">Exercises</h3>
           <div id="templatePreviewExercises" class="space-y-4"></div>
         </div>
