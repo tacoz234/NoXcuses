@@ -581,7 +581,7 @@ function startWorkoutFromTemplate(template) {
             // Deep copy exercise and its sets
             const copiedExercise = {
                 ...exercise,
-                sets: exercise.sets ? exercise.sets.map(set => ({ ...set })) : []
+                sets: Array.isArray(exercise.sets) ? exercise.sets.map(set => ({ ...set })) : []
             };
             addExerciseToWorkout(copiedExercise);
         });
