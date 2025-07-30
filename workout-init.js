@@ -466,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         
         templateExerciseList.innerHTML = filteredExercises.map(exercise => `
-            <div class="p-2 border rounded hover:bg-gray-100 cursor-pointer exercise-item" data-exercise='${JSON.stringify(exercise)}'>
+            <div class="p-2 border rounded hover:bg-gray-100 cursor-pointer exercise-item" data-exercise="${JSON.stringify(exercise).replace(/"/g, '&quot;')}">
                 <div class="font-medium">${exercise.name}</div>
                 <div class="text-sm text-gray-600">${exercise.muscle || 'Unknown muscle'}</div>
             </div>
@@ -766,18 +766,4 @@ document.addEventListener('DOMContentLoaded', function() {
         originalTemplateName = '';
     }
 
-    // Remove the old event listeners and update them
-    // Template deletion event listener (remove this)
-    // if (deleteTemplateBtn) {
-    //     deleteTemplateBtn.addEventListener('click', () => {
-    //         if (currentPreviewTemplate) {
-    //             deleteTemplate(currentPreviewTemplate.name);
-    //         }
-    //     });
-    // }
-
-    // Cancel template preview event listener (remove this)
-    // if (cancelBtn) {
-    //     cancelBtn.addEventListener('click', closeTemplatePreviewModal);
-    // }
 });
