@@ -291,14 +291,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Render Individual Templates in 2-column grid (only templates NOT in routines)
         if (templateList) {
-            // After rendering routines:
-            let routinelessContainer = document.getElementById('routineless-templates');
-            if (!routinelessContainer) {
-                routinelessContainer = document.createElement('div');
-                routinelessContainer.id = 'routineless-templates';
-                routinelessContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 mt-6'; // Make it visible and styled
-                templateList.appendChild(routinelessContainer);
-            }
+            // Clear any existing content first
+            templateList.innerHTML = '';
             
             const standaloneTemplates = allTemplates.filter(tpl => !templatesInRoutines.has(tpl.name));
             standaloneTemplates.forEach((tpl) => {
@@ -318,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     openTemplatePreviewModal(tpl);
                 });
                 
-                routinelessContainer.appendChild(card);
+                templateList.appendChild(card);
             });
         }
 
