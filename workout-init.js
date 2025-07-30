@@ -11,14 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let allTemplates = []; // Move this to a broader scope
 
     function openTemplatePreviewModal(template) {
-        console.log('Opening template preview for:', template.name);
         currentPreviewTemplate = template;
         const modal = document.getElementById('templatePreviewModal');
         const title = document.getElementById('templatePreviewTitle');
         const summary = document.getElementById('templatePreviewSummary');
         const exercisesList = document.getElementById('templatePreviewExercises');
         
-        console.log('Modal element found:', !!modal);
         if (!modal) {
             console.error('Template preview modal not found');
             return;
@@ -99,15 +97,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Force show modal with multiple approaches
-        console.log('Before showing modal - classes:', modal.className);
-        console.log('Before showing modal - display:', modal.style.display);
         
         modal.style.display = 'flex';
         modal.classList.remove('hidden');
         
-        console.log('After showing modal - classes:', modal.className);
-        console.log('After showing modal - display:', modal.style.display);
-        console.log('Modal should now be visible!');
     }
 
     function closeTemplatePreviewModal() {
@@ -280,7 +273,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         const templateName = e.target.closest('.template-item').dataset.template;
                         const template = allTemplates.find(t => t.name === templateName);
                         if (template) {
-                            console.log('Template clicked, opening preview:', template.name);
                             openTemplatePreviewModal(template);
                         }
                     }
@@ -308,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Make entire card clickable to open preview
                 card.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    console.log('Standalone template clicked:', tpl.name);
                     openTemplatePreviewModal(tpl);
                 });
                 

@@ -137,7 +137,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmAddTemplateBtn = document.getElementById('confirmAddTemplateBtn');
     if (confirmAddTemplateBtn) {
         confirmAddTemplateBtn.onclick = function() {
-            console.log('Save Template clicked');
             const name = document.getElementById('addTemplateNameInput').value.trim();
             if (!name) return alert('Please enter a template name.');
             const workout = window._workoutToTemplate;
