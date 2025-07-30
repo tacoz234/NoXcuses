@@ -564,6 +564,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Event listeners for template creation
+    const createRoutineBtn = document.getElementById('createRoutineBtn');
+    
+    if (createRoutineBtn) {
+        createRoutineBtn.addEventListener('click', () => {
+            // Placeholder function - doesn't do anything yet
+            console.log('Routine button clicked - functionality to be implemented');
+        });
+    }
+    
     if (createTemplateBtn) {
         createTemplateBtn.addEventListener('click', openTemplateCreationModal);
     }
