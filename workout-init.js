@@ -1,6 +1,6 @@
 // --- Main Workout Initialization ---
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Initialize core functionality
     attachDrawerEvents();
     setupButtonHandlers();
@@ -19,7 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.templateLoading = templateLoading;
     window.exerciseManagement = exerciseManagement;
 
-    // Load exercises and templates
-    exerciseManagement.loadExercises();
+    // Load exercises first (this is critical for modals to work)
+    await exerciseManagement.loadExercises();
+    
+    // Then load templates
     templateLoading.loadTemplatesAndRoutines();
 });

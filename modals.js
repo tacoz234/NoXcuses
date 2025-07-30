@@ -25,9 +25,23 @@ const exerciseList = document.getElementById('exerciseList');
 function openExerciseModal() {
     exerciseModal.classList.remove('hidden');
     exerciseSearch.value = '';
-    renderExerciseList(allExercises);
+    
+    // Check if exercises are loaded, if not show loading message
+    if (!window.allExercises || window.allExercises.length === 0) {
+        exerciseList.innerHTML = '<div class="text-gray-400 text-center">Loading exercises...</div>';
+        // Try to load exercises if they haven't been loaded yet
+        if (window.exerciseManagement) {
+            window.exerciseManagement.loadExercises().then(() => {
+                renderExerciseList(window.allExercises || []);
+            });
+        }
+    } else {
+        renderExerciseList(window.allExercises);
+    }
+    
     exerciseSearch.focus();
 }
+
 function closeExerciseModal() {
     exerciseModal.classList.add('hidden');
 }
@@ -38,6 +52,11 @@ window.addEventListener('keydown', function(e) {
 
 function renderExerciseList(exercises) {
     exerciseList.innerHTML = '';
+    if (!exercises || exercises.length === 0) {
+        exerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
+        return;
+    }
+    
     exercises.forEach(ex => {
         const div = document.createElement('div');
         div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100';
@@ -48,14 +67,12 @@ function renderExerciseList(exercises) {
         };
         exerciseList.appendChild(div);
     });
-    if (exercises.length === 0) {
-        exerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
-    }
 }
 
 exerciseSearch.addEventListener('input', function() {
     const val = exerciseSearch.value.toLowerCase();
-    renderExerciseList(allExercises.filter(ex => ex.name.toLowerCase().includes(val)));
+    const exercises = window.allExercises || [];
+    renderExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
 });
 
 // Replace Exercise Modal
@@ -68,9 +85,22 @@ function openReplaceExerciseModal(idx) {
     replaceExerciseIdx = idx;
     replaceExerciseModal.classList.remove('hidden');
     replaceExerciseSearch.value = '';
-    renderReplaceExerciseList(allExercises);
+    
+    // Check if exercises are loaded
+    if (!window.allExercises || window.allExercises.length === 0) {
+        replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">Loading exercises...</div>';
+        if (window.exerciseManagement) {
+            window.exerciseManagement.loadExercises().then(() => {
+                renderReplaceExerciseList(window.allExercises || []);
+            });
+        }
+    } else {
+        renderReplaceExerciseList(window.allExercises);
+    }
+    
     replaceExerciseSearch.focus();
 }
+
 function closeReplaceExerciseModal() {
     replaceExerciseModal.classList.add('hidden');
     replaceExerciseIdx = null;
@@ -81,11 +111,17 @@ window.addEventListener('keydown', function(e) {
 });
 replaceExerciseSearch.addEventListener('input', function() {
     const val = replaceExerciseSearch.value.toLowerCase();
-    renderReplaceExerciseList(allExercises.filter(ex => ex.name.toLowerCase().includes(val)));
+    const exercises = window.allExercises || [];
+    renderReplaceExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
 });
 
 function renderReplaceExerciseList(exercises) {
     replaceExerciseList.innerHTML = '';
+    if (!exercises || exercises.length === 0) {
+        replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
+        return;
+    }
+    
     exercises.forEach(ex => {
         const div = document.createElement('div');
         div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100 mb-1 text-black';
@@ -116,7 +152,4 @@ function renderReplaceExerciseList(exercises) {
         };
         replaceExerciseList.appendChild(div);
     });
-    if (exercises.length === 0) {
-        replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
-    }
 }
