@@ -39,10 +39,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     const exerciseDiv = document.createElement('div');
                     exerciseDiv.className = 'bg-gray-700 rounded-lg p-4';
                     
-                    // Handle both old and new template formats
+                    // Check if this exercise has actual workout data (sets with weight/reps)
+                    const hasActualSets = exercise.sets && Array.isArray(exercise.sets) && 
+                                         exercise.sets.length > 0 && 
+                                         exercise.sets.some(set => set.weight !== undefined || set.reps !== undefined);
+                    
                     let setsDisplay, repsDisplay, restDisplay;
                     
-                    if (exercise.sets && (exercise.minReps || exercise.maxReps)) {
+                    if (hasActualSets) {
+                        // For templates saved from history, show actual data in template format
+                        const completedSets = exercise.sets.filter(set => set.completed);
+                        setsDisplay = completedSets.length || exercise.sets.length;
+                        
+                        // Get rep range from actual sets
+                        const repsValues = exercise.sets
+                            .filter(set => set.reps && set.reps > 0)
+                            .map(set => parseInt(set.reps));
+                        
+                        if (repsValues.length > 0) {
+                            const minReps = Math.min(...repsValues);
+                            const maxReps = Math.max(...repsValues);
+                            repsDisplay = minReps === maxReps ? `${minReps}` : `${minReps}-${maxReps}`;
+                        } else {
+                            repsDisplay = '8-12'; // fallback
+                        }
+                        
+                        restDisplay = exercise.rest || '60-90s';
+                    } else if (exercise.sets && (exercise.minReps || exercise.maxReps)) {
                         // New format with sets and rep ranges
                         setsDisplay = exercise.sets;
                         if (exercise.minReps === exercise.maxReps) {
