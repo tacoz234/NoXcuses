@@ -61,7 +61,9 @@ function restoreRestTimerState() {
                                 restTimerDisplay.textContent = formatTime(restTimeSeconds);
                                 saveRestTimerState(); // Save state on each tick
                                 
+                                // Update the first timer completion location (around line 64)
                                 if (restTimeSeconds <= 0) {
+                                    showRestTimerFinishedAlert();
                                     stopRestTimer();
                                     restTimerContainer.classList.add('hidden');
                                 }
@@ -88,6 +90,33 @@ function parseRestTime(restString) {
         return parseInt(match[1]) * 60; // Use the lower end of the range in seconds
     }
     return DEFAULT_REST_TIME; // Fallback to default
+}
+
+function showRestTimerFinishedAlert() {
+    // Play a notification sound
+    try {
+        // Create an audio context and play a beep sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800 Hz tone
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+        console.log('Audio not supported or failed:', error);
+    }
+    
+    // Show alert popup
+    showAlert('Rest timer finished! Time for your next set.', 'Rest Complete');
 }
 
 // --- Workout History ---
@@ -451,7 +480,9 @@ function renderWorkoutExercises() {
             timerDisplayEl.textContent = formatTime(restTimeSeconds);
             saveRestTimerState(); // Save state on each tick
             
+            // Update the second timer completion location (around line 454)
             if (restTimeSeconds <= 0) {
+                showRestTimerFinishedAlert();
                 stopRestTimer();
                 containerEl.classList.add('hidden');
             }
@@ -708,6 +739,20 @@ function getLastWorkoutSet(exerciseName, setIndex) {
         }
     }
     return '-';
+}
+
+// Update the timer completion logic in both locations
+if (restTimeSeconds <= 0) {
+    showRestTimerFinishedAlert();
+    stopRestTimer();
+    restTimerContainer.classList.add('hidden');
+}
+
+// Update the timer completion logic in both locations
+if (restTimeSeconds <= 0) {
+    showRestTimerFinishedAlert();
+    stopRestTimer();
+    containerEl.classList.add('hidden');
 }
 
  
