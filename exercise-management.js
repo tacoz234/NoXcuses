@@ -74,7 +74,7 @@ class ExerciseManagement {
             if (editBtn) {
                 e.stopPropagation();
                 const idx = +editBtn.dataset.idx;
-                alert(`Edit exercise at index: ${idx} (functionality to be implemented)`);
+                showAlert(`Edit exercise at index: ${idx} (functionality to be implemented)`, 'Sorry!');
             }
         });
     }

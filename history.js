@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (confirmAddTemplateBtn) {
         confirmAddTemplateBtn.onclick = function() {
             const name = document.getElementById('addTemplateNameInput').value.trim();
-            if (!name) return alert('Please enter a template name.');
+            if (!name) return showAlert('Please enter a template name.', 'Error');
             const workout = window._workoutToTemplate;
             if (!workout) return;
             // Always store weights in lbs
@@ -157,9 +157,9 @@ document.addEventListener('DOMContentLoaded', function() {
             customTemplates.push({ name, exercises });
             localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
             document.getElementById('addTemplateModal').classList.add('hidden');
-            alert('Template saved!');
+            showAlert('Template saved!', 'Success!');
         };
     } else {
-        console.error('Save Template button not found in DOM');
+        showAlert('Save Template button not found in DOM');
     }
 });

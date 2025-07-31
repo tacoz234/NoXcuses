@@ -196,32 +196,40 @@ class TemplatePreview {
     }
 
     deleteTemplate(templateName) {
-        if (!confirm(`Are you sure you want to delete the template "${templateName}"? This action cannot be undone.`)) {
-            return;
-        }
+        showConfirm(
+            `Are you sure you want to delete the template "${templateName}"? This action cannot be undone.`,
+            'Delete Template',
+            () => {
+                // User confirmed deletion
+                // Only allow deletion of custom templates
+                let customTemplates = [];
+                try {
+                    customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+                } catch (e) {
+                    customTemplates = [];
+                }
 
-        // Only allow deletion of custom templates
-        let customTemplates = [];
-        try {
-            customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
-        } catch (e) {
-            customTemplates = [];
-        }
+                const templateIndex = customTemplates.findIndex(t => t.name === templateName);
+                if (templateIndex === -1) {
+                    showAlert('This template cannot be deleted (it may be a built-in template)');
+                    return;
+                }
 
-        const templateIndex = customTemplates.findIndex(t => t.name === templateName);
-        if (templateIndex === -1) {
-            alert('This template cannot be deleted (it may be a built-in template)');
-            return;
-        }
+                customTemplates.splice(templateIndex, 1);
+                localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
 
-        customTemplates.splice(templateIndex, 1);
-        localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
-
-        alert('Template deleted successfully!');
-        this.closeTemplatePreviewModal();
-        
-        // Refresh the page to update the template list
-        window.location.reload();
+                showAlert('Template deleted successfully!', 'Success');
+                this.closeTemplatePreviewModal();
+                
+                // Delay the page refresh to allow the alert to be seen
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000); // Wait 2 seconds before refreshing
+            },
+            () => {
+                // User cancelled deletion - do nothing
+            }
+        );
     }
 
     getCurrentPreviewTemplate() {

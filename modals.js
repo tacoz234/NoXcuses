@@ -153,3 +153,166 @@ function renderReplaceExerciseList(exercises) {
         replaceExerciseList.appendChild(div);
     });
 }
+
+// --- Alert Modal ---
+function showAlert(message, title = 'Alert', autoCloseSeconds = 3) {
+    
+    // Remove any existing alert
+    const existing = document.getElementById('simpleAlert');
+    if (existing) {
+        existing.remove();
+    }
+    
+    // Create a simple alert div that matches your app's style
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'simpleAlert';
+    alertDiv.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: #374151;
+            padding: 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            z-index: 999999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+            min-width: 300px;
+            max-width: 400px;
+            font-family: Arial, sans-serif;
+        ">
+            <div style="margin-bottom: 8px; font-size: 18px; font-weight: 600; color: #1f2937;">${title}</div>
+            <div style="color: #4b5563;">${message}</div>
+        </div>
+    `;
+    
+    // Add to page immediately
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after time
+    setTimeout(() => {
+        if (alertDiv.parentElement) {
+            alertDiv.remove();
+        }
+    }, autoCloseSeconds * 1000);
+    
+    return alertDiv;
+}
+
+// Don't override window.alert to avoid conflicts
+
+// --- Confirm Modal ---
+function showConfirm(message, title = 'Confirm', onConfirm = () => {}, onCancel = () => {}) {
+    
+    // Remove any existing confirm dialog
+    const existing = document.getElementById('simpleConfirm');
+    if (existing) {
+        existing.remove();
+    }
+    
+    // Create a simple confirm dialog that matches your app's style
+    const confirmDiv = document.createElement('div');
+    confirmDiv.id = 'simpleConfirm';
+    confirmDiv.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <div style="
+                background: #1f2937;
+                color: white;
+                padding: 24px;
+                border-radius: 12px;
+                font-size: 16px;
+                z-index: 1000000;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                text-align: center;
+                min-width: 300px;
+                max-width: 400px;
+                font-family: Arial, sans-serif;
+            ">
+                <div style="margin-bottom: 8px; font-size: 18px; font-weight: 600; color: white;">${title}</div>
+                <div style="color: #d1d5db; margin-bottom: 20px; line-height: 1.5;">${message}</div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="confirmCancel" style="
+                        background: #374151;
+                        color: white;
+                        border: 1px solid #4b5563;
+                        padding: 8px 16px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        transition: background-color 0.2s;
+                    ">Cancel</button>
+                    <button id="confirmOK" style="
+                        background: #dc2626;
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        transition: background-color 0.2s;
+                    ">OK</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add to page immediately
+    document.body.appendChild(confirmDiv);
+    
+    // Add event listeners
+    const cancelBtn = confirmDiv.querySelector('#confirmCancel');
+    const okBtn = confirmDiv.querySelector('#confirmOK');
+    
+    function cleanup() {
+        if (confirmDiv.parentElement) {
+            confirmDiv.remove();
+        }
+    }
+    
+    cancelBtn.addEventListener('click', () => {
+        cleanup();
+        onCancel();
+    });
+    
+    okBtn.addEventListener('click', () => {
+        cleanup();
+        onConfirm();
+    });
+    
+    // Close on overlay click
+    confirmDiv.addEventListener('click', (e) => {
+        if (e.target === confirmDiv) {
+            cleanup();
+            onCancel();
+        }
+    });
+    
+    // Close on Escape key
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+            cleanup();
+            onCancel();
+            document.removeEventListener('keydown', escapeHandler);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+    
+    return confirmDiv;
+}

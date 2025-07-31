@@ -76,7 +76,7 @@ saveSettingsBtn.addEventListener('click', function() {
     localStorage.setItem('userData', JSON.stringify(userData));
     
     // Show success message
-    alert('Settings saved successfully!');
+    showAlert('Settings saved successfully!', 'Success');
     
     // Redirect back to account page
     window.location.href = 'account.html';

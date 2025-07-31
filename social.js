@@ -95,7 +95,7 @@
             `).join('');
             templateListContainer.querySelectorAll('.template-item').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    alert(`Sharing template: ${e.target.dataset.templateName}`);
+                    showAlert(`Sharing template: ${e.target.dataset.templateName}`, 'Success');
                     templateShareModal.classList.add('hidden');
                 });
             });
@@ -119,7 +119,7 @@
         `).join('');
         workoutListContainer.querySelectorAll('.workout-item').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                alert(`Sharing workout from: ${e.target.dataset.workoutDate}`);
+                showAlert(`Sharing workout from: ${e.target.dataset.workoutDate}`, 'Success');
                 workoutShareModal.classList.add('hidden');
             });
         });
@@ -143,7 +143,7 @@
             `).join('');
             playlistListContainer.querySelectorAll('.playlist-item').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    alert(`Sharing playlist: ${e.target.dataset.playlistName}`);
+                    showAlert(`Sharing playlist: ${e.target.dataset.playlistName}`, 'Success');
                     playlistShareModal.classList.add('hidden');
                 });
             });
@@ -182,7 +182,7 @@
         if (videoFile) {
             message += ` with video: ${videoFile.name}`;
         }
-        alert(message);
+        showAlert(message, 'Success');
         prShareModal.classList.add('hidden');
     });
 })();

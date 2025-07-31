@@ -120,13 +120,20 @@ function setupButtonHandlers() {
         finishBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            showConfirm('Finish and save this workout?', function() {
-                stopStopwatch();
-                saveWorkoutToHistory();
-                setWorkoutActive(false);
-                closeDrawer();
-                resetStopwatch();
-            });
+            showConfirm(
+                'Finish and save this workout?',
+                'Finish Workout',
+                function() {
+                    stopStopwatch();
+                    saveWorkoutToHistory();
+                    setWorkoutActive(false);
+                    closeDrawer();
+                    resetStopwatch();
+                },
+                function() {
+                    // User cancelled - do nothing
+                }
+            );
         });
     }
     const cancelBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'Cancel Workout');
@@ -134,11 +141,18 @@ function setupButtonHandlers() {
         cancelBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            showConfirm('Cancel and erase this workout?', function() {
-                resetStopwatch();
-                setWorkoutActive(false);
-                closeDrawer();
-            });
+            showConfirm(
+                'Cancel and erase this workout?',
+                'Cancel Workout',
+                function() {
+                    resetStopwatch();
+                    setWorkoutActive(false);
+                    closeDrawer();
+                },
+                function() {
+                    // User cancelled - do nothing
+                }
+            );
         });
     }
 }

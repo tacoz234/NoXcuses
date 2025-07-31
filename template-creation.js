@@ -131,12 +131,12 @@ class TemplateCreation {
         const maxReps = parseInt(configMaxReps.value);
         
         if (sets < 1 || minReps < 1 || maxReps < 1) {
-            alert('Please enter valid numbers for sets and reps');
+            showAlert('Please enter valid numbers for sets and reps', 'Error');
             return;
         }
         
         if (minReps > maxReps) {
-            alert('Minimum reps cannot be greater than maximum reps');
+            showAlert('Minimum reps cannot be greater than maximum reps', 'Error');
             return;
         }
 
@@ -178,7 +178,7 @@ class TemplateCreation {
                 if (!this.templateExercises.find(ex => ex.name === exercise.name)) {
                     this.openExerciseConfigModal(exercise);
                 } else {
-                    alert('This exercise is already in your template');
+                    showAlert('This exercise is already in your template', 'Error');
                 }
             });
         });
@@ -189,12 +189,12 @@ class TemplateCreation {
         const templateName = templateNameInput ? templateNameInput.value.trim() : '';
         
         if (!templateName) {
-            alert('Please enter a template name');
+            showAlert('Please enter a template name', 'Error');
             return;
         }
         
         if (this.templateExercises.length === 0) {
-            alert('Please add at least one exercise to the template');
+            showAlert('Please add at least one exercise to the template', 'Error');
             return;
         }
 
@@ -226,7 +226,7 @@ class TemplateCreation {
             } else {
                 // If not found in custom templates, it might be a built-in template being "edited" as new
                 if (customTemplates.find(t => t.name === templateName) || (window.templatePreview && window.templatePreview.allTemplates.find(t => t.name === templateName))) {
-                    alert('A template with this name already exists');
+                    showAlert('A template with this name already exists', 'Error');
                     return;
                 }
                 customTemplates.push(newTemplate);
@@ -238,7 +238,7 @@ class TemplateCreation {
         } else {
             // Check if template name already exists for new templates
             if (customTemplates.find(t => t.name === templateName) || (window.templatePreview && window.templatePreview.allTemplates.find(t => t.name === templateName))) {
-                alert('A template with this name already exists');
+                showAlert('A template with this name already exists', 'Error');
                 return;
             }
             customTemplates.push(newTemplate);
@@ -246,11 +246,12 @@ class TemplateCreation {
 
         localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
 
-        alert(this.isEditingTemplate ? 'Template updated successfully!' : 'Template saved successfully!');
+        showAlert(this.isEditingTemplate ? 'Template updated successfully!' : 'Template saved successfully!', 'Success!');
         this.closeTemplateCreationModal();
         
-        // Refresh the page to show the updated template
-        window.location.reload();
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
     }
 
     editTemplate(template) {
