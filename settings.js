@@ -78,6 +78,7 @@ saveSettingsBtn.addEventListener('click', function() {
     // Show success message
     showAlert('Settings saved successfully!', 'Success');
     
+    
     // Redirect back to account page
     window.location.href = 'account.html';
 });
