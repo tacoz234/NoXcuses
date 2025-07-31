@@ -8,6 +8,7 @@ const DEFAULT_REST_TIME = 60; // Default rest time in seconds
 let activeRestTimer = null; // Store active timer info for persistence
 let restTimerInterval = null;
 let restTimeSeconds = 0;
+let initialRestTimeSeconds = 0; // Track initial timer duration for progress calculation
 
 function saveRestTimerState() {
     if (activeRestTimer) {
@@ -302,6 +303,9 @@ function renderWorkoutExercises() {
                                 <div class="rest-timer-display text-lg font-bold text-blue-400 cursor-pointer hover:text-blue-500">00:00</div>
                                 <button class="increase-time-btn bg-gray-600 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded-lg">+10s</button>
                             </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div class="rest-timer-progress bg-blue-500 h-2 rounded-full transition-all duration-1000 ease-linear" style="width: 100%"></div>
+                            </div>
                         </div>
                     </div>
                 `}).join('')}
@@ -453,10 +457,28 @@ function renderWorkoutExercises() {
     function adjustRestTime(seconds) {
         if (restTimerInterval) {
             restTimeSeconds = Math.max(0, restTimeSeconds + seconds);
+            
+            // Update the total duration when time is adjusted
+            initialRestTimeSeconds = Math.max(initialRestTimeSeconds + seconds, restTimeSeconds);
+            
             const displays = document.querySelectorAll('.rest-timer-display');
+            const progressBars = document.querySelectorAll('.rest-timer-progress');
+            
             displays.forEach(display => {
                 display.textContent = formatTime(restTimeSeconds);
             });
+            
+            // Update progress bar with new total duration
+            progressBars.forEach(progressBar => {
+                const progressPercentage = initialRestTimeSeconds > 0 ? (restTimeSeconds / initialRestTimeSeconds) * 100 : 0;
+                progressBar.style.width = `${Math.max(0, progressPercentage)}%`;
+            });
+            
+            // Update the stored initial duration in activeRestTimer
+            if (activeRestTimer) {
+                activeRestTimer.initialDuration = initialRestTimeSeconds;
+            }
+            
             saveRestTimerState(); // Save state when time is adjusted
         }
     }
@@ -464,30 +486,45 @@ function renderWorkoutExercises() {
     function startRestTimer(timerDisplayEl, containerEl, exercise, exerciseIndex, setIndex) {
         stopRestTimer();
         restTimeSeconds = exercise.rest ? parseRestTime(exercise.rest) : DEFAULT_REST_TIME;
+        initialRestTimeSeconds = restTimeSeconds; // Store initial duration for progress calculation
+        
         timerDisplayEl.textContent = formatTime(restTimeSeconds);
         containerEl.classList.remove('hidden');
+
+        // Initialize progress bar to 100%
+        const progressBar = containerEl.querySelector('.rest-timer-progress');
+        if (progressBar) {
+            progressBar.style.width = '100%';
+        }
 
         // Store active timer info for persistence
         activeRestTimer = {
             exerciseIndex: exerciseIndex,
             setIndex: setIndex,
             timerDisplay: timerDisplayEl,
-            timerContainer: containerEl
+            timerContainer: containerEl,
+            initialDuration: initialRestTimeSeconds
         };
 
         restTimerInterval = setInterval(() => {
             restTimeSeconds--;
             timerDisplayEl.textContent = formatTime(restTimeSeconds);
+            
+            // Update progress bar
+            if (progressBar && initialRestTimeSeconds > 0) {
+                const progressPercentage = (restTimeSeconds / initialRestTimeSeconds) * 100;
+                progressBar.style.width = `${Math.max(0, progressPercentage)}%`;
+            }
+            
             saveRestTimerState(); // Save state on each tick
             
-            // Update the second timer completion location (around line 454)
             if (restTimeSeconds <= 0) {
                 showRestTimerFinishedAlert();
                 stopRestTimer();
                 containerEl.classList.add('hidden');
             }
         }, 1000);
-        
+    
         saveRestTimerState(); // Save initial state
     }
 
