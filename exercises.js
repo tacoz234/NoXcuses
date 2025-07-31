@@ -16,112 +16,197 @@
                 .replace('EXERCISES_ACTIVE', page==='EXERCISES' ? 'text-blue-500' : 'text-gray-400')
                 .replace('SOCIAL_ACTIVE', page==='SOCIAL' ? 'text-blue-500' : 'text-gray-400');
         })();
+
 let allExercises = [];
-        let exerciseHistory = {}; // For demo, could be loaded from localStorage
-        // After fetching exercises.json
-        fetch('exercises.json')
-            .then(res => res.json())
-            .then(exercises => {
-                // Load custom exercises from localStorage
-                let customExercises = [];
-                try {
-                    customExercises = JSON.parse(localStorage.getItem('customExercises')) || [];
-                } catch (e) {}
-                allExercises = exercises.concat(customExercises).sort((a, b) => a.name.localeCompare(b.name));
-                renderExerciseList(allExercises);
-                renderAlphaSlider(allExercises);
-            });
+let filteredExercises = [];
+let exerciseHistory = {}; // For demo, could be loaded from localStorage
 
-        // In your create exercise logic:
-        document.getElementById('new-exercise-form').onsubmit = function(e) {
-            e.preventDefault();
-            const name = document.getElementById('new-ex-name').value.trim();
-            const notes = document.getElementById('new-ex-notes').value.trim();
-            const video = document.getElementById('new-ex-video').value.trim();
-            const image = document.getElementById('new-ex-image').value.trim();
-            if (!name) return;
-            const newEx = { name };
-            if (notes) newEx.notes = notes;
-            if (video) newEx.video = video;
-            if (image) newEx.image = image;
-            // Save to localStorage
-            let customExercises = [];
-            try {
-                customExercises = JSON.parse(localStorage.getItem('customExercises')) || [];
-            } catch (e) {}
-            customExercises.push(newEx);
-            localStorage.setItem('customExercises', JSON.stringify(customExercises));
-            allExercises.push(newEx);
-            renderExerciseList(allExercises);
-            renderAlphaSlider(allExercises);
-            document.getElementById('new-exercise-modal').classList.add('hidden');
+// Search functionality
+const searchBtn = document.getElementById('search-btn');
+const searchContainer = document.getElementById('search-container');
+const exerciseSearch = document.getElementById('exercise-search');
+const clearSearchBtn = document.getElementById('clear-search');
+
+searchBtn.onclick = function() {
+    searchContainer.classList.toggle('hidden');
+    if (!searchContainer.classList.contains('hidden')) {
+        exerciseSearch.focus();
+        // Adjust main content padding when search is visible
+        document.querySelector('main').style.paddingTop = '8rem';
+    } else {
+        // Reset main content padding when search is hidden
+        document.querySelector('main').style.paddingTop = '5rem';
+        exerciseSearch.value = '';
+        filteredExercises = allExercises;
+        renderExerciseList(filteredExercises);
+        renderAlphaSlider(filteredExercises);
+    }
+};
+
+exerciseSearch.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    if (searchTerm === '') {
+        filteredExercises = allExercises;
+    } else {
+        filteredExercises = allExercises.filter(exercise => 
+            exercise.name.toLowerCase().includes(searchTerm)
+        );
+    }
+    renderExerciseList(filteredExercises);
+    renderAlphaSlider(filteredExercises);
+});
+
+clearSearchBtn.onclick = function() {
+    exerciseSearch.value = '';
+    filteredExercises = allExercises;
+    renderExerciseList(filteredExercises);
+    renderAlphaSlider(filteredExercises);
+    exerciseSearch.focus();
+};
+
+// Close search when clicking outside
+document.addEventListener('click', function(e) {
+    if (!searchContainer.contains(e.target) && !searchBtn.contains(e.target)) {
+        if (!searchContainer.classList.contains('hidden') && exerciseSearch.value === '') {
+            searchContainer.classList.add('hidden');
+            document.querySelector('main').style.paddingTop = '5rem';
+        }
+    }
+});
+
+// After fetching exercises.json
+fetch('exercises.json')
+    .then(res => res.json())
+    .then(exercises => {
+        // Load custom exercises from localStorage
+        let customExercises = [];
+        try {
+            customExercises = JSON.parse(localStorage.getItem('customExercises')) || [];
+        } catch (e) {}
+        allExercises = exercises.concat(customExercises).sort((a, b) => a.name.localeCompare(b.name));
+        filteredExercises = allExercises;
+        renderExerciseList(filteredExercises);
+        renderAlphaSlider(filteredExercises);
+    });
+
+// In your create exercise logic:
+document.getElementById('new-exercise-form').onsubmit = function(e) {
+    e.preventDefault();
+    const name = document.getElementById('new-ex-name').value.trim();
+    const notes = document.getElementById('new-ex-notes').value.trim();
+    const video = document.getElementById('new-ex-video').value.trim();
+    const image = document.getElementById('new-ex-image').value.trim();
+    if (!name) return;
+    const newEx = { name };
+    if (notes) newEx.notes = notes;
+    if (video) newEx.video = video;
+    if (image) newEx.image = image;
+    // Save to localStorage
+    let customExercises = [];
+    try {
+        customExercises = JSON.parse(localStorage.getItem('customExercises')) || [];
+    } catch (e) {}
+    customExercises.push(newEx);
+    localStorage.setItem('customExercises', JSON.stringify(customExercises));
+    allExercises.push(newEx);
+    allExercises.sort((a, b) => a.name.localeCompare(b.name));
+    filteredExercises = allExercises;
+    renderExerciseList(filteredExercises);
+    renderAlphaSlider(filteredExercises);
+    document.getElementById('new-exercise-modal').classList.add('hidden');
+    document.getElementById('new-exercise-form').reset();
+};
+document.getElementById('add-exercise-btn').onclick = function() {
+    document.getElementById('new-exercise-modal').classList.remove('hidden');
+};
+
+// Add close button functionality for new exercise modal
+document.getElementById('close-new-exercise-modal').onclick = function() {
+    document.getElementById('new-exercise-modal').classList.add('hidden');
+    document.getElementById('new-exercise-form').reset();
+};
+
+// Also close modal when clicking outside of it
+document.getElementById('new-exercise-modal').onclick = function(e) {
+    if (e.target === this) {
+        document.getElementById('new-exercise-modal').classList.add('hidden');
+        document.getElementById('new-exercise-form').reset();
+    }
+};
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('new-exercise-modal');
+        if (!modal.classList.contains('hidden')) {
+            modal.classList.add('hidden');
             document.getElementById('new-exercise-form').reset();
-        };
-        document.getElementById('add-exercise-btn').onclick = function() {
-            document.getElementById('new-exercise-modal').classList.remove('hidden');
-        };
-        function renderExerciseList(exercises) {
-            const list = document.getElementById('exercise-list');
-            list.innerHTML = '';
-            let lastLetter = '';
-            exercises.forEach((ex, idx) => {
-                const firstLetter = ex.name[0].toUpperCase();
-                if (firstLetter !== lastLetter) {
-                    list.insertAdjacentHTML('beforeend', `<div id="letter-${firstLetter}" class="text-xs font-bold text-gray-400 mt-3 mb-1">${firstLetter}</div>`);
-                    lastLetter = firstLetter;
-                }
-                const div = document.createElement('div');
-                div.className = "bg-white rounded-lg shadow p-3 text-gray-900 cursor-pointer hover:bg-blue-50 transition";
-                div.textContent = ex.name;
-                div.onclick = () => openExerciseModal(ex);
-                list.appendChild(div);
-            });
         }
+    }
+});
 
-        function renderAlphaSlider(exercises) {
-            const slider = document.getElementById('alpha-slider');
-            slider.innerHTML = '';
-            const letters = Array.from(new Set(exercises.map(e => e.name[0].toUpperCase())));
-            letters.forEach(letter => {
-                const btn = document.createElement('div');
-                btn.className = 'text-xs font-bold text-gray-300 hover:text-blue-400 cursor-pointer px-1 py-0.5';
-                btn.textContent = letter;
-                btn.onclick = () => {
-                    const el = document.getElementById('letter-' + letter);
-                    if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'});
-                };
-                slider.appendChild(btn);
-            });
+function renderExerciseList(exercises) {
+    const list = document.getElementById('exercise-list');
+    list.innerHTML = '';
+    let lastLetter = '';
+    exercises.forEach((ex, idx) => {
+        const firstLetter = ex.name[0].toUpperCase();
+        if (firstLetter !== lastLetter) {
+            list.insertAdjacentHTML('beforeend', `<div id="letter-${firstLetter}" class="text-xs font-bold text-gray-400 mt-3 mb-1">${firstLetter}</div>`);
+            lastLetter = firstLetter;
         }
+        const div = document.createElement('div');
+        div.className = "bg-white rounded-lg shadow p-3 text-gray-900 cursor-pointer hover:bg-blue-50 transition";
+        div.textContent = ex.name;
+        div.onclick = () => openExerciseModal(ex);
+        list.appendChild(div);
+    });
+}
 
-        // Modal logic
-        const modal = document.getElementById('exercise-modal');
-        const closeModalBtn = document.getElementById('close-exercise-modal');
-        const modalExName = document.getElementById('modal-ex-name');
-        const modalTabContent = document.getElementById('modal-tab-content');
-        let currentExercise = null;
+function renderAlphaSlider(exercises) {
+    const slider = document.getElementById('alpha-slider');
+    slider.innerHTML = '';
+    const letters = Array.from(new Set(exercises.map(e => e.name[0].toUpperCase())));
+    letters.forEach(letter => {
+        const btn = document.createElement('div');
+        btn.className = 'text-xs font-bold text-gray-300 hover:text-blue-400 cursor-pointer px-1 py-0.5';
+        btn.textContent = letter;
+        btn.onclick = () => {
+            const el = document.getElementById('letter-' + letter);
+            if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'});
+        };
+        slider.appendChild(btn);
+    });
+}
 
-        function openExerciseModal(ex) {
-            currentExercise = ex;
-            modalExName.textContent = ex.name;
-            
-            // Handle video/image button visibility and setup
-            const mediaBtn = document.getElementById('toggle-video');
-            const videoContainer = document.getElementById('video-container');
-            const videoFrame = document.getElementById('exercise-video');
-            const imageContainer = document.createElement('div');
-            imageContainer.id = 'image-container';
-            imageContainer.className = 'hidden mb-4';
-            
-            if (ex.video || ex.image) {
-                mediaBtn.classList.remove('hidden');
-                mediaBtn.innerHTML = `<i class="fas ${ex.video ? 'fa-play' : 'fa-image'} mr-2"></i>${ex.video ? 'Watch Demo' : 'View Form'}`;
-                
-                mediaBtn.onclick = () => {
-                    if (ex.video) {
-                        // Handle video
-                        videoContainer.classList.remove('hidden');
-                        if (imageContainer) imageContainer.classList.add('hidden');
+// Modal logic
+const modal = document.getElementById('exercise-modal');
+const closeModalBtn = document.getElementById('close-exercise-modal');
+const modalExName = document.getElementById('modal-ex-name');
+const modalTabContent = document.getElementById('modal-tab-content');
+let currentExercise = null;
+
+function openExerciseModal(ex) {
+    currentExercise = ex;
+    modalExName.textContent = ex.name;
+    
+    // Handle video/image button visibility and setup
+    const mediaBtn = document.getElementById('toggle-video');
+    const videoContainer = document.getElementById('video-container');
+    const videoFrame = document.getElementById('exercise-video');
+    const imageContainer = document.createElement('div');
+    imageContainer.id = 'image-container';
+    imageContainer.className = 'hidden mb-4';
+    
+    if (ex.video || ex.image) {
+        mediaBtn.classList.remove('hidden');
+        mediaBtn.innerHTML = `<i class="fas ${ex.video ? 'fa-play' : 'fa-image'} mr-2"></i>${ex.video ? 'Watch Demo' : 'View Form'}`;
+        
+        mediaBtn.onclick = () => {
+            if (ex.video) {
+                // Handle video
+                videoContainer.classList.remove('hidden');
+                if (imageContainer) imageContainer.classList.add('hidden');
                         
                         let videoId;
                         if (ex.video.includes('youtu.be')) {
