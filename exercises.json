@@ -1,560 +1,669 @@
+
 [
   {
     "name": "Ab Wheel Rollout (Bodyweight)",
     "notes": "Don't just bend at your hips, use your abs to lower yourself down under control and pull yourself back up. If you don't have the core strength to get all the way extended at the bottom, try to progressively increase the ROM week to week.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Rectus Abdominis", "Obliques", "Erector Spinae", "Latissimus Dorsi"]
   },
   {
     "name": "Bayesian Curl (Cable)",
     "notes": "If you have a left-right bicep size imbalance, do these 1 arm at a time, starting with the weaker arm. Take the weaker arm to the listed RPE. Then match the reps with the other arm (stop once you've matched the reps, even if the RPE is lower). If you don't have a size imbalance, do these both arms at the same time.",
-    "video": "https://youtu.be/CWH5J_7kzjM?si=FlPzreLDPHogRxve"
+    "video": "https://youtu.be/CWH5J_7kzjM?si=FlPzreLDPHogRxve",
+    "muscle": ["Biceps Brachii", "Brachialis", "Brachioradialis"]
   },
   {
     "name": "Bent-Over Row (Barbell)",
     "notes": "Maintain a flat back throughout the movement. Drive your elbows towards the ceiling and squeeze your shoulder blades.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid & Lower)", "Posterior Deltoids", "Biceps"]
   },
   {
     "name": "Bird-Dog (Bodyweight)",
     "notes": "Start on all fours. Extend one arm forward and the opposite leg backward, keeping your core stable and your back flat. Avoid rotating your hips.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Erector Spinae", "Rectus Abdominis", "Obliques", "Glutes"]
   },
   {
     "name": "Bicep Curl (Barbell)",
     "notes": "Keep elbows tucked in. Focus on squeezing the biceps at the top.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Biceps Brachii", "Brachialis", "Brachioradialis"]
   },
   {
     "name": "Bicep Curl (Cable)",
     "notes": "Use a straight bar or EZ bar attachment. Maintain constant tension on the biceps throughout the movement.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Biceps Brachii", "Brachialis", "Brachioradialis"]
   },
   {
     "name": "Bicep Curl (Dumbbell)",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Biceps Brachii", "Brachialis", "Brachioradialis"]
   },
   {
     "name": "Bicep Curl (Machine)",
     "notes": "Adjust the machine for proper alignment. Focus on smooth, controlled contractions.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Biceps Brachii", "Brachialis"]
   },
   {
     "name": "Bottom-Half Fly (Dumbbell)",
     "notes": "All reps and sets are to be performed in the bottom half of the ROM. Focus on feeling a deep stretch in your pecs at the bottom of each rep.",
-    "video": "https://youtu.be/qJzc-iHKGdg?si=GGd61Dr4uoDUI9b6"
+    "video": "https://youtu.be/qJzc-iHKGdg?si=GGd61Dr4uoDUI9b6",
+    "muscle": ["Pectoralis Major", "Anterior Deltoids"]
   },
   {
     "name": "Bottom-Half Seated Fly (Cable)",
     "notes": "All reps and sets are to be performed in the bottom half of the ROM. Focus on feeling a deep stretch in your pecs at the bottom of each rep.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Pectoralis Major", "Anterior Deltoids"]
   },
   {
     "name": "Box Jump (Bodyweight)",
     "notes": "Stand in front of a sturdy box. Explode upwards, swinging your arms and landing softly on the box. Step down, don't jump down, to reduce impact.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Hamstrings", "Glutes", "Calves"]
   },
   {
     "name": "Bulgarian Split Squat (Dumbbell)",
     "notes": "Lower all the way down until your front thigh is parallel to the ground. Drive through your front heel on the way up.",
-    "video": "https://youtu.be/htDXu61MPio?si=WNsXh0BmNMXONRHP"
+    "video": "https://youtu.be/htDXu61MPio?si=WNsXh0BmNMXONRHP",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Bulgarian Split Squat (Barbell)",
     "notes": "Lower all the way down until your front thigh is parallel to the ground. Drive through your front heel on the way up.",
-    "video": "https://youtu.be/htDXu61MPio?si=WNsXh0BmNMXONRHP"
+    "video": "https://youtu.be/htDXu61MPio?si=WNsXh0BmNMXONRHP",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Calf Press on Leg Press (Machine)",
     "notes": "1-2 second pause at the bottom of each rep. Instead of just going up onto your toes, think about rolling your ankle back and forth on the balls of your feet.",
     "video": "",
-    "image": "images/placeholder.placeholder.jpg"
+    "image": "images/placeholder.placeholder.jpg",
+    "muscle": ["Gastrocnemius", "Soleus"]
   },
   {
     "name": "Crossover Ladder (Cable)",
     "notes": "Do one set with low cable position, one set with medium-height cable position, and one height with a high cable position. If you only have one or two sets, choose the one or two cable positions you prefer.",
-    "video": "https://www.youtube.com/watch?v=0TP9kVcWGic"
+    "video": "https://www.youtube.com/watch?v=0TP9kVcWGic",
+    "muscle": ["Pectoralis Major", "Anterior Deltoids"]
   },
   {
     "name": "Chest Press (Machine)",
     "notes": "1 second pause at the bottom of each rep while maintaining tension on the pecs.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Pectoralis Major", "Anterior Deltoids", "Triceps"]
   },
   {
     "name": "Chest-Supported Row (Machine)",
     "notes": "Flare elbows out at roughly 45° and squeeze your shoulder blades together hard at the top of each rep.",
-    "video": "https://youtu.be/ijsSiWSzYw0?si=ADBJRkNSajLiVayN"
+    "video": "https://youtu.be/ijsSiWSzYw0?si=ADBJRkNSajLiVayN",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid)", "Posterior Deltoids"]
   },
   {
     "name": "Close-Grip Bench Press (Barbell)",
     "notes": "Use a grip slightly narrower than shoulder-width. Keep your elbows tucked close to your body to emphasize the triceps.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Triceps Brachii", "Pectoralis Major (Inner)", "Anterior Deltoids"]
   },
   {
     "name": "Close-Grip Bench Press (Dumbbell)",
     "notes": "Hold dumbbells with palms facing each other. Keep your elbows tucked close to your body to emphasize the triceps.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Triceps Brachii", "Pectoralis Major (Inner)", "Anterior Deltoids"]
   },
   {
     "name": "Concentration Curl (Dumbbell)",
     "notes": "Smooth, controlled reps. Mind-muscle connection with the biceps.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Biceps Brachii", "Brachialis"]
   },
   {
     "name": "Cossack Squat (Bodyweight)",
     "notes": "Stand with a wide stance. Shift your weight to one leg and squat down, keeping the other leg straight. Focus on flexibility and single-leg strength.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings", "Adductors"]
   },
   {
     "name": "Crunch (Cable)",
     "notes": "Round your lower back as you crunch. Maintain a mind-muscle connection with your 6-pack.",
-    "video": "https://youtu.be/epBrpaGHMcg?si=FMV9IKBOvBkuUOZM"
+    "video": "https://youtu.be/epBrpaGHMcg?si=FMV9IKBOvBkuUOZM",
+    "muscle": ["Rectus Abdominis", "Obliques"]
   },
   {
     "name": "Crunch (Machine)",
     "notes": "Round your lower back as you crunch. Maintain a mind-muscle connection with your 6-pack.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Rectus Abdominis", "Obliques"]
   },
   {
     "name": "Deadlift (Barbell)",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Hamstrings", "Glutes", "Erector Spinae", "Quadriceps", "Trapezius", "Forearms"]
   },
   {
     "name": "Deadlift (Dumbbell)",
     "notes": "Can be performed with a dumbbell in each hand. Focus on a flat back and hinging at the hips.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Hamstrings", "Glutes", "Erector Spinae", "Quadriceps", "Trapezius", "Forearms"]
   },
   {
     "name": "Elbows-Out Row (Cable)",
     "notes": "Flare your elbows out ~45°. Smooth, controlled reps.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Rhomboids", "Trapezius (Mid)", "Posterior Deltoids", "Latissimus Dorsi"]
   },
   {
     "name": "EZ-Bar Curl (Cable)",
     "notes": "Set up the cable at the lowest position. Maintain constant tension on the biceps. Slow, controlled reps.",
-    "video": "https://youtu.be/ck1zjNTnFew?si=EgggtiVFxulCoYXU"
+    "video": "https://youtu.be/ck1zjNTnFew?si=EgggtiVFxulCoYXU",
+    "muscle": ["Biceps Brachii", "Brachialis", "Brachioradialis"]
   },
   {
     "name": "Face Pull (Cable)",
     "notes": "Use a rope attachment on a cable machine. Pull the rope towards your face, flaring your elbows out and squeezing your upper back and rear deltoids.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Posterior Deltoids", "Trapezius (Mid)", "Rhomboids", "Rotator Cuff"]
   },
   {
     "name": "Farmers Walk (Dumbbell)",
     "notes": "Hold heavy dumbbells in each hand. Walk for a set distance, maintaining an upright posture and engaging your core.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Forearms", "Trapezius", "Core", "Erector Spinae", "Quadriceps", "Hamstrings", "Glutes"]
   },
   {
     "name": "Farmers Walk (Kettlebell)",
     "notes": "Hold heavy kettlebells in each hand. Walk for a set distance, maintaining an upright posture and engaging your core.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Forearms", "Trapezius", "Core", "Erector Spinae", "Quadriceps", "Hamstrings", "Glutes"]
   },
   {
     "name": "Glute Bridge (Barbell)",
     "notes": "Place a barbell across your hips. Lie on your back with knees bent and feet flat on the floor. Drive through your heels to lift your hips off the ground, squeezing your glutes at the top.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Gluteus Maximus", "Hamstrings", "Erector Spinae"]
   },
   {
     "name": "Glute Bridge (Bodyweight)",
     "notes": "Lie on your back with knees bent and feet flat on the floor. Drive through your heels to lift your hips off the ground, squeezing your glutes at the top.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Gluteus Maximus", "Hamstrings"]
   },
   {
     "name": "Goblet Squat (Kettlebell)",
     "notes": "Hold a kettlebell against your chest. Squat down, keeping your chest up and elbows inside your knees.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings", "Core"]
   },
   {
     "name": "Goblet Squat (Dumbbell)",
     "notes": "Hold a dumbbell against your chest. Squat down, keeping your chest up and elbows inside your knees.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings", "Core"]
   },
   {
     "name": "Good Mornings (Barbell)",
     "notes": "Place a barbell across your upper back. Hinge at your hips, keeping a slight bend in your knees and a flat back, lowering your torso until it's nearly parallel to the floor. Feel the stretch in your hamstrings and glutes.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Hamstrings", "Gluteus Maximus", "Erector Spinae"]
   },
   {
     "name": "Hack Squat (Machine)",
     "notes": "Use a controlled negative (don't free fall) and then explode on the positive.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Hammer Curl Rope (Cable)",
     "notes": "Squeeze the rope hard as you curl the weight up. Smooth, controlled reps.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Brachialis", "Brachioradialis", "Biceps Brachii"]
   },
   {
     "name": "Hammer Curl (Dumbbell)",
     "notes": "Keep your palms facing each other throughout the movement. Focus on squeezing the bicep and brachialis.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Brachialis", "Brachioradialis", "Biceps Brachii"]
   },
   {
     "name": "High Lateral Raise (Cable)",
     "notes": "Focus on squeezing your lateral delt to move the weight.",
-    "video": "https://youtu.be/MnMux3Wc0Ac?si=diOk1ZKwTwTa4Sx0"
+    "video": "https://youtu.be/MnMux3Wc0Ac?si=diOk1ZKwTwTa4Sx0",
+    "muscle": ["Lateral Deltoids"]
   },
   {
     "name": "Hip Abduction (Machine)",
     "notes": "If possible, use pads to increase the range of motion on the machine: Lean forward and grab onto the machine rails to stretch the glutes further.",
-    "video": "https://youtu.be/pozooPg6PBE?si=uVtC8JPKXvZKeVlE"
+    "video": "https://youtu.be/pozooPg6PBE?si=uVtC8JPKXvZKeVlE",
+    "muscle": ["Gluteus Medius", "Gluteus Minimus", "Tensor Fasciae Latae"]
   },
   {
     "name": "Hip Adduction (Machine)",
     "notes": "Mind-muscle connection with your inner thighs. These are great for adding thigh mass from the front! Push them hard!",
-    "video": "https://youtu.be/FMSCZYu1JhE?si=iYXhWk9YxX6x5mcF"
+    "video": "https://youtu.be/FMSCZYu1JhE?si=iYXhWk9YxX6x5mcF",
+    "muscle": ["Adductor Magnus", "Adductor Longus", "Adductor Brevis", "Pectineus", "Gracilis"]
   },
   {
     "name": "Hyperextension (Bodyweight)",
     "notes": "Squeeze your glutes hard at the top of each rep. Slow controlled reps on the way down, followed by an explosive positive. Can hold a weight plate for added resistance.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Erector Spinae", "Gluteus Maximus", "Hamstrings"]
   },
   {
     "name": "Incline Curl (Dumbbell)",
     "notes": "Sit on an incline bench. Allow your arms to hang straight down at your sides. Curl the dumbbells up, focusing on the stretch at the bottom and contraction at the top.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Biceps Brachii"]
   },
   {
     "name": "Incline Press (Barbell)",
     "notes": "1 second pause at the bottom of each rep while maintaining tension on the pecs.",
-    "video": "https://www.youtube.com/watch?v=vqQ9ok0dEgk"
+    "video": "https://www.youtube.com/watch?v=vqQ9ok0dEgk",
+    "muscle": ["Pectoralis Major (Upper)", "Anterior Deltoids", "Triceps"]
   },
   {
     "name": "Incline Press (Dumbbell)",
     "notes": "1 second pause at the bottom of each rep while maintaining tension on the pecs.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Pectoralis Major (Upper)", "Anterior Deltoids", "Triceps"]
   },
   {
     "name": "Kettlebell Swing (Kettlebell)",
     "notes": "Hinge at your hips and powerfully snap them forward to propel the kettlebell up. Focus on hip drive, not arm strength.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Glutes", "Hamstrings", "Erector Spinae", "Core", "Quadriceps"]
   },
   {
     "name": "Landmine Press (Barbell)",
     "notes": "Load one end of a barbell into a landmine attachment. Hold the other end at shoulder height and press it up and forward. Can be done kneeling or standing.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Anterior Deltoids", "Triceps", "Upper Chest", "Core"]
   },
   {
     "name": "Lateral Raise (Dumbbell)",
     "notes": "Keep a slight bend in your elbows. Raise the dumbbells out to the sides until your arms are parallel to the floor, focusing on the contraction in your side deltoids.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Lateral Deltoids"]
   },
   {
     "name": "Lat Pulldown Dual-Handle (Cable)",
     "notes": "Lean back by ~15° and drive your elbows down as you squeeze your shoulder blades together. This should feel like a mix of lats and mid-traps.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid)", "Biceps"]
   },
   {
     "name": "Lat Pulldown Lean-Back (Cable)",
     "notes": "Initiate the pulldown with a straight up posture. As you pull the bar down, lean back by about 15-30° to get the mid-back more involved. Softly touch the bar to your chest on every rep and, even though you're leaning back, still control the weight!",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid)", "Biceps"]
   },
   {
     "name": "Lat Pulldown Neutral-Grip (Cable)",
     "notes": "Do these pulldowns with the handle more out in front of you, more like a cross between pullover and a pulldown. Focus on feeling your lats working more than the weight you're using.",
-    "video": "https://youtu.be/lA4_1F9EAFU?si=5Bh19rDwBplX5QUz"
+    "video": "https://youtu.be/lA4_1F9EAFU?si=5Bh19rDwBplX5QUz",
+    "muscle": ["Latissimus Dorsi", "Teres Major", "Biceps"]
   },
   {
     "name": "Leg Extension (Machine)",
     "notes": "Set the seat back as far as it will go while still feeling comfortable. Grab the handles as hard as you can to pull your butt down into the seat. Use a 2-3 second negative. Feel your quads pulling apart on the negative.",
-    "video": "https://youtu.be/uFbNtqP966A?si=3mIG7OVH30gHjNhd"
+    "video": "https://youtu.be/uFbNtqP966A?si=3mIG7OVH30gHjNhd",
+    "muscle": ["Quadriceps"]
   },
   {
     "name": "Leg Press (Machine)",
     "notes": "Feet lower on the platform for more quad focus. Get as deep as you can without excessive back rounding. Control the negative and do a slight pause at the bottom of each rep.",
-    "video": "https://youtu.be/1yKAQLVV_XI?si=G0wEZEbz8Kq9vFnF"
+    "video": "https://youtu.be/1yKAQLVV_XI?si=G0wEZEbz8Kq9vFnF",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Leg Press Single Leg (Machine)",
     "notes": "Perform the leg press one leg at a time. Focus on driving through your heel and maintaining control throughout the movement.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Lying Leg Curl (Machine)",
     "notes": "Set the machine so that you get the biggest stretch possible at the bottom. Prevent your butt from popping up as you curl.",
-    "video": "https://youtu.be/sX4tGtcc62k?si=mparE5f2nb9KfXPl"
+    "video": "https://youtu.be/sX4tGtcc62k?si=mparE5f2nb9KfXPl",
+    "muscle": ["Hamstrings"]
   },
   {
     "name": "Medicine Ball Slam (Medicine Ball)",
     "notes": "Lift a medicine ball overhead and powerfully slam it into the ground. Focus on engaging your core and full body power.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Core", "Shoulders", "Back", "Glutes", "Hamstrings", "Quadriceps"]
   },
   {
     "name": "Overhead Press (Barbell)",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Anterior Deltoids", "Lateral Deltoids", "Triceps", "Upper Trapezius"]
   },
   {
     "name": "Overhead Press (Dumbbell)",
     "notes": "Can be performed seated or standing. Maintain a stable core and press the dumbbells directly overhead.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Anterior Deltoids", "Lateral Deltoids", "Triceps", "Upper Trapezius"]
   },
   {
     "name": "Overhead Press (Machine)",
     "notes": "Adjust the machine to your comfort. Focus on pressing through your deltoids.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Anterior Deltoids", "Lateral Deltoids", "Triceps"]
   },
   {
     "name": "Overhead Triceps Extension (Cable)",
     "notes": "Optionally pause for 0.5-1 second in the stretched aspect of each rep.",
-    "video": "https://youtu.be/9_I1PqZAjdA?si=hLmz2aLH05YfsUTF"
+    "video": "https://youtu.be/9_I1PqZAjdA?si=hLmz2aLH05YfsUTF",
+    "muscle": ["Triceps Brachii"]
   },
   {
     "name": "Overhead Triceps Extension (Dumbbell)",
     "notes": "Hold one dumbbell with both hands or a single dumbbell in one hand. Extend your arms straight overhead, then lower the dumbbell behind your head by bending at the elbows, focusing on the triceps stretch.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Triceps Brachii"]
   },
   {
     "name": "Paused Shrug-In (Cable)",
     "notes": "Shrug up and in. Think about shrugging \"up to your ears.\" 1-2 second pause in the squeeze (at the top) of each rep, then another 1-2 second pause in the stretch (at the bottom) of each rep.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Trapezius (Upper)", "Levator Scapulae"]
   },
   {
     "name": "Pec Deck (Machine)",
     "notes": "Focus on bringing your elbows together-not your hands.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Pectoralis Major", "Anterior Deltoids"]
   },
   {
     "name": "Pendlay Deficit Row (Barbell)",
     "notes": "Stand on a bumper plate. Focus on getting a big stretch and touch your stomach/chest on each rep.",
-    "video": "https://youtu.be/MmuyHKYCLps?si=JK1d5szj5PIIbYYm"
+    "video": "https://youtu.be/MmuyHKYCLps?si=JK1d5szj5PIIbYYm",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid & Lower)", "Posterior Deltoids", "Erector Spinae", "Biceps"]
   },
   {
     "name": "Plank (Bodyweight)",
     "notes": "Keep your body in a straight line from head to heels. Engage your core and avoid sagging your hips or raising your butt too high.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Rectus Abdominis", "Obliques", "Transverse Abdominis", "Erector Spinae"]
   },
   {
     "name": "Preacher Curl (Barbell)",
     "notes": "Keep upper arms stationary on the pad. Focus on a full contraction and stretch of the biceps.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Biceps Brachii", "Brachialis"]
   },
   {
     "name": "Preacher Curl (Machine)",
     "notes": "Smooth, controlled reps. Mind-muscle connection with the biceps.",
-    "video": "https://www.youtube.com/watch?v=R2iUnBxFtis"
+    "video": "https://www.youtube.com/watch?v=R2iUnBxFtis",
+    "muscle": ["Biceps Brachii", "Brachialis"]
   },
   {
     "name": "Assisted Pull Up (Machine)",
     "notes": "Use an assisted pull-up machine or resistance bands to help with the movement. Focus on the same form cues as a bodyweight pull-up.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Teres Major", "Rhomboids", "Trapezius (Lower)", "Biceps"]
   },
   {
     "name": "Pull Up (Bodyweight)",
     "notes": "1.5x shoulder width overhand grip. Slow 2-3 second negative. Feel your lats pulling apart on the way down.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Teres Major", "Rhomboids", "Trapezius (Lower)", "Biceps"]
   },
   {
     "name": "1-Arm 45° Rear Delt Flye ( Cable)",
     "notes": "Pause for 1-2 seconds in the squeeze of each rep. Contract the rear delts hard!",
-    "video": "https://www.youtube.com/watch?v=6G5DmVaocGM"
+    "video": "https://www.youtube.com/watch?v=6G5DmVaocGM",
+    "muscle": ["Posterior Deltoids", "Rhomboids", "Trapezius (Mid)"]
   },
   {
     "name": "Renegade Row (Dumbbell)",
     "notes": "Start in a plank position with hands on dumbbells. Row one dumbbell up towards your chest, keeping your core tight and minimizing body rotation.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Posterior Deltoids", "Biceps", "Core"]
   },
   {
     "name": "Reverse Hyperextension (Machine)",
     "notes": "Use a reverse hyperextension machine. Anchor your upper body and raise your legs, squeezing your glutes and hamstrings at the top.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Gluteus Maximus", "Hamstrings", "Erector Spinae"]
   },
   {
     "name": "RDL (Barbell)",
     "notes": "To keep tension on the hamstrings, stop about 75% of the way to full lockout on each rep (ie, stay in the bottom 3/4 of the range of motion).",
-    "video": "https://www.youtube.com/watch?v=3fJwfg51cv0"
+    "video": "https://www.youtube.com/watch?v=3fJwfg51cv0",
+    "muscle": ["Hamstrings", "Gluteus Maximus", "Erector Spinae"]
   },
   {
     "name": "RDL (Dumbbell)",
     "notes": "Hold dumbbells in each hand. To keep tension on the hamstrings, stop about 75% of the way to full lockout on each rep.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Hamstrings", "Gluteus Maximus", "Erector Spinae"]
   },
   {
     "name": "Roman Chair Leg Raise (Bodyweight)",
     "notes": "Allow your lower back to round as you curl your legs up. 10-20 reps is a broad range on purpose: just go until you hit the listed RPE with controlled form.",
-    "video": "https://youtu.be/irOzFVqJ0IE?si=T1jsVXxw_GUhXrPX"
+    "video": "https://youtu.be/irOzFVqJ0IE?si=T1jsVXxw_GUhXrPX",
+    "muscle": ["Rectus Abdominis", "Obliques", "Hip Flexors"]
   },
   {
     "name": "Row (Smith Machine)",
     "notes": "Focus on squeezing your shoulder blades together, keeping your elbows at a ~45° angle.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid)", "Posterior Deltoids", "Biceps"]
   },
   {
     "name": "Russian Twists (Bodyweight)",
     "notes": "Sit on the floor with knees bent and feet flat or slightly elevated. Lean back slightly and twist your torso from side to side, touching the floor beside you with your hands.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Obliques", "Rectus Abdominis", "Transverse Abdominis"]
   },
   {
     "name": "Russian Twists (Weighted)",
     "notes": "Sit on the floor with knees bent and feet flat or slightly elevated. Lean back slightly and twist your torso from side to side, touching the floor beside you with a dumbbell or medicine ball.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Obliques", "Rectus Abdominis", "Transverse Abdominis"]
   },
   {
     "name": "Seated Calf Raise (Machine)",
     "notes": "Focus on a full stretch at the bottom and a powerful contraction at the top. Hold the peak contraction for a second or two.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Soleus"]
   },
   {
     "name": "Seated Neutral-Grip Row (Cable)",
     "notes": "Focus on squeezing your shoulder blades together, driving your elbows down and back.",
-    "video": "https://youtu.be/hM7XHxQgvLk?si=NSpgHwt_kgLsKPBY"
+    "video": "https://youtu.be/hM7XHxQgvLk?si=NSpgHwt_kgLsKPBY",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid)", "Biceps"]
   },
   {
     "name": "Seated Wide Grip Row (Cable)",
     "notes": "Use a wide-grip bar. Pull towards your lower abdomen, squeezing your lats and mid-back.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid)", "Biceps"]
   },
   {
     "name": "Seated Leg Curl (Machine)",
     "notes": "Lean forward over the machine to get a maximum stretch in your hamstrings.",
-    "video": "https://youtu.be/yv0aAY7M1mk?si=Z1Cx7ih-vWTSTqq-"
+    "video": "https://youtu.be/yv0aAY7M1mk?si=Z1Cx7ih-vWTSTqq-",
+    "muscle": ["Hamstrings"]
   },
   {
     "name": "Seated Shoulder Press (Dumbbell)",
     "notes": "Ensure that your elbows break at least 90°. Mind-muscle connection with your delts. Smooth, controlled reps.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Anterior Deltoids", "Lateral Deltoids", "Triceps"]
   },
   {
     "name": "Shoulder Press (Machine)",
     "notes": "Ensure that your elbows break at least 90°. Mind-muscle connection with your delts. Smooth, controlled reps.",
-    "video": "https://youtu.be/SCQVmN1gYsk?si=Enyh4L6ZDiCc6RyU"
+    "video": "https://youtu.be/SCQVmN1gYsk?si=Enyh4L6ZDiCc6RyU",
+    "muscle": ["Anterior Deltoids", "Lateral Deltoids", "Triceps"]
   },
   {
     "name": "Shrug (Barbell)",
     "notes": "Hold a barbell with an overhand grip. Shrug your shoulders straight up towards your ears. Control the movement both up and down.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Trapezius (Upper)"]
   },
   {
     "name": "Shrug (Dumbbell)",
     "notes": "Hold dumbbells in each hand. Keep your arms straight and shrug your shoulders straight up towards your ears. Control the movement both up and down.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Trapezius (Upper)"]
   },
   {
     "name": "Shrug (Machine)",
     "notes": "Brief pause at the top of the bottom of ROM. Think about pulling your shoulders up to your ears!",
-    "video": "https://youtu.be/ua0XuKwKQ9M?si=Y-kGNEq_riqAF2Tn"
+    "video": "https://youtu.be/ua0XuKwKQ9M?si=Y-kGNEq_riqAF2Tn",
+    "muscle": ["Trapezius (Upper)"]
   },
   {
     "name": "Single-Arm Row (Dumbbell)",
     "notes": "Support yourself on a bench with one hand and knee. Keep your back flat and pull the dumbbell up towards your hip, squeezing your lats.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Posterior Deltoids", "Biceps"]
   },
   {
     "name": "Sissy Squat (Bodyweight)",
     "notes": "Lean back while letting your knees travel forward and down, keeping your body in a straight line from your knees to your shoulders. Focus on deep quad activation.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Hip Flexors"]
   },
   {
     "name": "Squat (Barbell)",
     "notes": "Bring toes out slightly until heels don't come off the ground.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings", "Erector Spinae", "Adductors"]
   },
   {
     "name": "Squat (Dumbbell)",
     "notes": "Hold a dumbbell in each hand or goblet style. Bring toes out slightly until heels don't come off the ground.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings", "Erector Spinae", "Adductors"]
   },
   {
     "name": "Squat (Machine)",
     "notes": "Utilize a squat machine if available, focusing on controlled movement.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Squat (Smith Machine)",
     "notes": "Once you are under the bar, set up your feet as you would a normal squat and then bring them forward ~3-6 inches. This will cause you to lean back into the bar slightly, allowing for a more upright squat, while also placing more tension on the quads. If your heels are raising at the bottom, you may need to bring your feet more forward. If your feet feel like they are slipping or your lower back is rounding at the bottom, try bringing your feet back a bit.",
-    "video": "https://www.youtube.com/watch?v=J2D2J7RO_tA"
+    "video": "https://www.youtube.com/watch?v=J2D2J7RO_tA",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Standing Calf Raise (Bodyweight)",
     "notes": "1-2 second pause at the bottom of each rep. Instead of just going up onto your toes, think about rolling your ankle back and forth on the balls of your feet.",
-    "video": "https://youtu.be/6lR2JdxUh7w?si=Q_4oyceNkI-WarRg"
+    "video": "https://youtu.be/6lR2JdxUh7w?si=Q_4oyceNkI-WarRg",
+    "muscle": ["Gastrocnemius", "Soleus"]
   },
   {
     "name": "Standing Calf Raise (Dumbbell)",
     "notes": "Hold dumbbells in each hand for added resistance. 1-2 second pause at the bottom of each rep.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Gastrocnemius", "Soleus"]
   },
   {
     "name": "Standing Calf Raise (Machine)",
     "notes": "Adjust the machine to allow for a full range of motion. Focus on the stretch and squeeze.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Gastrocnemius", "Soleus"]
   },
   {
     "name": "Static Lunge with Elevated Front Foot (Smith Machine)",
     "notes": "Elevate your front foot on a small box. Minimize contribution from your back leg.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Chest-Supported T-Bar Row (Machine)",
     "notes": "Flare elbows out at roughly 45° and squeeze your shoulder blades together hard at the top of each rep.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Latissimus Dorsi", "Rhomboids", "Trapezius (Mid)", "Posterior Deltoids", "Biceps"]
   },
   {
     "name": "Triceps Kickback (Cable)",
     "notes": "There are two ways you can do this: upright or bent over. Choose the one that feels more comfortable for you. The main thing is that when you're in the full squeeze, your shoulder should be positioned back behind your torso.",
-    "video": "https://youtu.be/oRxTKRtP8RE?si=S_C_5SZAal_SIFBq"
+    "video": "https://youtu.be/oRxTKRtP8RE?si=S_C_5SZAal_SIFBq",
+    "muscle": ["Triceps Brachii"]
   },
   {
     "name": "Triceps Kickback (Dumbbell)",
     "notes": "Perform this bent over with a dumbbell. Focus on squeezing your triceps at the top of the movement.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Triceps Brachii"]
   },
   {
     "name": "Triceps Pressdown Bar (Cable)",
     "notes": "Focus on squeezing your triceps to move the weight.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Triceps Brachii"]
   },
   {
     "name": "Triceps Pressdown Rope (Cable)",
     "notes": "Use a rope attachment. Separate the ends of the rope at the bottom of the movement to get a full contraction of the triceps.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Triceps Brachii"]
   },
   {
     "name": "Walking Lunge (Barbell)",
     "notes": "Place a barbell across your upper back. Take medium strides. Minimize contribution from the back leg.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Walking Lunge (Bodyweight)",
     "notes": "Take medium strides. Minimize contribution from the back leg.",
     "video": "",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Walking Lunge (Dumbbell)",
     "notes": "Hold a dumbbell in each hand. Take medium strides. Minimize contribution from the back leg.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Quadriceps", "Glutes", "Hamstrings"]
   },
   {
     "name": "Wide-Grip Pull-Up (Bodyweight)",
     "notes": "1.5x shoulder width overhand grip. Slow 2-3 second negative. Feel your lats pulling apart on the way down.",
-    "video": "https://www.youtube.com/watch?v=yGnp0HU8BnA"
+    "video": "https://www.youtube.com/watch?v=yGnp0HU8BnA",
+    "muscle": ["Latissimus Dorsi", "Teres Major", "Rhomboids", "Trapezius (Lower)", "Biceps"]
   },
   {
     "name": "Z-Press (Barbell)",
     "notes": "Sit on the floor with legs extended. Press the barbell overhead, maintaining a strong, upright torso. Challenges core stability and shoulder strength.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Anterior Deltoids", "Lateral Deltoids", "Triceps", "Upper Trapezius", "Core"]
   },
   {
     "name": "Z-Press (Dumbbell)",
     "notes": "Sit on the floor with legs extended. Press the dumbbells overhead, maintaining a strong, upright torso. Challenges core stability and shoulder strength.",
-    "image": "images/placeholder.jpg"
+    "image": "images/placeholder.jpg",
+    "muscle": ["Anterior Deltoids", "Lateral Deltoids", "Triceps", "Upper Trapezius", "Core"]
   }
 ]
