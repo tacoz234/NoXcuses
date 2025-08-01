@@ -5,7 +5,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     attachDrawerEvents();
     setupButtonHandlers();
     startAutoSave(); // Start auto-saving
-    restoreWorkoutState(); // Attempt to restore workout state on load
+    
+    // Only restore workout state if we're on the workout page or there's an active workout
+    if (window.location.pathname.includes('workout.html') || localStorage.getItem('isWorkoutActive') === '1') {
+        restoreWorkoutState(); // Attempt to restore workout state on load
+    } else {
+        // Clean up any leftover rest timer state if not on workout page and no active workout
+        localStorage.removeItem('activeRestTimer');
+    }
 
     // Initialize modules
     const templatePreview = new TemplatePreview();

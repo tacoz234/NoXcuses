@@ -24,62 +24,121 @@ function saveRestTimerState() {
 }
 
 function restoreRestTimerState() {
+    console.log('restoreRestTimerState called');
+    
+    // Only restore if workout is actually active
+    if (localStorage.getItem('isWorkoutActive') !== '1') {
+        console.log('No active workout - cleaning up rest timer state');
+        localStorage.removeItem('activeRestTimer');
+        return;
+    }
+    
     const savedTimer = localStorage.getItem('activeRestTimer');
-    if (savedTimer) {
-        try {
-            const timerData = JSON.parse(savedTimer);
-            const now = Date.now();
-            const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
-            const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
+    if (!savedTimer) {
+        console.log('No saved rest timer found');
+        return;
+    }
+    
+    try {
+        const timerData = JSON.parse(savedTimer);
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
+        const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
+        
+        console.log('Timer data:', { remainingTime, elapsedSeconds, originalTime: timerData.remainingSeconds });
+        
+        // If timer expired while away, clean up silently without notification
+        if (remainingTime <= 0) {
+            console.log('Timer expired while away - cleaning up silently');
+            localStorage.removeItem('activeRestTimer');
+            return;
+        }
+        
+        // Only restore if there's meaningful time left (more than 3 seconds)
+        if (remainingTime > 3) {
+            console.log('Restoring timer with', remainingTime, 'seconds remaining');
             
-            if (remainingTime > 0) {
-                // Find the corresponding timer display and container
-                const exerciseIndex = timerData.exerciseIndex;
-                const setIndex = timerData.setIndex;
-                
-                // Wait for DOM to be ready, then restore timer
-                setTimeout(() => {
-                    const setRow = document.querySelector(`.set-row[data-ex-idx="${exerciseIndex}"][data-set-idx="${setIndex}"]`);
-                    if (setRow) {
-                        const setContainer = setRow.parentElement;
-                        const restTimerContainer = setContainer.querySelector('.rest-timer-container');
-                        const restTimerDisplay = restTimerContainer.querySelector('.rest-timer-display');
+            // Find the corresponding timer display and container
+            const exerciseIndex = timerData.exerciseIndex;
+            const setIndex = timerData.setIndex;
+            
+            // Wait for DOM to be ready, then restore timer
+            setTimeout(() => {
+                const setRow = document.querySelector(`.set-row[data-ex-idx="${exerciseIndex}"][data-set-idx="${setIndex}"]`);
+                if (setRow) {
+                    const setContainer = setRow.parentElement;
+                    const restTimerContainer = setContainer.querySelector('.rest-timer-container');
+                    const restTimerDisplay = restTimerContainer.querySelector('.rest-timer-display');
+                    
+                    if (restTimerContainer && restTimerDisplay) {
+                        activeRestTimer = {
+                            exerciseIndex: exerciseIndex,
+                            setIndex: setIndex,
+                            timerDisplay: restTimerDisplay,
+                            timerContainer: restTimerContainer,
+                            initialDuration: timerData.initialDuration || remainingTime
+                        };
                         
-                        if (restTimerContainer && restTimerDisplay) {
-                            activeRestTimer = {
-                                exerciseIndex: exerciseIndex,
-                                setIndex: setIndex,
-                                timerDisplay: restTimerDisplay,
-                                timerContainer: restTimerContainer
-                            };
-                            
-                            restTimeSeconds = remainingTime;
-                            restTimerDisplay.textContent = formatTime(restTimeSeconds);
-                            restTimerContainer.classList.remove('hidden');
-                            
-                            restTimerInterval = setInterval(() => {
-                                restTimeSeconds--;
-                                restTimerDisplay.textContent = formatTime(restTimeSeconds);
-                                saveRestTimerState(); // Save state on each tick
-                                
-                                // Update the first timer completion location (around line 64)
-                                if (restTimeSeconds <= 0) {
-                                    showRestTimerFinishedAlert();
-                                    stopRestTimer();
-                                    restTimerContainer.classList.add('hidden');
-                                }
-                            }, 1000);
+                        restTimeSeconds = remainingTime;
+                        initialRestTimeSeconds = timerData.initialDuration || remainingTime;
+                        restTimerDisplay.textContent = formatTime(restTimeSeconds);
+                        restTimerContainer.classList.remove('hidden');
+                        
+                        // Update progress bar
+                        const progressBar = restTimerContainer.querySelector('.rest-timer-progress');
+                        if (progressBar && initialRestTimeSeconds > 0) {
+                            const progressPercentage = (restTimeSeconds / initialRestTimeSeconds) * 100;
+                            progressBar.style.width = `${Math.max(0, progressPercentage)}%`;
                         }
+                        
+                        restTimerInterval = setInterval(() => {
+                            restTimeSeconds--;
+                            restTimerDisplay.textContent = formatTime(restTimeSeconds);
+                            
+                            // Update progress bar
+                            if (progressBar && initialRestTimeSeconds > 0) {
+                                const progressPercentage = (restTimeSeconds / initialRestTimeSeconds) * 100;
+                                progressBar.style.width = `${Math.max(0, progressPercentage)}%`;
+                            }
+                            
+                            saveRestTimerState(); // Save state on each tick
+                            
+                            if (restTimeSeconds <= 0) {
+                                // Only show alert if we're still in an active workout
+                                if (localStorage.getItem('isWorkoutActive') === '1') {
+                                    showRestTimerFinishedAlert();
+                                }
+                                // Find the stopRestTimer function in the current scope
+                                if (typeof stopRestTimer === 'function') {
+                                    stopRestTimer();
+                                } else {
+                                    // Fallback cleanup if stopRestTimer is not available
+                                    clearInterval(restTimerInterval);
+                                    restTimerInterval = null;
+                                    activeRestTimer = null;
+                                    localStorage.removeItem('activeRestTimer');
+                                }
+                                restTimerContainer.classList.add('hidden');
+                            }
+                        }, 1000);
+                        
+                        console.log('Timer restored successfully');
+                    } else {
+                        console.log('Could not find timer elements in DOM');
+                        localStorage.removeItem('activeRestTimer');
                     }
-                }, 100);
-            } else {
-                // Timer has expired while away
-                localStorage.removeItem('activeRestTimer');
-            }
-        } catch (e) {
-            console.error('Error restoring rest timer state:', e);
+                } else {
+                    console.log('Could not find set row in DOM');
+                    localStorage.removeItem('activeRestTimer');
+                }
+            }, 100);
+        } else {
+            console.log('Timer has very little time left - cleaning up');
             localStorage.removeItem('activeRestTimer');
         }
+    } catch (e) {
+        console.error('Error restoring rest timer state:', e);
+        localStorage.removeItem('activeRestTimer');
     }
 }
 
@@ -94,6 +153,18 @@ function parseRestTime(restString) {
 }
 
 function showRestTimerFinishedAlert() {
+    // Add debugging to see when this is called
+    console.log('showRestTimerFinishedAlert called');
+    console.log('isWorkoutActive:', localStorage.getItem('isWorkoutActive'));
+    console.log('activeRestTimer:', activeRestTimer);
+    console.log('restTimerInterval:', restTimerInterval);
+    
+    // Only show alert if workout is actually active
+    if (localStorage.getItem('isWorkoutActive') !== '1') {
+        console.log('Blocking rest timer alert - no active workout');
+        return;
+    }
+    
     // Play a notification sound
     try {
         // Create an audio context and play a beep sound
@@ -741,8 +812,13 @@ async function restoreWorkoutState() {
             })) : [];
             renderWorkoutExercises();
             
-            // Restore rest timer after rendering exercises
-            restoreRestTimerState();
+            // Only restore rest timer if workout is actually active
+            if (localStorage.getItem('isWorkoutActive') === '1') {
+                restoreRestTimerState();
+            } else {
+                // If workout is not active, clean up any leftover rest timer state
+                localStorage.removeItem('activeRestTimer');
+            }
             
             if (localStorage.getItem('isWorkoutActive') === '1') {
                 openDrawer();
@@ -750,6 +826,9 @@ async function restoreWorkoutState() {
         } catch (e) {
             console.error('Error restoring workout state:', e);
         }
+    } else {
+        // If there's no saved workout, make sure to clean up rest timer state
+        localStorage.removeItem('activeRestTimer');
     }
 }
 
@@ -761,7 +840,7 @@ function startAutoSave() {
     }, 5000);
 }
 
-// Add this helper function at the top of the file
+// Helper function to get last workout set data
 function getLastWorkoutSet(exerciseName, setIndex) {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const localWeightUnit = userData.weightUnit || 'lb';
@@ -776,20 +855,6 @@ function getLastWorkoutSet(exerciseName, setIndex) {
         }
     }
     return '-';
-}
-
-// Update the timer completion logic in both locations
-if (restTimeSeconds <= 0) {
-    showRestTimerFinishedAlert();
-    stopRestTimer();
-    restTimerContainer.classList.add('hidden');
-}
-
-// Update the timer completion logic in both locations
-if (restTimeSeconds <= 0) {
-    showRestTimerFinishedAlert();
-    stopRestTimer();
-    containerEl.classList.add('hidden');
 }
 
  
