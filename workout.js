@@ -11,15 +11,17 @@ let restTimeSeconds = 0;
 let initialRestTimeSeconds = 0; // Track initial timer duration for progress calculation
 
 function saveRestTimerState() {
-    if (activeRestTimer) {
-        const restTimerState = {
-            ...activeRestTimer,
+    if (activeRestTimer && restTimeSeconds > 0) {
+        const timerData = {
+            exerciseIndex: activeRestTimer.exerciseIndex,
+            setIndex: activeRestTimer.setIndex,
             remainingSeconds: restTimeSeconds,
-            lastUpdateTime: Date.now()
+            initialDuration: initialRestTimeSeconds,
+            lastUpdateTime: Date.now(),
+            exerciseName: workoutExercises[activeRestTimer.exerciseIndex]?.name || 'Exercise' // Add exercise name
         };
-        localStorage.setItem('activeRestTimer', JSON.stringify(restTimerState));
-    } else {
-        localStorage.removeItem('activeRestTimer');
+        localStorage.setItem('activeRestTimer', JSON.stringify(timerData));
+        console.log('Rest timer state saved:', timerData);
     }
 }
 
@@ -47,7 +49,8 @@ function restoreRestTimerState() {
         
         console.log('Timer data:', { remainingTime, elapsedSeconds, originalTime: timerData.remainingSeconds });
         
-        // If timer expired while away, clean up silently without notification
+        // If timer expired while away, the global timer should have handled the notification
+        // Just clean up silently
         if (remainingTime <= 0) {
             console.log('Timer expired while away - cleaning up silently');
             localStorage.removeItem('activeRestTimer');
@@ -104,7 +107,7 @@ function restoreRestTimerState() {
                             saveRestTimerState(); // Save state on each tick
                             
                             if (restTimeSeconds <= 0) {
-                                // Only show alert if we're still in an active workout
+                                // Only show alert if we're still in an active workout and on workout page
                                 if (localStorage.getItem('isWorkoutActive') === '1') {
                                     showRestTimerFinishedAlert();
                                 }
