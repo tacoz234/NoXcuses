@@ -79,7 +79,17 @@ if (exerciseModal && closeExerciseModalBtn && exerciseSearch && exerciseList) {
     exerciseSearch.addEventListener('input', function() {
         const val = exerciseSearch.value.toLowerCase();
         const exercises = window.allExercises || [];
-        renderExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
+        renderExerciseList(exercises.filter(ex => {
+            // Search by exercise name
+            const nameMatch = ex.name.toLowerCase().includes(val);
+            
+            // Search by muscles worked
+            const muscleMatch = ex.muscle && ex.muscle.some(muscle => 
+                muscle.toLowerCase().includes(val)
+            );
+            
+            return nameMatch || muscleMatch;
+        }));
     });
 }
 
@@ -125,7 +135,17 @@ if (replaceExerciseModal && closeReplaceExerciseModalBtn && replaceExerciseSearc
     replaceExerciseSearch.addEventListener('input', function() {
         const val = replaceExerciseSearch.value.toLowerCase();
         const exercises = window.allExercises || [];
-        renderReplaceExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
+        renderReplaceExerciseList(exercises.filter(ex => {
+            // Search by exercise name
+            const nameMatch = ex.name.toLowerCase().includes(val);
+            
+            // Search by muscles worked
+            const muscleMatch = ex.muscle && ex.muscle.some(muscle => 
+                muscle.toLowerCase().includes(val)
+            );
+            
+            return nameMatch || muscleMatch;
+        }));
     });
 
     function renderReplaceExerciseList(exercises) {

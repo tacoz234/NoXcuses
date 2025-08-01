@@ -35,7 +35,7 @@
 
     <!-- Place this modal after the exercise modal -->
     <div id="new-exercise-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900 relative">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 text-gray-900 relative max-h-[90vh] overflow-y-auto">
             <button id="close-new-exercise-modal" class="absolute top-2 right-3 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
             <h2 class="text-xl font-semibold mb-4">Create New Exercise</h2>
             <form id="new-exercise-form" class="space-y-3">
@@ -43,6 +43,11 @@
                 <textarea id="new-ex-notes" class="w-full border rounded p-2" placeholder="Notes (optional)"></textarea>
                 <input type="url" id="new-ex-video" class="w-full border rounded p-2" placeholder="Video URL (optional)" />
                 <input type="url" id="new-ex-image" class="w-full border rounded p-2" placeholder="Image URL (optional)" />
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Muscles Worked (optional)</label>
+                    <input type="text" id="new-ex-muscles" class="w-full border rounded p-2" placeholder="e.g., Biceps, Triceps, Shoulders (comma separated)" />
+                    <p class="text-xs text-gray-500 mt-1">Enter muscle groups separated by commas</p>
+                </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded p-2 font-semibold">Create Exercise</button>
             </form>
         </div>
@@ -75,6 +80,15 @@
             <button id="toggle-video" class="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 hidden">
                 <i class="fas fa-play mr-2"></i>Watch Demo
             </button>
+            <!-- Muscles Worked Section -->
+            <div id="muscles-worked-section" class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-600 mb-2">
+                    <i class="fas fa-dumbbell mr-1"></i>Muscles Worked
+                </h3>
+                <div id="muscles-worked-tags" class="flex flex-wrap gap-1">
+                    <!-- Muscle tags will be inserted here -->
+                </div>
+            </div>
             <div class="flex border-b mb-4">
                 <button class="modal-tab px-3 py-1 text-sm font-semibold text-gray-700 border-b-2 border-transparent focus:outline-none" data-tab="notes">Notes</button>
                 <button class="modal-tab px-3 py-1 text-sm font-semibold text-gray-700 border-b-2 border-transparent focus:outline-none" data-tab="history">History</button>

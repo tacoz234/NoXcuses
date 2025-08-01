@@ -48,9 +48,17 @@ exerciseSearch.addEventListener('input', function() {
     if (searchTerm === '') {
         filteredExercises = allExercises;
     } else {
-        filteredExercises = allExercises.filter(exercise => 
-            exercise.name.toLowerCase().includes(searchTerm)
-        );
+        filteredExercises = allExercises.filter(exercise => {
+            // Search by exercise name
+            const nameMatch = exercise.name.toLowerCase().includes(searchTerm);
+            
+            // Search by muscles worked
+            const muscleMatch = exercise.muscle && exercise.muscle.some(muscle => 
+                muscle.toLowerCase().includes(searchTerm)
+            );
+            
+            return nameMatch || muscleMatch;
+        });
     }
     renderExerciseList(filteredExercises);
     renderAlphaSlider(filteredExercises);
@@ -96,11 +104,16 @@ document.getElementById('new-exercise-form').onsubmit = function(e) {
     const notes = document.getElementById('new-ex-notes').value.trim();
     const video = document.getElementById('new-ex-video').value.trim();
     const image = document.getElementById('new-ex-image').value.trim();
+    const musclesInput = document.getElementById('new-ex-muscles').value.trim();
     if (!name) return;
     const newEx = { name };
     if (notes) newEx.notes = notes;
     if (video) newEx.video = video;
     if (image) newEx.image = image;
+    if (musclesInput) {
+        // Parse comma-separated muscles and clean them up
+        newEx.muscle = musclesInput.split(',').map(m => m.trim()).filter(m => m.length > 0);
+    }
     // Save to localStorage
     let customExercises = [];
     try {
@@ -190,6 +203,9 @@ function openExerciseModal(ex) {
     currentExercise = ex;
     modalExName.textContent = ex.name;
     
+    // Display muscles worked
+    displayMusclesWorked(ex);
+    
     // Handle video/image button visibility and setup
     const mediaBtn = document.getElementById('toggle-video');
     const videoContainer = document.getElementById('video-container');
@@ -239,6 +255,25 @@ function openExerciseModal(ex) {
             setActiveTab('notes');
             modal.classList.remove('hidden');
         }
+
+function displayMusclesWorked(exercise) {
+    const musclesSection = document.getElementById('muscles-worked-section');
+    const musclesContainer = document.getElementById('muscles-worked-tags');
+    
+    if (exercise.muscle && exercise.muscle.length > 0) {
+        musclesSection.classList.remove('hidden');
+        musclesContainer.innerHTML = '';
+        
+        exercise.muscle.forEach(muscle => {
+            const tag = document.createElement('span');
+            tag.className = 'inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium mr-1 mb-1';
+            tag.textContent = muscle;
+            musclesContainer.appendChild(tag);
+        });
+    } else {
+        musclesSection.classList.add('hidden');
+    }
+}
 
         // Update close modal function to handle both video and image
         closeModalBtn.onclick = () => {
