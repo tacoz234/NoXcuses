@@ -1,6 +1,8 @@
 // --- Confirmation Modal ---
 function showConfirm(message, onYes) {
     const modal = document.getElementById('confirmModal');
+    if (!modal) return; // Exit if modal doesn't exist on this page
+    
     document.getElementById('confirmMessage').textContent = message;
     modal.style.display = '';
     function cleanup() {
@@ -17,63 +19,69 @@ function showConfirm(message, onYes) {
 }
 
 // --- Exercise Modals ---
+// Only initialize if elements exist (workout page)
 const exerciseModal = document.getElementById('exerciseModal');
 const closeExerciseModalBtn = document.getElementById('closeExerciseModal');
 const exerciseSearch = document.getElementById('exerciseSearch');
 const exerciseList = document.getElementById('exerciseList');
 
-function openExerciseModal() {
-    exerciseModal.classList.remove('hidden');
-    exerciseSearch.value = '';
-    
-    // Check if exercises are loaded, if not show loading message
-    if (!window.allExercises || window.allExercises.length === 0) {
-        exerciseList.innerHTML = '<div class="text-gray-400 text-center">Loading exercises...</div>';
-        // Try to load exercises if they haven't been loaded yet
-        if (window.exerciseManagement) {
-            window.exerciseManagement.loadExercises().then(() => {
-                renderExerciseList(window.allExercises || []);
-            });
+// Only set up exercise modal if elements exist
+if (exerciseModal && closeExerciseModalBtn && exerciseSearch && exerciseList) {
+    function openExerciseModal() {
+        exerciseModal.classList.remove('hidden');
+        exerciseSearch.value = '';
+        
+        // Check if exercises are loaded, if not show loading message
+        if (!window.allExercises || window.allExercises.length === 0) {
+            exerciseList.innerHTML = '<div class="text-gray-400 text-center">Loading exercises...</div>';
+            // Try to load exercises if they haven't been loaded yet
+            if (window.exerciseManagement) {
+                window.exerciseManagement.loadExercises().then(() => {
+                    renderExerciseList(window.allExercises || []);
+                });
+            }
+        } else {
+            renderExerciseList(window.allExercises);
         }
-    } else {
-        renderExerciseList(window.allExercises);
+        
+        exerciseSearch.focus();
+    }
+
+    function closeExerciseModal() {
+        exerciseModal.classList.add('hidden');
     }
     
-    exerciseSearch.focus();
-}
-
-function closeExerciseModal() {
-    exerciseModal.classList.add('hidden');
-}
-closeExerciseModalBtn.onclick = closeExerciseModal;
-window.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeExerciseModal();
-});
-
-function renderExerciseList(exercises) {
-    exerciseList.innerHTML = '';
-    if (!exercises || exercises.length === 0) {
-        exerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
-        return;
-    }
+    closeExerciseModalBtn.onclick = closeExerciseModal;
     
-    exercises.forEach(ex => {
-        const div = document.createElement('div');
-        div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100';
-        div.textContent = ex.name;
-        div.onclick = () => {
-            addExerciseToWorkout(ex);
-            closeExerciseModal();
-        };
-        exerciseList.appendChild(div);
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeExerciseModal();
+    });
+
+    function renderExerciseList(exercises) {
+        exerciseList.innerHTML = '';
+        if (!exercises || exercises.length === 0) {
+            exerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
+            return;
+        }
+        
+        exercises.forEach(ex => {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100';
+            div.textContent = ex.name;
+            div.onclick = () => {
+                addExerciseToWorkout(ex);
+                closeExerciseModal();
+            };
+            exerciseList.appendChild(div);
+        });
+    }
+
+    exerciseSearch.addEventListener('input', function() {
+        const val = exerciseSearch.value.toLowerCase();
+        const exercises = window.allExercises || [];
+        renderExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
     });
 }
-
-exerciseSearch.addEventListener('input', function() {
-    const val = exerciseSearch.value.toLowerCase();
-    const exercises = window.allExercises || [];
-    renderExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
-});
 
 // Replace Exercise Modal
 const replaceExerciseModal = document.getElementById('replaceExerciseModal');
@@ -81,77 +89,83 @@ const closeReplaceExerciseModalBtn = document.getElementById('closeReplaceExerci
 const replaceExerciseSearch = document.getElementById('replaceExerciseSearch');
 const replaceExerciseList = document.getElementById('replaceExerciseList');
 
-function openReplaceExerciseModal(idx) {
-    replaceExerciseIdx = idx;
-    replaceExerciseModal.classList.remove('hidden');
-    replaceExerciseSearch.value = '';
-    
-    // Check if exercises are loaded
-    if (!window.allExercises || window.allExercises.length === 0) {
-        replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">Loading exercises...</div>';
-        if (window.exerciseManagement) {
-            window.exerciseManagement.loadExercises().then(() => {
-                renderReplaceExerciseList(window.allExercises || []);
-            });
-        }
-    } else {
-        renderReplaceExerciseList(window.allExercises);
-    }
-    
-    replaceExerciseSearch.focus();
-}
-
-function closeReplaceExerciseModal() {
-    replaceExerciseModal.classList.add('hidden');
-    replaceExerciseIdx = null;
-}
-closeReplaceExerciseModalBtn.onclick = closeReplaceExerciseModal;
-window.addEventListener('keydown', function(e) {
-    if (!replaceExerciseModal.classList.contains('hidden') && e.key === 'Escape') closeReplaceExerciseModal();
-});
-replaceExerciseSearch.addEventListener('input', function() {
-    const val = replaceExerciseSearch.value.toLowerCase();
-    const exercises = window.allExercises || [];
-    renderReplaceExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
-});
-
-function renderReplaceExerciseList(exercises) {
-    replaceExerciseList.innerHTML = '';
-    if (!exercises || exercises.length === 0) {
-        replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
-        return;
-    }
-    
-    exercises.forEach(ex => {
-        const div = document.createElement('div');
-        div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100 mb-1 text-black';
-        div.textContent = ex.name;
-        div.onclick = () => {
-            if (replaceExerciseIdx !== null) {
-                let sets = [];
-                // Always copy reps and rest from the exercise being replaced
-                let oldEx = workoutExercises[replaceExerciseIdx];
-                let reps = oldEx?.sets?.[0]?.reps ?? 10;
-                let rest = oldEx?.rest ?? null;
-                let numSets = oldEx?.sets?.length ?? 1;
-                for (let i = 0; i < numSets; i++) {
-                    sets.push({
-                        reps: reps,
-                        weight: 0,
-                        completed: false
-                    });
-                }
-                workoutExercises[replaceExerciseIdx] = {
-                    name: ex.name,
-                    sets: sets,
-                    rest: rest
-                };
-                renderWorkoutExercises();
-                closeReplaceExerciseModal();
+// Only set up replace exercise modal if elements exist
+if (replaceExerciseModal && closeReplaceExerciseModalBtn && replaceExerciseSearch && replaceExerciseList) {
+    function openReplaceExerciseModal(idx) {
+        replaceExerciseIdx = idx;
+        replaceExerciseModal.classList.remove('hidden');
+        replaceExerciseSearch.value = '';
+        
+        // Check if exercises are loaded
+        if (!window.allExercises || window.allExercises.length === 0) {
+            replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">Loading exercises...</div>';
+            if (window.exerciseManagement) {
+                window.exerciseManagement.loadExercises().then(() => {
+                    renderReplaceExerciseList(window.allExercises || []);
+                });
             }
-        };
-        replaceExerciseList.appendChild(div);
+        } else {
+            renderReplaceExerciseList(window.allExercises);
+        }
+        
+        replaceExerciseSearch.focus();
+    }
+
+    function closeReplaceExerciseModal() {
+        replaceExerciseModal.classList.add('hidden');
+        replaceExerciseIdx = null;
+    }
+    
+    closeReplaceExerciseModalBtn.onclick = closeReplaceExerciseModal;
+    
+    window.addEventListener('keydown', function(e) {
+        if (!replaceExerciseModal.classList.contains('hidden') && e.key === 'Escape') closeReplaceExerciseModal();
     });
+    
+    replaceExerciseSearch.addEventListener('input', function() {
+        const val = replaceExerciseSearch.value.toLowerCase();
+        const exercises = window.allExercises || [];
+        renderReplaceExerciseList(exercises.filter(ex => ex.name.toLowerCase().includes(val)));
+    });
+
+    function renderReplaceExerciseList(exercises) {
+        replaceExerciseList.innerHTML = '';
+        if (!exercises || exercises.length === 0) {
+            replaceExerciseList.innerHTML = '<div class="text-gray-400 text-center">No exercises found.</div>';
+            return;
+        }
+        
+        exercises.forEach(ex => {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-100 rounded p-2 cursor-pointer hover:bg-blue-100 mb-1 text-black';
+            div.textContent = ex.name;
+            div.onclick = () => {
+                if (replaceExerciseIdx !== null) {
+                    let sets = [];
+                    // Always copy reps and rest from the exercise being replaced
+                    let oldEx = workoutExercises[replaceExerciseIdx];
+                    let reps = oldEx?.sets?.[0]?.reps ?? 10;
+                    let rest = oldEx?.rest ?? null;
+                    let numSets = oldEx?.sets?.length ?? 1;
+                    for (let i = 0; i < numSets; i++) {
+                        sets.push({
+                            reps: reps,
+                            weight: 0,
+                            completed: false
+                        });
+                    }
+                    workoutExercises[replaceExerciseIdx] = {
+                        name: ex.name,
+                        sets: sets,
+                        rest: rest
+                    };
+                    renderWorkoutExercises();
+                    closeReplaceExerciseModal();
+                }
+            };
+            replaceExerciseList.appendChild(div);
+        });
+    }
 }
 
 // --- Alert Modal ---
@@ -237,37 +251,33 @@ function showConfirm(message, title = 'Confirm', onConfirm = () => {}, onCancel 
                 border-radius: 12px;
                 font-size: 16px;
                 z-index: 1000000;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
                 text-align: center;
                 min-width: 300px;
                 max-width: 400px;
                 font-family: Arial, sans-serif;
             ">
-                <div style="margin-bottom: 8px; font-size: 18px; font-weight: 600; color: white;">${title}</div>
-                <div style="color: #d1d5db; margin-bottom: 20px; line-height: 1.5;">${message}</div>
+                <div style="margin-bottom: 8px; font-size: 18px; font-weight: 600;">${title}</div>
+                <div style="margin-bottom: 20px; color: #d1d5db;">${message}</div>
                 <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="confirmCancel" style="
-                        background: #374151;
-                        color: white;
-                        border: 1px solid #4b5563;
-                        padding: 8px 16px;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        font-weight: 500;
-                        transition: background-color 0.2s;
-                    ">Cancel</button>
-                    <button id="confirmOK" style="
-                        background: #dc2626;
+                    <button id="confirmBtn" style="
+                        background: #3b82f6;
                         color: white;
                         border: none;
-                        padding: 8px 16px;
-                        border-radius: 8px;
+                        padding: 10px 20px;
+                        border-radius: 6px;
                         cursor: pointer;
-                        font-size: 14px;
-                        font-weight: 500;
-                        transition: background-color 0.2s;
-                    ">OK</button>
+                        font-weight: 600;
+                    ">Confirm</button>
+                    <button id="cancelBtn" style="
+                        background: #6b7280;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-weight: 600;
+                    ">Cancel</button>
                 </div>
             </div>
         </div>
@@ -277,42 +287,40 @@ function showConfirm(message, title = 'Confirm', onConfirm = () => {}, onCancel 
     document.body.appendChild(confirmDiv);
     
     // Add event listeners
-    const cancelBtn = confirmDiv.querySelector('#confirmCancel');
-    const okBtn = confirmDiv.querySelector('#confirmOK');
+    const confirmBtn = confirmDiv.querySelector('#confirmBtn');
+    const cancelBtn = confirmDiv.querySelector('#cancelBtn');
     
-    function cleanup() {
-        if (confirmDiv.parentElement) {
-            confirmDiv.remove();
-        }
-    }
+    const cleanup = () => {
+        confirmDiv.remove();
+    };
     
-    cancelBtn.addEventListener('click', () => {
-        cleanup();
-        onCancel();
-    });
-    
-    okBtn.addEventListener('click', () => {
+    confirmBtn.onclick = () => {
         cleanup();
         onConfirm();
-    });
+    };
     
-    // Close on overlay click
-    confirmDiv.addEventListener('click', (e) => {
+    cancelBtn.onclick = () => {
+        cleanup();
+        onCancel();
+    };
+    
+    // Close on background click
+    confirmDiv.onclick = (e) => {
         if (e.target === confirmDiv) {
             cleanup();
             onCancel();
         }
-    });
+    };
     
     // Close on Escape key
-    const escapeHandler = (e) => {
+    const handleEscape = (e) => {
         if (e.key === 'Escape') {
             cleanup();
             onCancel();
-            document.removeEventListener('keydown', escapeHandler);
+            document.removeEventListener('keydown', handleEscape);
         }
     };
-    document.addEventListener('keydown', escapeHandler);
+    document.addEventListener('keydown', handleEscape);
     
     return confirmDiv;
 }

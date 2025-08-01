@@ -19,6 +19,15 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png" sizes="180x180">
+  
+  <!-- Redirect to workout.html as main page -->
+  <script>
+    // Check if we're being accessed directly (not from navigation)
+    if (!document.referrer || !document.referrer.includes(window.location.hostname)) {
+      // Redirect to workout page as the main landing page
+      window.location.replace('workout.html');
+    }
+  </script>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
   <!-- Header -->
