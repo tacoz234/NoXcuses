@@ -30,9 +30,7 @@ class GlobalRestTimer {
     async requestNotificationPermission() {
         if ('Notification' in window) {
             this.notificationPermission = await Notification.requestPermission();
-            console.log('Notification permission:', this.notificationPermission);
         } else {
-            console.log('Browser does not support notifications');
         }
     }
 
@@ -220,7 +218,6 @@ class GlobalRestTimer {
         const exerciseName = timerData.exerciseName || 'Exercise';
         const setNumber = (timerData.setIndex || 0) + 1;
         
-        console.log('Showing cross-page notification for:', exerciseName, 'Set', setNumber);
         
         // Play notification sound
         this.playNotificationSound();
@@ -281,7 +278,6 @@ class GlobalRestTimer {
             playTone(1000, now + 0.15, 0.3); // Second tone (slightly delayed and higher)
             
         } catch (error) {
-            console.log('Audio not supported or failed:', error);
         }
     }
 

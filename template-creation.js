@@ -348,7 +348,6 @@ class TemplateCreation {
         if (createRoutineBtn) {
             createRoutineBtn.addEventListener('click', () => {
                 // Placeholder function - doesn't do anything yet
-                console.log('Routine button clicked - functionality to be implemented');
             });
         }
     }
