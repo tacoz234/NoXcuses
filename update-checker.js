@@ -1,7 +1,7 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.28'; // Increment to new version
         this.currentVersion = this.getCurrentVersion();
+        this.latestVersion = '1.0.29'; // Update this
         this.updateCheckInterval = null;
         this.isUpdating = false;
         this.hasShownNotification = false;
