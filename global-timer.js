@@ -272,7 +272,9 @@ class GlobalRestTimer {
                 if (event.data.type === 'GET_TIMER_DATA') {
                     // Send timer data to service worker
                     const timerData = this.getTimerDataForServiceWorker();
-                    event.ports[0].postMessage(timerData);
+                    if (event.ports && event.ports[0]) {
+                        event.ports[0].postMessage(timerData);
+                    }
                 } else if (event.data.type === 'MARK_NOTIFICATION_SHOWN') {
                     // Mark notification as shown in localStorage
                     const savedTimer = localStorage.getItem('activeRestTimer');
@@ -281,6 +283,7 @@ class GlobalRestTimer {
                             const timerData = JSON.parse(savedTimer);
                             timerData.notificationShown = true;
                             localStorage.setItem('activeRestTimer', JSON.stringify(timerData));
+                            console.log('Marked notification as shown via SW message');
                         } catch (e) {
                             console.error('Error updating notification status:', e);
                         }
