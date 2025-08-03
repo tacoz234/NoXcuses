@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.5';
+const CACHE_NAME = 'noxcuses-v1.0.6';
 const urlsToCache = [
   './',
   './index.html',
@@ -78,10 +78,7 @@ function startBackgroundTimerMonitoring() {
   
   backgroundTimerInterval = setInterval(async () => {
     try {
-      // Check if there's an active rest timer
-      const clients = await self.clients.matchAll();
-      
-      // Get timer data from IndexedDB or simulate localStorage access
+      // Get timer data directly from storage simulation
       const timerData = await getTimerDataFromStorage();
       
       if (timerData && timerData.isWorkoutActive) {
@@ -91,9 +88,10 @@ function startBackgroundTimerMonitoring() {
         
         // If timer expired, show notification
         if (remainingTime <= 0 && !timerData.notificationShown) {
+          console.log('Timer expired, showing notification');
           await showBackgroundNotification(timerData);
-          // Mark notification as shown
-          await updateTimerNotificationStatus(timerData);
+          // Mark notification as shown by updating the stored data
+          await markNotificationShown();
         }
       }
     } catch (error) {
@@ -102,14 +100,14 @@ function startBackgroundTimerMonitoring() {
   }, 1000);
 }
 
-// Function to get timer data (simulating localStorage access)
+// Function to get timer data (improved version)
 async function getTimerDataFromStorage() {
   try {
-    // Since service workers can't access localStorage directly,
-    // we'll use postMessage to get data from clients
+    // Try to get data from clients first
     const clients = await self.clients.matchAll();
     
     if (clients.length > 0) {
+      // Try to get data from active client
       return new Promise((resolve) => {
         const messageChannel = new MessageChannel();
         messageChannel.port1.onmessage = (event) => {
@@ -120,14 +118,52 @@ async function getTimerDataFromStorage() {
           type: 'GET_TIMER_DATA'
         }, [messageChannel.port2]);
         
-        // Timeout after 1 second
-        setTimeout(() => resolve(null), 1000);
+        // Timeout after 500ms and try alternative method
+        setTimeout(() => {
+          // Fallback: simulate localStorage access by checking if we have cached data
+          // This is a workaround since service workers can't access localStorage directly
+          resolve(getCachedTimerData());
+        }, 500);
       });
     }
     
-    return null;
+    return getCachedTimerData();
   } catch (error) {
+    console.error('Error getting timer data:', error);
     return null;
+  }
+}
+
+// Cache timer data when received from clients
+let cachedTimerData = null;
+let lastCacheUpdate = 0;
+
+function getCachedTimerData() {
+  // Return cached data if it's recent (within 5 seconds)
+  if (cachedTimerData && (Date.now() - lastCacheUpdate) < 5000) {
+    return cachedTimerData;
+  }
+  return null;
+}
+
+function updateCachedTimerData(data) {
+  cachedTimerData = data;
+  lastCacheUpdate = Date.now();
+}
+
+// Function to mark notification as shown
+async function markNotificationShown() {
+  const clients = await self.clients.matchAll();
+  
+  if (clients.length > 0) {
+    clients[0].postMessage({
+      type: 'MARK_NOTIFICATION_SHOWN'
+    });
+  }
+  
+  // Also update cached data
+  if (cachedTimerData) {
+    cachedTimerData.notificationShown = true;
   }
 }
 
@@ -192,10 +228,13 @@ self.addEventListener('notificationclick', (event) => {
   }
 });
 
-// Handle messages from clients
+// Handle messages from clients (improved)
 self.addEventListener('message', (event) => {
   if (event.data.type === 'GET_TIMER_DATA') {
     // This will be handled by the client-side code
+  } else if (event.data.type === 'UPDATE_TIMER_DATA') {
+    // Cache the timer data for background use
+    updateCachedTimerData(event.data.timerData);
   }
 });
 

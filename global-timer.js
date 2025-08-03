@@ -11,7 +11,7 @@ class GlobalRestTimer {
     }
 
     async init() {
-        // Request notification permission
+        // Request notification permission more aggressively
         await this.requestNotificationPermission();
         
         // Get service worker registration
@@ -29,11 +29,62 @@ class GlobalRestTimer {
         window.addEventListener('storage', (e) => {
             if (e.key === 'activeRestTimer') {
                 this.handleTimerUpdate();
+                this.sendTimerDataToServiceWorker();
             }
         });
         
+        // Send initial timer data to service worker
+        this.sendTimerDataToServiceWorker();
+        
         // Also check immediately when page loads
         this.handleTimerUpdate();
+    }
+
+    async requestNotificationPermission() {
+        if ('Notification' in window) {
+            // Check current permission
+            if (Notification.permission === 'default') {
+                // Show a user-friendly prompt first
+                const userWantsNotifications = confirm(
+                    'NoXcuses would like to send you notifications when your rest timer finishes. This helps you stay on track with your workout even when the app is in the background. Allow notifications?'
+                );
+                
+                if (userWantsNotifications) {
+                    this.notificationPermission = await Notification.requestPermission();
+                } else {
+                    this.notificationPermission = 'denied';
+                }
+            } else {
+                this.notificationPermission = Notification.permission;
+            }
+            
+            console.log('Notification permission:', this.notificationPermission);
+            
+            // If permission is denied, show instructions
+            if (this.notificationPermission === 'denied') {
+                console.warn('Notifications are blocked. Background timer alerts will not work.');
+            }
+        }
+    }
+
+    // New method to send timer data to service worker
+    sendTimerDataToServiceWorker() {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            const timerData = this.getTimerDataForServiceWorker();
+            navigator.serviceWorker.controller.postMessage({
+                type: 'UPDATE_TIMER_DATA',
+                timerData: timerData
+            });
+        }
+    }
+
+    startMonitoring() {
+        // Check every second for timer updates
+        this.checkInterval = setInterval(() => {
+            this.checkTimerStatus();
+            // Also send updated data to service worker
+            this.sendTimerDataToServiceWorker();
+        }, 1000);
     }
 
     setupServiceWorkerCommunication() {
@@ -76,12 +127,6 @@ class GlobalRestTimer {
             };
         } catch (e) {
             return null;
-        }
-    }
-
-    async requestNotificationPermission() {
-        if ('Notification' in window) {
-            this.notificationPermission = await Notification.requestPermission();
         }
     }
 

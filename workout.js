@@ -18,9 +18,30 @@ function saveRestTimerState() {
             remainingSeconds: restTimeSeconds,
             initialDuration: initialRestTimeSeconds,
             lastUpdateTime: Date.now(),
-            exerciseName: workoutExercises[activeRestTimer.exerciseIndex]?.name || 'Exercise' // Add exercise name
+            exerciseName: workoutExercises[activeRestTimer.exerciseIndex]?.name || 'Exercise',
+            notificationShown: false // Always reset this when saving
         };
         localStorage.setItem('activeRestTimer', JSON.stringify(timerData));
+        
+        // Also send to service worker if available
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'UPDATE_TIMER_DATA',
+                timerData: {
+                    ...timerData,
+                    isWorkoutActive: localStorage.getItem('isWorkoutActive') === '1'
+                }
+            });
+        }
+    } else {
+        // Clear timer data when no active timer
+        localStorage.removeItem('activeRestTimer');
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'UPDATE_TIMER_DATA',
+                timerData: null
+            });
+        }
     }
 }
 
