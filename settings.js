@@ -85,3 +85,25 @@ saveSettingsBtn.addEventListener('click', function() {
 
 // Load user data when page loads
 loadUserData();
+
+// Display app version information
+function displayAppInfo() {
+    const currentVersion = localStorage.getItem('app-version') || '1.0.0';
+    const lastUpdated = localStorage.getItem('last-update-check') || 'Never';
+    
+    const versionEl = document.getElementById('appVersion');
+    const lastUpdatedEl = document.getElementById('lastUpdated');
+    
+    if (versionEl) versionEl.textContent = currentVersion;
+    if (lastUpdatedEl) {
+        if (lastUpdated === 'Never') {
+            lastUpdatedEl.textContent = 'Never';
+        } else {
+            const date = new Date(parseInt(lastUpdated));
+            lastUpdatedEl.textContent = date.toLocaleDateString();
+        }
+    }
+}
+
+// Call on page load
+displayAppInfo();

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.4';
+const CACHE_NAME = 'noxcuses-v1.0.5';
 const urlsToCache = [
   './',
   './index.html',
@@ -45,6 +45,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
   );
+  // Force immediate activation
   self.skipWaiting();
 });
 
@@ -54,13 +55,16 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      // Force immediate control of all clients
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
   
   // Start background timer monitoring when service worker activates
   startBackgroundTimerMonitoring();
@@ -200,10 +204,33 @@ self.addEventListener('fetch', (event) => {
   
   // Never cache update-checker.js - always fetch fresh
   if (noCacheFiles.some(file => url.pathname.endsWith(file.replace('./', '')))) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request, {
+        cache: 'no-store'
+      })
+    );
     return;
   }
   
+  // For HTML files, try network first, then cache
+  if (event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Clone the response before caching
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(event.request, responseClone));
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+  
+  // For other resources, cache first, then network
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
