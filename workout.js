@@ -46,7 +46,6 @@ function saveRestTimerState() {
 }
 
 function restoreRestTimerState() {
-    
     // Only restore if workout is actually active
     if (localStorage.getItem('isWorkoutActive') !== '1') {
         localStorage.removeItem('activeRestTimer');
@@ -64,17 +63,17 @@ function restoreRestTimerState() {
         const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
         const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
         
+        console.log(`Timer restoration: ${timerData.remainingSeconds}s saved, ${elapsedSeconds}s elapsed, ${remainingTime}s remaining`);
         
-        // If timer expired while away, the global timer should have handled the notification
-        // Just clean up silently
+        // If timer expired while away, clean up and don't restore
         if (remainingTime <= 0) {
+            console.log('Timer expired while app was closed');
             localStorage.removeItem('activeRestTimer');
             return;
         }
         
-        // Only restore if there's meaningful time left (more than 3 seconds)
-        if (remainingTime > 3) {
-            
+        // Only restore if there's meaningful time left (more than 1 second)
+        if (remainingTime > 1) {
             // Find the corresponding timer display and container
             const exerciseIndex = timerData.exerciseIndex;
             const setIndex = timerData.setIndex;
@@ -108,6 +107,7 @@ function restoreRestTimerState() {
                             progressBar.style.width = `${Math.max(0, progressPercentage)}%`;
                         }
                         
+                        // Start the timer with the remaining time
                         restTimerInterval = setInterval(() => {
                             restTimeSeconds--;
                             restTimerDisplay.textContent = formatTime(restTimeSeconds);
@@ -125,33 +125,66 @@ function restoreRestTimerState() {
                                 if (localStorage.getItem('isWorkoutActive') === '1') {
                                     showRestTimerFinishedAlert();
                                 }
-                                // Find the stopRestTimer function in the current scope
-                                if (typeof stopRestTimer === 'function') {
-                                    stopRestTimer();
-                                } else {
-                                    // Fallback cleanup if stopRestTimer is not available
-                                    clearInterval(restTimerInterval);
-                                    restTimerInterval = null;
-                                    activeRestTimer = null;
-                                    localStorage.removeItem('activeRestTimer');
-                                }
+                                stopRestTimer();
                                 restTimerContainer.classList.add('hidden');
                             }
                         }, 1000);
                         
+                        console.log(`Timer restored: ${remainingTime}s remaining`);
+                        
                     } else {
+                        console.log('Timer UI elements not found, cleaning up');
                         localStorage.removeItem('activeRestTimer');
                     }
                 } else {
+                    console.log('Set row not found, cleaning up timer');
                     localStorage.removeItem('activeRestTimer');
                 }
             }, 100);
         } else {
+            console.log('Timer has too little time remaining, cleaning up');
             localStorage.removeItem('activeRestTimer');
         }
     } catch (e) {
+        console.error('Error restoring timer state:', e);
         localStorage.removeItem('activeRestTimer');
     }
+}
+
+function showRestTimerFinishedAlert() {
+    // Only show alert if workout is actually active
+    if (localStorage.getItem('isWorkoutActive') !== '1') {
+        return;
+    }
+    
+    // Play a notification sound using the global timer's audio context
+    if (window.globalRestTimer && typeof window.globalRestTimer.playNotificationSound === 'function') {
+        window.globalRestTimer.playNotificationSound();
+    } else {
+        // Fallback sound method
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (error) {
+            console.warn('Could not play notification sound:', error);
+        }
+    }
+    
+    // Show alert popup
+    showAlert('Rest timer finished! Time for your next set.', 'Rest Complete');
 }
 
 // --- Utility Functions ---

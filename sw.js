@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.7';
+const CACHE_NAME = 'noxcuses-v1.0.8';
 const urlsToCache = [
   './',
   './index.html',

@@ -7,19 +7,20 @@ class GlobalRestTimer {
         this.notificationPermission = null;
         this.hasShownNotification = false;
         this.serviceWorkerRegistration = null;
+        this.audioContext = null; // Add audio context for sound
         this.init();
     }
 
     async init() {
-        // Request notification permission more aggressively
-        await this.requestNotificationPermission();
+        // Only request notification permission if not already handled
+        await this.checkNotificationPermission();
         
         // Get service worker registration
         if ('serviceWorker' in navigator) {
             this.serviceWorkerRegistration = await navigator.serviceWorker.ready;
         }
         
-        // Set up service worker message handling
+        // Set up service worker communication
         this.setupServiceWorkerCommunication();
         
         // Start monitoring for active timers
@@ -38,13 +39,18 @@ class GlobalRestTimer {
         
         // Also check immediately when page loads
         this.handleTimerUpdate();
+        
+        // Initialize audio context on first user interaction
+        this.initializeAudioOnUserInteraction();
     }
 
-    async requestNotificationPermission() {
+    async checkNotificationPermission() {
         if ('Notification' in window) {
-            // Check current permission
-            if (Notification.permission === 'default') {
-                // Show a user-friendly prompt first
+            // Check if we've already asked and stored the result
+            const storedPermission = localStorage.getItem('notification-permission-asked');
+            
+            if (Notification.permission === 'default' && !storedPermission) {
+                // Only ask once per device
                 const userWantsNotifications = confirm(
                     'NoXcuses would like to send you notifications when your rest timer finishes. This helps you stay on track with your workout even when the app is in the background. Allow notifications?'
                 );
@@ -54,7 +60,12 @@ class GlobalRestTimer {
                 } else {
                     this.notificationPermission = 'denied';
                 }
+                
+                // Store that we've asked, regardless of the answer
+                localStorage.setItem('notification-permission-asked', 'true');
+                localStorage.setItem('notification-permission-result', this.notificationPermission);
             } else {
+                // Use the current browser permission or stored result
                 this.notificationPermission = Notification.permission;
             }
             
@@ -65,6 +76,27 @@ class GlobalRestTimer {
                 console.warn('Notifications are blocked. Background timer alerts will not work.');
             }
         }
+    }
+
+    initializeAudioOnUserInteraction() {
+        const initAudio = () => {
+            if (!this.audioContext) {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // Remove the event listeners once audio context is created
+                    document.removeEventListener('click', initAudio);
+                    document.removeEventListener('touchstart', initAudio);
+                    document.removeEventListener('keydown', initAudio);
+                } catch (error) {
+                    console.warn('Could not create audio context:', error);
+                }
+            }
+        };
+        
+        // Listen for any user interaction to initialize audio
+        document.addEventListener('click', initAudio);
+        document.addEventListener('touchstart', initAudio);
+        document.addEventListener('keydown', initAudio);
     }
 
     // New method to send timer data to service worker
@@ -382,16 +414,24 @@ class GlobalRestTimer {
 
     playNotificationSound() {
         try {
-            // Create an audio context and play a pleasant notification sound
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Use the pre-initialized audio context
+            if (!this.audioContext) {
+                // Fallback: try to create audio context (might not work without user interaction)
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Resume audio context if it's suspended
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
             
             // Create a more pleasant notification sound (two-tone chime)
             const playTone = (frequency, startTime, duration) => {
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
                 
                 oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
+                gainNode.connect(this.audioContext.destination);
                 
                 oscillator.frequency.setValueAtTime(frequency, startTime);
                 oscillator.type = 'sine';
@@ -405,11 +445,19 @@ class GlobalRestTimer {
             };
             
             // Play a pleasant two-tone chime
-            const now = audioContext.currentTime;
+            const now = this.audioContext.currentTime;
             playTone(800, now, 0.3);      // First tone
             playTone(1000, now + 0.15, 0.3); // Second tone (slightly delayed and higher)
             
         } catch (error) {
+            console.warn('Could not play notification sound:', error);
+            // Fallback: try to use a simple beep
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+                audio.play().catch(() => {});
+            } catch (fallbackError) {
+                // Silent fallback
+            }
         }
     }
 
@@ -430,9 +478,10 @@ class GlobalRestTimer {
 let globalRestTimer;
 document.addEventListener('DOMContentLoaded', () => {
     globalRestTimer = new GlobalRestTimer();
+    // Make it globally accessible for other scripts
+    window.globalRestTimer = globalRestTimer;
 });
 
-// Clean up when page unloads
 window.addEventListener('beforeunload', () => {
     if (globalRestTimer) {
         globalRestTimer.destroy();

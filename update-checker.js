@@ -1,7 +1,7 @@
 // Enhanced automatic update checker
 function checkForUpdates() {
   const currentVersion = localStorage.getItem('app-version') || '1.0.0';
-  const latestVersion = '1.0.7';
+  const latestVersion = '1.0.8';
   
   console.log('Current version:', currentVersion, 'Latest version:', latestVersion);
   
@@ -53,7 +53,7 @@ function checkForUpdates() {
 
 // Initialize version on first load
 if (!localStorage.getItem('app-version')) {
-  localStorage.setItem('app-version', '1.0.7');
+  localStorage.setItem('app-version', '1.0.8');
   localStorage.setItem('last-update-check', Date.now().toString());
 }
 
