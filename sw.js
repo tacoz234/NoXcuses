@@ -1,35 +1,35 @@
-const CACHE_NAME = 'noxcuses-v1.0.12'; // Update version
+const CACHE_NAME = 'noxcuses-v1.0.13'; // Update version
 const urlsToCache = [
   './',
-  './index.html?v=1.0.12',
-  './workout.html?v=1.0.12',
-  './exercises.html?v=1.0.12',
-  './history.html?v=1.0.12',
-  './social.html?v=1.0.12',
-  './account.html?v=1.0.12',
-  './settings.html?v=1.0.12',
-  './index.js?v=1.0.12',
-  './workout.js?v=1.0.12',
-  './exercises.js?v=1.0.12',
-  './history.js?v=1.0.12',
-  './social.js?v=1.0.12',
-  './account.js?v=1.0.12',
-  './settings.js?v=1.0.12',
-  './drawer.js?v=1.0.12',
-  './modals.js?v=1.0.12',
-  './navbar.js?v=1.0.12',
-  './stopwatch.js?v=1.0.12',
-  './workout-init.js?v=1.0.12',
-  './exercise-management.js?v=1.0.12',
-  './global-timer.js?v=1.0.12',
-  './template-creation.js?v=1.0.12',
-  './template-loading.js?v=1.0.12',
-  './template-preview.js?v=1.0.12',
-  './manifest.json?v=1.0.12',
-  './icon-192.png?v=1.0.12',
-  './badges.json?v=1.0.12',
-  './exercises.json?v=1.0.12',
-  './templates.json?v=1.0.12'
+  './index.html?v=1.0.13',
+  './workout.html?v=1.0.13',
+  './exercises.html?v=1.0.13',
+  './history.html?v=1.0.13',
+  './social.html?v=1.0.13',
+  './account.html?v=1.0.13',
+  './settings.html?v=1.0.13',
+  './index.js?v=1.0.13',
+  './workout.js?v=1.0.13',
+  './exercises.js?v=1.0.13',
+  './history.js?v=1.0.13',
+  './social.js?v=1.0.13',
+  './account.js?v=1.0.13',
+  './settings.js?v=1.0.13',
+  './drawer.js?v=1.0.13',
+  './modals.js?v=1.0.13',
+  './navbar.js?v=1.0.13',
+  './stopwatch.js?v=1.0.13',
+  './workout-init.js?v=1.0.13',
+  './exercise-management.js?v=1.0.13',
+  './global-timer.js?v=1.0.13',
+  './template-creation.js?v=1.0.13',
+  './template-loading.js?v=1.0.13',
+  './template-preview.js?v=1.0.13',
+  './manifest.json?v=1.0.13',
+  './icon-192.png?v=1.0.13',
+  './badges.json?v=1.0.13',
+  './exercises.json?v=1.0.13',
+  './templates.json?v=1.0.13'
 ];
 
 // Enhanced background timer monitoring for PWA
@@ -84,8 +84,8 @@ async function showBackgroundNotification(timerData) {
   // PWA-optimized notification options
   const notificationOptions = {
     body: `Time for your next set of ${exerciseName} (Set ${setNumber})\n\nTap to return to your workout`,
-    icon: '/icon-192.png?v=1.0.12',
-    badge: '/icon-192.png?v=1.0.12',
+    icon: '/icon-192.png?v=1.0.13',
+    badge: '/icon-192.png?v=1.0.13',
     tag: 'rest-timer-' + Date.now(), // Always unique for PWA
     requireInteraction: true,
     silent: false,
@@ -105,7 +105,7 @@ async function showBackgroundNotification(timerData) {
     data: {
       exerciseName: exerciseName,
       setNumber: setNumber,
-      url: '/workout.html?v=1.0.12',
+      url: '/workout.html?v=1.0.13',
       timestamp: Date.now()
     },
     // PWA-specific enhancements

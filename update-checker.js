@@ -1,6 +1,6 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.12'; // Increment this for new updates
+        this.latestVersion = '1.0.13'; // Increment this for new updates
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
@@ -117,6 +117,10 @@ class UpdateChecker {
             // 3. Clear all storage
             localStorage.clear();
             sessionStorage.clear();
+            
+            // 4. Set the new version in localStorage
+            localStorage.setItem('app-version', this.latestVersion);
+            localStorage.setItem('last-update-check', Date.now().toString());
             
             // 4. Clear IndexedDB if present
             if ('indexedDB' in window) {
