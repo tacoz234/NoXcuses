@@ -1,36 +1,149 @@
-const CACHE_NAME = 'noxcuses-v1.0.11';
+const CACHE_NAME = 'noxcuses-v1.0.12'; // Update version
 const urlsToCache = [
   './',
-  './index.html',
-  './workout.html',
-  './exercises.html',
-  './history.html',
-  './social.html',
-  './account.html',
-  './settings.html',
-  './index.js',
-  './workout.js',
-  './exercises.js',
-  './history.js',
-  './social.js',
-  './account.js',
-  './settings.js',
-  './drawer.js',
-  './modals.js',
-  './navbar.js',
-  './stopwatch.js',
-  './workout-init.js',
-  './exercise-management.js',
-  './global-timer.js',
-  './template-creation.js',
-  './template-loading.js',
-  './template-preview.js',
-  './manifest.json',
-  './icon-192.png?v=1.0.11', // Add version parameter
-  './badges.json',
-  './exercises.json',
-  './templates.json'
+  './index.html?v=1.0.12',
+  './workout.html?v=1.0.12',
+  './exercises.html?v=1.0.12',
+  './history.html?v=1.0.12',
+  './social.html?v=1.0.12',
+  './account.html?v=1.0.12',
+  './settings.html?v=1.0.12',
+  './index.js?v=1.0.12',
+  './workout.js?v=1.0.12',
+  './exercises.js?v=1.0.12',
+  './history.js?v=1.0.12',
+  './social.js?v=1.0.12',
+  './account.js?v=1.0.12',
+  './settings.js?v=1.0.12',
+  './drawer.js?v=1.0.12',
+  './modals.js?v=1.0.12',
+  './navbar.js?v=1.0.12',
+  './stopwatch.js?v=1.0.12',
+  './workout-init.js?v=1.0.12',
+  './exercise-management.js?v=1.0.12',
+  './global-timer.js?v=1.0.12',
+  './template-creation.js?v=1.0.12',
+  './template-loading.js?v=1.0.12',
+  './template-preview.js?v=1.0.12',
+  './manifest.json?v=1.0.12',
+  './icon-192.png?v=1.0.12',
+  './badges.json?v=1.0.12',
+  './exercises.json?v=1.0.12',
+  './templates.json?v=1.0.12'
 ];
+
+// Enhanced background timer monitoring for PWA
+function startBackgroundTimerMonitoring() {
+  if (backgroundTimerInterval) {
+    clearInterval(backgroundTimerInterval);
+  }
+  
+  backgroundTimerInterval = setInterval(async () => {
+    try {
+      const timerData = await getTimerDataFromStorage();
+      
+      if (timerData && timerData.isWorkoutActive) {
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
+        const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
+        
+        console.log(`SW Timer check: ${remainingTime}s remaining, notification shown: ${timerData.notificationShown}`);
+        
+        // Check if any clients are visible
+        const clients = await self.clients.matchAll({ 
+          type: 'window',
+          includeUncontrolled: true 
+        });
+        
+        const hasVisibleClient = clients.some(client => 
+          client.visibilityState === 'visible' || client.focused
+        );
+        
+        console.log('Clients:', clients.length, 'Visible:', hasVisibleClient);
+        
+        // If timer expired and no visible clients, show notification
+        if (remainingTime <= 0 && !timerData.notificationShown) {
+          console.log('Timer expired, showing notification. Visible clients:', hasVisibleClient);
+          
+          // Always show notification for PWA, regardless of visibility
+          await showBackgroundNotification(timerData);
+          await markNotificationShown();
+        }
+      }
+    } catch (error) {
+      console.error('Background timer check error:', error);
+    }
+  }, 100); // Very frequent checking for PWA
+}
+
+// Enhanced notification for PWA
+async function showBackgroundNotification(timerData) {
+  const exerciseName = timerData.exerciseName || 'Exercise';
+  const setNumber = (timerData.setIndex || 0) + 1;
+  
+  // PWA-optimized notification options
+  const notificationOptions = {
+    body: `Time for your next set of ${exerciseName} (Set ${setNumber})\n\nTap to return to your workout`,
+    icon: '/icon-192.png?v=1.0.12',
+    badge: '/icon-192.png?v=1.0.12',
+    tag: 'rest-timer-' + Date.now(), // Always unique for PWA
+    requireInteraction: true,
+    silent: false,
+    vibrate: [300, 100, 300, 100, 300],
+    renotify: true,
+    timestamp: Date.now(),
+    actions: [
+      {
+        action: 'open-workout',
+        title: '💪 Continue Workout'
+      },
+      {
+        action: 'dismiss',
+        title: '❌ Dismiss'
+      }
+    ],
+    data: {
+      exerciseName: exerciseName,
+      setNumber: setNumber,
+      url: '/workout.html?v=1.0.12',
+      timestamp: Date.now()
+    },
+    // PWA-specific enhancements
+    dir: 'auto',
+    lang: 'en',
+    // Force notification even if permission is default
+    persistent: true
+  };
+  
+  try {
+    // Request permission if needed
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        console.log('Notification permission denied');
+        return;
+      }
+    }
+    
+    if (Notification.permission === 'granted') {
+      await self.registration.showNotification('🔔 Rest Timer Complete!', notificationOptions);
+      console.log('PWA notification shown for:', exerciseName, 'Set', setNumber);
+    }
+  } catch (error) {
+    console.error('PWA notification failed:', error);
+    // Fallback: try with minimal options
+    try {
+      await self.registration.showNotification('Rest Timer Complete!', {
+        body: `Time for ${exerciseName} Set ${setNumber}`,
+        requireInteraction: true,
+        tag: 'rest-timer-' + Date.now(),
+        vibrate: [200, 100, 200]
+      });
+    } catch (fallbackError) {
+      console.error('Fallback notification also failed:', fallbackError);
+    }
+  }
+}
 
 // Don't cache update-checker.js - always fetch fresh
 const noCacheFiles = ['./update-checker.js'];

@@ -1,120 +1,176 @@
-// Enhanced automatic update checker with more aggressive cache invalidation
-function checkForUpdates() {
-  const currentVersion = localStorage.getItem('app-version') || '1.0.0';
-  const latestVersion = '1.0.11';
-  
-  console.log('Current version:', currentVersion, 'Latest version:', latestVersion);
-  
-  // Store last check time
-  localStorage.setItem('last-update-check', Date.now().toString());
-  
-  if (currentVersion !== latestVersion) {
-    console.log('New version detected, forcing update...');
-    
-    // Update version immediately
-    localStorage.setItem('app-version', latestVersion);
-    
-    // More aggressive cache clearing approach
-    if ('serviceWorker' in navigator) {
-      // First, try to clear all caches
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            console.log('Deleting cache:', cacheName);
-            return caches.delete(cacheName);
-          })
-        );
-      }).then(() => {
-        console.log('All caches cleared');
+class UpdateChecker {
+    constructor() {
+        this.latestVersion = '1.0.12'; // Increment this for new updates
+        this.currentVersion = this.getCurrentVersion();
+        this.updateCheckInterval = null;
+        this.isUpdating = false;
         
-        // Then unregister service workers
-        return navigator.serviceWorker.getRegistrations();
-      }).then(registrations => {
-        return Promise.all(registrations.map(reg => {
-          console.log('Unregistering service worker:', reg.scope);
-          return reg.unregister();
-        }));
-      }).then(() => {
-        console.log('Service workers unregistered');
-        
-        // Clear localStorage flags
-        localStorage.removeItem('sw-cache-cleared');
-        localStorage.removeItem('notification-permission-asked');
-        
-        // Force hard reload with aggressive cache busting
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substring(7);
-        const sessionId = Math.random().toString(36).substring(7);
-        
-        // Clear browser cache headers
-        const newUrl = window.location.href.split('?')[0] + 
-          `?v=${latestVersion}&t=${timestamp}&r=${random}&s=${sessionId}&nocache=true&_=${Date.now()}`;
-        
-        console.log('Forcing reload with URL:', newUrl);
-        
-        // Use location.replace to avoid back button issues
-        window.location.replace(newUrl);
-      }).catch(error => {
-        console.error('Error during update process:', error);
-        // Fallback: just reload with cache busting
-        const timestamp = Date.now();
-        const newUrl = window.location.href.split('?')[0] + `?v=${latestVersion}&t=${timestamp}&nocache=true`;
-        window.location.replace(newUrl);
-      });
-    } else {
-      // Fallback for browsers without service worker
-      const timestamp = Date.now();
-      const random = Math.random().toString(36).substring(7);
-      const newUrl = window.location.href.split('?')[0] + 
-        `?v=${latestVersion}&t=${timestamp}&r=${random}&nocache=true`;
-      window.location.replace(newUrl);
+        this.init();
     }
-  }
+
+    init() {
+        console.log('UpdateChecker initialized. Current:', this.currentVersion, 'Latest:', this.latestVersion);
+        
+        // Check immediately on load
+        this.checkForUpdates();
+        
+        // Check when page becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && !this.isUpdating) {
+                console.log('Page became visible, checking for updates');
+                this.checkForUpdates();
+            }
+        });
+        
+        // Check when window gains focus
+        window.addEventListener('focus', () => {
+            if (!this.isUpdating) {
+                console.log('Window focused, checking for updates');
+                this.checkForUpdates();
+            }
+        });
+        
+        // More frequent checking - every 5 seconds when active
+        this.updateCheckInterval = setInterval(() => {
+            if (!document.hidden && !this.isUpdating) {
+                this.checkForUpdates();
+            }
+        }, 5000);
+        
+        // Listen for service worker updates
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data.type === 'SW_UPDATED') {
+                    console.log('Service worker updated, forcing reload');
+                    this.forceUpdate();
+                }
+            });
+        }
+    }
+
+    getCurrentVersion() {
+        // Try multiple methods to get current version
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlVersion = urlParams.get('v');
+        
+        if (urlVersion) {
+            return urlVersion;
+        }
+        
+        // Check localStorage
+        const storedVersion = localStorage.getItem('app-version');
+        if (storedVersion) {
+            return storedVersion;
+        }
+        
+        // Check manifest or other sources
+        const metaVersion = document.querySelector('meta[name="version"]');
+        if (metaVersion) {
+            return metaVersion.content;
+        }
+        
+        return '1.0.0'; // fallback
+    }
+
+    async checkForUpdates() {
+        if (this.isUpdating) return;
+        
+        try {
+            console.log('Checking for updates...', this.currentVersion, 'vs', this.latestVersion);
+            
+            if (this.currentVersion !== this.latestVersion) {
+                console.log('Update available! Current:', this.currentVersion, 'Latest:', this.latestVersion);
+                await this.performUpdate();
+            }
+        } catch (error) {
+            console.error('Update check failed:', error);
+        }
+    }
+
+    async performUpdate() {
+        if (this.isUpdating) return;
+        this.isUpdating = true;
+        
+        console.log('Performing aggressive update...');
+        
+        try {
+            // 1. Unregister ALL service workers
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                console.log('Unregistering', registrations.length, 'service workers');
+                
+                for (const registration of registrations) {
+                    await registration.unregister();
+                }
+            }
+            
+            // 2. Clear ALL caches
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                console.log('Clearing', cacheNames.length, 'caches');
+                
+                await Promise.all(
+                    cacheNames.map(cacheName => caches.delete(cacheName))
+                );
+            }
+            
+            // 3. Clear all storage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 4. Clear IndexedDB if present
+            if ('indexedDB' in window) {
+                try {
+                    const databases = await indexedDB.databases();
+                    await Promise.all(
+                        databases.map(db => {
+                            return new Promise((resolve) => {
+                                const deleteReq = indexedDB.deleteDatabase(db.name);
+                                deleteReq.onsuccess = () => resolve();
+                                deleteReq.onerror = () => resolve(); // Continue even if error
+                            });
+                        })
+                    );
+                } catch (e) {
+                    console.log('IndexedDB clear failed:', e);
+                }
+            }
+            
+            // 5. Force hard reload with cache busting
+            const timestamp = Date.now();
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('v', this.latestVersion);
+            currentUrl.searchParams.set('_t', timestamp);
+            currentUrl.searchParams.set('_force', '1');
+            
+            console.log('Forcing reload to:', currentUrl.href);
+            
+            // Use replace to avoid back button issues
+            window.location.replace(currentUrl.href);
+            
+        } catch (error) {
+            console.error('Update failed:', error);
+            // Fallback: simple reload
+            window.location.reload(true);
+        }
+    }
+
+    forceUpdate() {
+        console.log('Force update requested');
+        this.performUpdate();
+    }
+
+    destroy() {
+        if (this.updateCheckInterval) {
+            clearInterval(this.updateCheckInterval);
+        }
+    }
 }
 
-// Enhanced version detection
-function forceVersionUpdate() {
-  // Clear any cached version info
-  localStorage.removeItem('app-version');
-  localStorage.removeItem('last-update-check');
-  
-  // Set to latest version
-  localStorage.setItem('app-version', '1.0.11');
-  localStorage.setItem('last-update-check', Date.now().toString());
-}
+// Initialize update checker
+const updateChecker = new UpdateChecker();
 
-// Force version check on first load if no version is set or version is old
-const storedVersion = localStorage.getItem('app-version');
-if (!storedVersion || storedVersion === '1.0.3' || storedVersion < '1.0.11') {
-  console.log('Forcing version update from:', storedVersion);
-  forceVersionUpdate();
-}
-
-// Check on app start with delay to ensure DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(checkForUpdates, 500);
-  });
-} else {
-  setTimeout(checkForUpdates, 500);
-}
-
-// Check when app becomes visible (more aggressive checking)
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
-    // Delay to ensure page is fully loaded
-    setTimeout(checkForUpdates, 2000);
-  }
-});
-
-// Check every 10 seconds when active (more frequent for faster updates)
-setInterval(() => {
-  if (!document.hidden) {
-    checkForUpdates();
-  }
-}, 10000);
-
-// Also check on page focus
-window.addEventListener('focus', () => {
-  setTimeout(checkForUpdates, 1000);
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    updateChecker.destroy();
 });
