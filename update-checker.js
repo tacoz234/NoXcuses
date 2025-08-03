@@ -1,6 +1,6 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.26'; // Increment to new version
+        this.latestVersion = '1.0.28'; // Increment to new version
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
@@ -244,31 +244,62 @@ class UpdateChecker {
                 );
             }
             
-            // 3. Clear all storage except notification permissions
-            const notificationAsked = localStorage.getItem('notification-permission-asked');
-            const notificationResult = localStorage.getItem('notification-permission-result');
+            // 3. Preserve user data and notification permissions during storage clear
+            const preservedData = {
+                // Notification permissions
+                'notification-permission-asked': localStorage.getItem('notification-permission-asked'),
+                'notification-permission-result': localStorage.getItem('notification-permission-result'),
+                
+                // User workout data
+                'workoutHistory': localStorage.getItem('workoutHistory'),
+                'currentWorkout': localStorage.getItem('currentWorkout'),
+                
+                // User templates and exercises
+                'custom_templates': localStorage.getItem('custom_templates'),
+                'customExercises': localStorage.getItem('customExercises'),
+                
+                // Workout state
+                'isWorkoutActive': localStorage.getItem('isWorkoutActive'),
+                
+                // Rest timer state (if active)
+                'restTimerState': localStorage.getItem('restTimerState'),
+                
+                // Any other user preferences that might exist
+                'userPreferences': localStorage.getItem('userPreferences'),
+                'settings': localStorage.getItem('settings')
+            };
             
+            // Clear all storage
             localStorage.clear();
             sessionStorage.clear();
             
-            // Restore notification permissions
-            if (notificationAsked) {
-                localStorage.setItem('notification-permission-asked', notificationAsked);
-            }
-            if (notificationResult) {
-                localStorage.setItem('notification-permission-result', notificationResult);
-            }
+            // Restore preserved data
+            Object.entries(preservedData).forEach(([key, value]) => {
+                if (value !== null && value !== undefined) {
+                    localStorage.setItem(key, value);
+                }
+            });
             
             // 4. Set the new version
             localStorage.setItem('app-version', this.latestVersion);
             localStorage.setItem('last-update-check', Date.now().toString());
+            localStorage.setItem('last-notified-version', this.latestVersion);
             
-            // 5. Clear IndexedDB
+            // 5. Clear IndexedDB (but preserve any user data if stored there)
             if ('indexedDB' in window) {
                 try {
                     const databases = await indexedDB.databases();
+                    // Only clear app-specific databases, not user data databases
+                    const appDatabases = databases.filter(db => 
+                        db.name && (
+                            db.name.includes('cache') || 
+                            db.name.includes('sw-') ||
+                            db.name.includes('service-worker')
+                        )
+                    );
+                    
                     await Promise.all(
-                        databases.map(db => {
+                        appDatabases.map(db => {
                             return new Promise((resolve) => {
                                 const deleteReq = indexedDB.deleteDatabase(db.name);
                                 deleteReq.onsuccess = () => resolve();
@@ -305,6 +336,7 @@ class UpdateChecker {
             }
             
             console.log('Forcing reload to:', currentUrl.href);
+            console.log('Preserved user data during update:', Object.keys(preservedData).filter(k => preservedData[k] !== null));
             
             // Force a hard reload that bypasses all caches
             window.location.replace(currentUrl.href);
