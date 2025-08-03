@@ -1,6 +1,6 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.17'; // Increment this for new updates
+        this.latestVersion = '1.0.18'; // Increment this for new updates
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
@@ -36,14 +36,26 @@ class UpdateChecker {
             if (!document.hidden && !this.isUpdating && !this.hasShownNotification) {
                 this.checkForUpdates();
             }
-        }, 30000); // Changed from 5000 to 30000
+        }, 30000);
         
-        // Listen for service worker updates
+        // Enhanced service worker update handling
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.addEventListener('message', (event) => {
                 if (event.data.type === 'SW_UPDATED') {
                     console.log('Service worker updated, forcing reload');
-                    this.forceUpdate();
+                    if (event.data.forceReload) {
+                        this.forceUpdate();
+                    } else {
+                        this.showUpdateNotification();
+                    }
+                }
+            });
+            
+            // Check for waiting service worker
+            navigator.serviceWorker.ready.then(registration => {
+                if (registration.waiting) {
+                    console.log('Service worker waiting, showing update notification');
+                    this.showUpdateNotification();
                 }
             });
         }
@@ -79,10 +91,35 @@ class UpdateChecker {
         try {
             console.log('Checking for updates...', this.currentVersion, 'vs', this.latestVersion);
             
+            // Enhanced version checking with server validation
+            const isProduction = !window.location.hostname.includes('localhost');
+            
+            if (isProduction) {
+                // For production, also check server for version info
+                try {
+                    const response = await fetch(`./manifest.json?v=${Date.now()}`, {
+                        cache: 'no-store',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const manifest = await response.json();
+                        if (manifest.version && manifest.version !== this.currentVersion) {
+                            console.log('Server version mismatch detected');
+                            this.showUpdateNotification();
+                            this.hasShownNotification = true;
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Server version check failed:', e);
+                }
+            }
+            
             if (this.currentVersion !== this.latestVersion) {
                 console.log('Update available! Current:', this.currentVersion, 'Latest:', this.latestVersion);
-                
-                // Show update notification instead of auto-updating
                 this.showUpdateNotification();
                 this.hasShownNotification = true;
             }
@@ -176,6 +213,9 @@ class UpdateChecker {
         console.log('Performing aggressive update...');
         
         try {
+            // Enhanced production update strategy
+            const isProduction = !window.location.hostname.includes('localhost');
+            
             // 1. Unregister ALL service workers
             if ('serviceWorker' in navigator) {
                 const registrations = await navigator.serviceWorker.getRegistrations();
@@ -184,9 +224,12 @@ class UpdateChecker {
                 for (const registration of registrations) {
                     await registration.unregister();
                 }
+                
+                // Wait a bit for unregistration to complete
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
             
-            // 2. Clear ALL caches
+            // 2. Clear ALL caches aggressively
             if ('caches' in window) {
                 const cacheNames = await caches.keys();
                 console.log('Clearing', cacheNames.length, 'caches');
@@ -203,7 +246,7 @@ class UpdateChecker {
             localStorage.clear();
             sessionStorage.clear();
             
-            // Restore notification permissions to avoid re-prompting
+            // Restore notification permissions
             if (notificationAsked) {
                 localStorage.setItem('notification-permission-asked', notificationAsked);
             }
@@ -211,11 +254,11 @@ class UpdateChecker {
                 localStorage.setItem('notification-permission-result', notificationResult);
             }
             
-            // 4. Set the new version in localStorage
+            // 4. Set the new version
             localStorage.setItem('app-version', this.latestVersion);
             localStorage.setItem('last-update-check', Date.now().toString());
             
-            // 5. Clear IndexedDB if present
+            // 5. Clear IndexedDB
             if ('indexedDB' in window) {
                 try {
                     const databases = await indexedDB.databases();
@@ -224,7 +267,7 @@ class UpdateChecker {
                             return new Promise((resolve) => {
                                 const deleteReq = indexedDB.deleteDatabase(db.name);
                                 deleteReq.onsuccess = () => resolve();
-                                deleteReq.onerror = () => resolve(); // Continue even if error
+                                deleteReq.onerror = () => resolve();
                             });
                         })
                     );
@@ -233,22 +276,34 @@ class UpdateChecker {
                 }
             }
             
-            // 6. Force hard reload with cache busting
+            // 6. Enhanced cache busting for production
             const timestamp = Date.now();
             const currentUrl = new URL(window.location.href);
+            
+            // Clear all URL parameters first
+            currentUrl.search = '';
+            
+            // Add aggressive cache busting
             currentUrl.searchParams.set('v', this.latestVersion);
             currentUrl.searchParams.set('_t', timestamp);
             currentUrl.searchParams.set('_force', '1');
+            currentUrl.searchParams.set('_cb', Math.random().toString(36));
+            
+            if (isProduction) {
+                // Additional production cache busting
+                currentUrl.searchParams.set('_prod_update', '1');
+                currentUrl.searchParams.set('_no_cache', timestamp);
+            }
             
             console.log('Forcing reload to:', currentUrl.href);
             
-            // Use replace to avoid back button issues
-            window.location.replace(currentUrl.href);
+            // Use location.href instead of replace for more aggressive reload
+            window.location.href = currentUrl.href;
             
         } catch (error) {
             console.error('Update failed:', error);
-            // Fallback: simple reload
-            window.location.reload(true);
+            // Fallback: aggressive reload
+            window.location.href = window.location.href + '?_force_reload=' + Date.now();
         }
     }
 

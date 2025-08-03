@@ -1,35 +1,35 @@
-const CACHE_NAME = 'noxcuses-v1.0.17'; // Update version to match
+const CACHE_NAME = 'noxcuses-v1.0.18'; // Increment version
 const urlsToCache = [
   './',
-  './index.html?v=1.0.17',
-  './workout.html?v=1.0.17',
-  './exercises.html?v=1.0.17',
-  './history.html?v=1.0.17',
-  './social.html?v=1.0.17',
-  './account.html?v=1.0.17',
-  './settings.html?v=1.0.17',
-  './index.js?v=1.0.17',
-  './workout.js?v=1.0.17',
-  './exercises.js?v=1.0.17',
-  './history.js?v=1.0.17',
-  './social.js?v=1.0.17',
-  './account.js?v=1.0.17',
-  './settings.js?v=1.0.17',
-  './drawer.js?v=1.0.17',
-  './modals.js?v=1.0.17',
-  './navbar.js?v=1.0.17',
-  './stopwatch.js?v=1.0.17',
-  './workout-init.js?v=1.0.17',
-  './exercise-management.js?v=1.0.17',
-  './global-timer.js?v=1.0.17',
-  './template-creation.js?v=1.0.17',
-  './template-loading.js?v=1.0.17',
-  './template-preview.js?v=1.0.17',
-  './manifest.json?v=1.0.17',
-  './icon-192.png?v=1.0.17',
-  './badges.json?v=1.0.17',
-  './exercises.json?v=1.0.17',
-  './templates.json?v=1.0.17'
+  './index.html?v=1.0.18',
+  './workout.html?v=1.0.18',
+  './exercises.html?v=1.0.18',
+  './history.html?v=1.0.18',
+  './social.html?v=1.0.18',
+  './account.html?v=1.0.18',
+  './settings.html?v=1.0.18',
+  './index.js?v=1.0.18',
+  './workout.js?v=1.0.18',
+  './exercises.js?v=1.0.18',
+  './history.js?v=1.0.18',
+  './social.js?v=1.0.18',
+  './account.js?v=1.0.18',
+  './settings.js?v=1.0.18',
+  './drawer.js?v=1.0.18',
+  './modals.js?v=1.0.18',
+  './navbar.js?v=1.0.18',
+  './stopwatch.js?v=1.0.18',
+  './workout-init.js?v=1.0.18',
+  './exercise-management.js?v=1.0.18',
+  './global-timer.js?v=1.0.18',
+  './template-creation.js?v=1.0.18',
+  './template-loading.js?v=1.0.18',
+  './template-preview.js?v=1.0.18',
+  './manifest.json?v=1.0.18',
+  './icon-192.png?v=1.0.18',
+  './badges.json?v=1.0.18',
+  './exercises.json?v=1.0.18',
+  './templates.json?v=1.0.18'
 ];
 
 // Enhanced background timer monitoring for PWA
@@ -132,14 +132,20 @@ async function showBackgroundNotification(timerData) {
 // Don't cache update-checker.js - always fetch fresh
 const noCacheFiles = ['./update-checker.js'];
 
-// Background timer monitoring
 let backgroundTimerInterval = null;
 
 self.addEventListener('install', (event) => {
   console.log('Service worker installing with cache:', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then((cache) => {
+        // Use cache-busting for initial install
+        const cacheBustingUrls = urlsToCache.map(url => {
+          const separator = url.includes('?') ? '&' : '?';
+          return `${url}${separator}_sw_install=${Date.now()}`;
+        });
+        return cache.addAll(cacheBustingUrls);
+      })
   );
   // Force immediate activation
   self.skipWaiting();
@@ -168,7 +174,8 @@ self.addEventListener('activate', (event) => {
         clients.forEach(client => {
           client.postMessage({
             type: 'SW_UPDATED',
-            version: CACHE_NAME
+            version: CACHE_NAME,
+            forceReload: true // Add this flag
           });
         });
       });
@@ -384,39 +391,65 @@ self.addEventListener('fetch', (event) => {
   if (noCacheFiles.some(file => url.pathname.endsWith(file.replace('./', '')))) {
     event.respondWith(
       fetch(event.request, {
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       })
     );
     return;
   }
   
-  // Use network-first strategy for better updates
-  // This ensures users get the latest version as soon as it's available
+  // Enhanced cache-busting strategy for production
   event.respondWith(
-    fetch(event.request, {
-      cache: 'no-cache' // Always check network first
-    }).then(networkResponse => {
-      // If network request succeeds, update cache and return response
-      if (networkResponse && networkResponse.status === 200) {
-        const responseClone = networkResponse.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseClone);
+    (async () => {
+      try {
+        // Create cache-busting request
+        const cacheBustUrl = new URL(event.request.url);
+        cacheBustUrl.searchParams.set('_cb', Date.now());
+        
+        const cacheBustRequest = new Request(cacheBustUrl.href, {
+          method: event.request.method,
+          headers: {
+            ...Object.fromEntries(event.request.headers.entries()),
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
+          mode: event.request.mode,
+          credentials: event.request.credentials,
+          redirect: event.request.redirect
         });
-        return networkResponse;
-      }
-      throw new Error('Network response not ok');
-    }).catch(() => {
-      // If network fails, fall back to cache
-      return caches.match(event.request).then(cachedResponse => {
+        
+        // Try network first with cache busting
+        const networkResponse = await fetch(cacheBustRequest);
+        
+        if (networkResponse && networkResponse.status === 200) {
+          // Update cache with the fresh response
+          const responseClone = networkResponse.clone();
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(event.request, responseClone);
+          return networkResponse;
+        }
+        
+        throw new Error('Network response not ok');
+      } catch (networkError) {
+        console.log('Network failed, trying cache:', networkError);
+        
+        // Fall back to cache
+        const cachedResponse = await caches.match(event.request);
         if (cachedResponse) {
           return cachedResponse;
         }
+        
         // If no cache either, return a basic error response
         return new Response('Offline - content not available', {
           status: 503,
           statusText: 'Service Unavailable'
         });
-      });
-    })
+      }
+    })()
   );
 });
