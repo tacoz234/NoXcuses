@@ -5,7 +5,8 @@ class GlobalRestTimer {
     constructor() {
         this.checkInterval = null;
         this.notificationPermission = null;
-        this.hasShownNotification = false; // Flag to prevent repeated notifications
+        this.hasShownNotification = false;
+        this.serviceWorkerRegistration = null;
         this.init();
     }
 
@@ -13,10 +14,18 @@ class GlobalRestTimer {
         // Request notification permission
         await this.requestNotificationPermission();
         
+        // Get service worker registration
+        if ('serviceWorker' in navigator) {
+            this.serviceWorkerRegistration = await navigator.serviceWorker.ready;
+        }
+        
+        // Set up service worker message handling
+        this.setupServiceWorkerCommunication();
+        
         // Start monitoring for active timers
         this.startMonitoring();
         
-        // Listen for storage changes (when timer is updated from workout page)
+        // Listen for storage changes
         window.addEventListener('storage', (e) => {
             if (e.key === 'activeRestTimer') {
                 this.handleTimerUpdate();
@@ -27,10 +36,52 @@ class GlobalRestTimer {
         this.handleTimerUpdate();
     }
 
+    setupServiceWorkerCommunication() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data.type === 'GET_TIMER_DATA') {
+                    // Send timer data to service worker
+                    const timerData = this.getTimerDataForServiceWorker();
+                    event.ports[0].postMessage(timerData);
+                } else if (event.data.type === 'MARK_NOTIFICATION_SHOWN') {
+                    // Mark notification as shown in localStorage
+                    const savedTimer = localStorage.getItem('activeRestTimer');
+                    if (savedTimer) {
+                        try {
+                            const timerData = JSON.parse(savedTimer);
+                            timerData.notificationShown = true;
+                            localStorage.setItem('activeRestTimer', JSON.stringify(timerData));
+                        } catch (e) {
+                            console.error('Error updating notification status:', e);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    getTimerDataForServiceWorker() {
+        const savedTimer = localStorage.getItem('activeRestTimer');
+        const isWorkoutActive = localStorage.getItem('isWorkoutActive') === '1';
+        
+        if (!savedTimer || !isWorkoutActive) {
+            return null;
+        }
+        
+        try {
+            const timerData = JSON.parse(savedTimer);
+            return {
+                ...timerData,
+                isWorkoutActive: isWorkoutActive
+            };
+        } catch (e) {
+            return null;
+        }
+    }
+
     async requestNotificationPermission() {
         if ('Notification' in window) {
             this.notificationPermission = await Notification.requestPermission();
-        } else {
         }
     }
 
@@ -42,7 +93,7 @@ class GlobalRestTimer {
     }
 
     handleTimerUpdate() {
-        // Reset notification flag when timer data changes (new timer started)
+        // Reset notification flag when timer data changes
         this.hasShownNotification = false;
         this.checkTimerStatus();
     }
@@ -52,7 +103,6 @@ class GlobalRestTimer {
         const isWorkoutActive = localStorage.getItem('isWorkoutActive') === '1';
         
         if (!savedTimer || !isWorkoutActive) {
-            // Reset notification flag when no timer is active
             this.hasShownNotification = false;
             return;
         }
@@ -63,16 +113,53 @@ class GlobalRestTimer {
             const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
             const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
 
-            // If timer has expired and we're not on the workout page and haven't shown notification yet
-            if (remainingTime <= 0 && !this.isOnWorkoutPage() && !this.hasShownNotification) {
-                this.showCrossPageNotification(timerData);
+            // If timer has expired and we haven't shown notification yet
+            if (remainingTime <= 0 && !this.hasShownNotification && !timerData.notificationShown) {
+                if (this.isOnWorkoutPage()) {
+                    // Show in-page notification if on workout page
+                    this.showCrossPageNotification(timerData);
+                } else {
+                    // Show background notification via service worker
+                    this.showBackgroundNotification(timerData);
+                }
+                
                 // Clean up the expired timer
                 localStorage.removeItem('activeRestTimer');
-                // Mark that we've shown the notification
                 this.hasShownNotification = true;
             }
         } catch (e) {
             console.error('Error checking timer status:', e);
+        }
+    }
+
+    async showBackgroundNotification(timerData) {
+        if (this.serviceWorkerRegistration && this.notificationPermission === 'granted') {
+            const exerciseName = timerData.exerciseName || 'Exercise';
+            const setNumber = (timerData.setIndex || 0) + 1;
+            
+            await this.serviceWorkerRegistration.showNotification('Rest Timer Complete! 💪', {
+                body: `Time for your next set of ${exerciseName} (Set ${setNumber})`,
+                icon: './icon-192.png',
+                badge: './icon-192.png',
+                tag: 'rest-timer',
+                requireInteraction: true,
+                vibrate: [200, 100, 200, 100, 200],
+                actions: [
+                    {
+                        action: 'open-workout',
+                        title: 'Go to Workout'
+                    },
+                    {
+                        action: 'dismiss',
+                        title: 'Dismiss'
+                    }
+                ],
+                data: {
+                    exerciseName: exerciseName,
+                    setNumber: setNumber,
+                    url: './workout.html'
+                }
+            });
         }
     }
 
@@ -287,7 +374,6 @@ class GlobalRestTimer {
             this.checkInterval = null;
         }
         
-        // Remove any existing notification modal
         const existingModal = document.getElementById('restTimerNotificationModal');
         if (existingModal) {
             existingModal.remove();

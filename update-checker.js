@@ -1,7 +1,7 @@
 // Enhanced update checker with cache busting
 function checkForUpdates() {
   const currentVersion = localStorage.getItem('app-version') || '1.0.0';
-  const latestVersion = '1.0.3';
+  const latestVersion = '1.0.4';
   
   console.log('Current version:', currentVersion, 'Latest version:', latestVersion);
   
