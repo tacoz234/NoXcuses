@@ -1,6 +1,6 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.13'; // Increment this for new updates
+        this.latestVersion = '1.0.14'; // Increment this for new updates
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
@@ -80,11 +80,90 @@ class UpdateChecker {
             
             if (this.currentVersion !== this.latestVersion) {
                 console.log('Update available! Current:', this.currentVersion, 'Latest:', this.latestVersion);
-                await this.performUpdate();
+                
+                // Show update notification instead of auto-updating
+                this.showUpdateNotification();
             }
         } catch (error) {
             console.error('Update check failed:', error);
         }
+    }
+
+    // Add this new method
+    showUpdateNotification() {
+        // Check if we've already shown the notification for this version
+        const lastNotifiedVersion = localStorage.getItem('last-notified-version');
+        if (lastNotifiedVersion === this.latestVersion) {
+            return; // Don't spam notifications
+        }
+        
+        // Create update notification
+        const updateDiv = document.createElement('div');
+        updateDiv.id = 'updateNotification';
+        updateDiv.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #1f2937;
+                color: white;
+                padding: 16px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 300px;
+                font-family: Arial, sans-serif;
+            ">
+                <div style="font-weight: bold; margin-bottom: 8px;">🚀 Update Available!</div>
+                <div style="margin-bottom: 12px; font-size: 14px;">Version ${this.latestVersion} is ready to install.</div>
+                <div style="display: flex; gap: 8px;">
+                    <button id="updateNow" style="
+                        background: #3b82f6;
+                        color: white;
+                        border: none;
+                        padding: 8px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">Update Now</button>
+                    <button id="updateLater" style="
+                        background: #6b7280;
+                        color: white;
+                        border: none;
+                        padding: 8px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                    ">Later</button>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing notification if any
+        const existing = document.getElementById('updateNotification');
+        if (existing) existing.remove();
+        
+        document.body.appendChild(updateDiv);
+        
+        // Add event listeners
+        document.getElementById('updateNow').onclick = () => {
+            updateDiv.remove();
+            this.performUpdate();
+        };
+        
+        document.getElementById('updateLater').onclick = () => {
+            updateDiv.remove();
+            // Remember we showed notification for this version
+            localStorage.setItem('last-notified-version', this.latestVersion);
+        };
+        
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            if (document.getElementById('updateNotification')) {
+                updateDiv.remove();
+                localStorage.setItem('last-notified-version', this.latestVersion);
+            }
+        }, 10000);
     }
 
     async performUpdate() {
