@@ -1,36 +1,36 @@
-const CACHE_NAME = 'noxcuses-v1.0.34'; // Increment version
+const CACHE_NAME = 'noxcuses-v1.0.35'; // Increment version
 const urlsToCache = [
   './',
-  './index.html?v=1.0.34',
-  './workout.html?v=1.0.34',
-  './exercises.html?v=1.0.34',
-  './history.html?v=1.0.34',
-  './social.html?v=1.0.34',
-  './account.html?v=1.0.34',
-  './settings.html?v=1.0.34',
-  './index.js?v=1.0.34',
-  './workout.js?v=1.0.34',
-  './exercises.js?v=1.0.34',
-  './history.js?v=1.0.34',
-  './social.js?v=1.0.34',
-  './account.js?v=1.0.34',
-  './settings.js?v=1.0.34',
-  './drawer.js?v=1.0.34',
-  './modals.js?v=1.0.34',
-  './navbar.js?v=1.0.34',
-  './stopwatch.js?v=1.0.34',
-  './update-checker.js?v=1.0.34',
-  './workout-init.js?v=1.0.34',
-  './exercise-management.js?v=1.0.34',
-  './global-timer.js?v=1.0.34',
-  './template-creation.js?v=1.0.34',
-  './template-loading.js?v=1.0.34',
-  './template-preview.js?v=1.0.34',
-  './manifest.json?v=1.0.34',
-  './icon-3.png?v=1.0.34',
-  './badges.json?v=1.0.34',
-  './exercises.json?v=1.0.34',
-  './templates.json?v=1.0.34'
+  './index.html?v=1.0.35',
+  './workout.html?v=1.0.35',
+  './exercises.html?v=1.0.35',
+  './history.html?v=1.0.35',
+  './social.html?v=1.0.35',
+  './account.html?v=1.0.35',
+  './settings.html?v=1.0.35',
+  './index.js?v=1.0.35',
+  './workout.js?v=1.0.35',
+  './exercises.js?v=1.0.35',
+  './history.js?v=1.0.35',
+  './social.js?v=1.0.35',
+  './account.js?v=1.0.35',
+  './settings.js?v=1.0.35',
+  './drawer.js?v=1.0.35',
+  './modals.js?v=1.0.35',
+  './navbar.js?v=1.0.35',
+  './stopwatch.js?v=1.0.35',
+  './update-checker.js?v=1.0.35',
+  './workout-init.js?v=1.0.35',
+  './exercise-management.js?v=1.0.35',
+  './global-timer.js?v=1.0.35',
+  './template-creation.js?v=1.0.35',
+  './template-loading.js?v=1.0.35',
+  './template-preview.js?v=1.0.35',
+  './manifest.json?v=1.0.35',
+  './icon-3.png?v=1.0.35',
+  './badges.json?v=1.0.35',
+  './exercises.json?v=1.0.35',
+  './templates.json?v=1.0.35'
 ];
 
 // Enhanced background timer monitoring for PWA
@@ -405,6 +405,41 @@ self.addEventListener('fetch', (event) => {
         });
       }
     })()
+  );
+});
+
+// Add this to your service worker
+self.addEventListener('push', (event) => {
+  console.log('Push event received:', event);
+  
+  let notificationData = {
+    title: 'Rest Timer Complete! 💪',
+    body: 'Your rest period is over. Time for the next set!',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'rest-timer',
+    requireInteraction: true
+  };
+  
+  // If push has data, use it
+  if (event.data) {
+    try {
+      const pushData = event.data.json();
+      notificationData = { ...notificationData, ...pushData };
+    } catch (e) {
+      console.log('Push data not JSON:', event.data.text());
+    }
+  }
+  
+  event.waitUntil(
+    self.registration.showNotification(notificationData.title, {
+      body: notificationData.body,
+      icon: notificationData.icon,
+      badge: notificationData.badge,
+      tag: notificationData.tag,
+      requireInteraction: notificationData.requireInteraction,
+      data: notificationData
+    })
   );
 });
 
