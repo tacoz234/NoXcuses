@@ -1,6 +1,6 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.21'; // Increment this for new updates
+        this.latestVersion = '1.0.22'; // Increment this for new updates
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
@@ -208,14 +208,7 @@ class UpdateChecker {
             this.hasShownNotification = true;
         };
         
-        // Auto-hide after 10 seconds
-        setTimeout(() => {
-            if (document.getElementById('updateNotification')) {
-                updateDiv.remove();
-                localStorage.setItem('last-notified-version', this.latestVersion);
-                this.hasShownNotification = true;
-            }
-        }, 10000);
+        // Removed the auto-hide timeout - notification will persist until user action
     }
 
     async performUpdate() {
