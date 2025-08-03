@@ -1,20 +1,20 @@
 {
   "name": "NoXcuses Fitness Tracker",
   "short_name": "NoXcuses",
-  "version": "1.0.30",
-  "start_url": "./workout.html?v=1.0.30",
+  "version": "1.0.31",
+  "start_url": "./workout.html?v=1.0.31",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
   "icons": [
     {
-      "src": "icon-3.png?v=1.0.30",
+      "src": "icon-3.png?v=1.0.31",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-3.png?v=1.0.30",
+      "src": "icon-3.png?v=1.0.31",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

@@ -86,6 +86,35 @@ saveSettingsBtn.addEventListener('click', function() {
 // Load user data when page loads
 loadUserData();
 
+// Help modal functionality
+const helpBtn = document.getElementById('helpBtn');
+const helpModal = document.getElementById('helpModal');
+const closeHelpModal = document.getElementById('closeHelpModal');
+
+if (helpBtn && helpModal && closeHelpModal) {
+    helpBtn.addEventListener('click', function() {
+        helpModal.classList.remove('hidden');
+    });
+    
+    closeHelpModal.addEventListener('click', function() {
+        helpModal.classList.add('hidden');
+    });
+    
+    // Close modal when clicking outside
+    helpModal.addEventListener('click', function(e) {
+        if (e.target === helpModal) {
+            helpModal.classList.add('hidden');
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !helpModal.classList.contains('hidden')) {
+            helpModal.classList.add('hidden');
+        }
+    });
+}
+
 // Display app version information
 function displayAppInfo() {
     const currentVersion = localStorage.getItem('app-version') || '1.0.0';

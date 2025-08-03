@@ -154,38 +154,66 @@ class GlobalRestTimer {
 
     async checkNotificationPermission() {
         if ('Notification' in window) {
-            // Check if we've already asked and stored the result
-            const storedPermission = localStorage.getItem('notification-permission-asked');
+            // Always check current permission status
+            this.notificationPermission = Notification.permission;
             
-            if (Notification.permission === 'default' && !storedPermission) {
-                // Only ask once per device
+            // For iOS PWA, we need to be more aggressive about requesting permission
+            if (this.notificationPermission === 'default') {
+                // Show a more iOS-friendly permission request
                 const userWantsNotifications = confirm(
-                    'NoXcuses would like to send you notifications when your rest timer finishes. This helps you stay on track with your workout even when the app is in the background. Allow notifications?'
+                    '🔔 Enable Rest Timer Notifications?\n\nGet notified when your rest timer finishes, even when the app is in the background.\n\n⚠️ Important: Make sure you\'ve added this app to your Home Screen for notifications to work on iOS.'
                 );
                 
                 if (userWantsNotifications) {
-                    this.notificationPermission = await Notification.requestPermission();
+                    try {
+                        this.notificationPermission = await Notification.requestPermission();
+                        
+                        // For iOS, also show instructions if permission granted
+                        if (this.notificationPermission === 'granted') {
+                            console.log('✅ Notifications enabled! Make sure the app is added to your Home Screen.');
+                            
+                            // Test notification to verify it works
+                            setTimeout(() => {
+                                this.showTestNotification();
+                            }, 1000);
+                        }
+                    } catch (error) {
+                        console.error('Error requesting notification permission:', error);
+                        this.notificationPermission = 'denied';
+                    }
                 } else {
                     this.notificationPermission = 'denied';
                 }
-                
-                // Store that we've asked, regardless of the answer
-                localStorage.setItem('notification-permission-asked', 'true');
-                localStorage.setItem('notification-permission-result', this.notificationPermission);
-            } else {
-                // Use the current browser permission or stored result
-                this.notificationPermission = Notification.permission;
             }
+            
+            // Store permission result
+            localStorage.setItem('notification-permission-result', this.notificationPermission);
             
             console.log('Notification permission:', this.notificationPermission);
             
-            // If permission is denied, show instructions
+            // Show iOS-specific instructions if needed
             if (this.notificationPermission === 'denied') {
-                console.warn('Notifications are blocked. Background timer alerts will not work.');
+                console.warn('❌ Notifications blocked. To enable:\n1. Add app to Home Screen\n2. Go to Settings > Notifications > [App Name]\n3. Enable notifications');
             }
+        } else {
+            console.warn('Notifications not supported in this browser');
+            this.notificationPermission = 'denied';
         }
     }
-
+    
+    // Add test notification method
+    showTestNotification() {
+        if (this.notificationPermission === 'granted' && this.serviceWorkerRegistration) {
+            this.serviceWorkerRegistration.showNotification('🎉 Notifications Enabled!', {
+                body: 'You\'ll now receive rest timer alerts even when the app is in the background.',
+                icon: './icon-3.png',
+                badge: './icon-3.png',
+                tag: 'test-notification',
+                requireInteraction: false,
+                vibrate: [200, 100, 200]
+            });
+        }
+    }
     initializeAudioOnUserInteraction() {
         const initAudio = async () => {
             if (!this.audioContext) {

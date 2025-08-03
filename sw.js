@@ -1,36 +1,36 @@
-const CACHE_NAME = 'noxcuses-v1.0.30'; // Increment version
+const CACHE_NAME = 'noxcuses-v1.0.31'; // Increment version
 const urlsToCache = [
   './',
-  './index.html?v=1.0.30',
-  './workout.html?v=1.0.30',
-  './exercises.html?v=1.0.30',
-  './history.html?v=1.0.30',
-  './social.html?v=1.0.30',
-  './account.html?v=1.0.30',
-  './settings.html?v=1.0.30',
-  './index.js?v=1.0.30',
-  './workout.js?v=1.0.30',
-  './exercises.js?v=1.0.30',
-  './history.js?v=1.0.30',
-  './social.js?v=1.0.30',
-  './account.js?v=1.0.30',
-  './settings.js?v=1.0.30',
-  './drawer.js?v=1.0.30',
-  './modals.js?v=1.0.30',
-  './navbar.js?v=1.0.30',
-  './stopwatch.js?v=1.0.30',
-  './update-checker.js?v=1.0.30',
-  './workout-init.js?v=1.0.30',
-  './exercise-management.js?v=1.0.30',
-  './global-timer.js?v=1.0.30',
-  './template-creation.js?v=1.0.30',
-  './template-loading.js?v=1.0.30',
-  './template-preview.js?v=1.0.30',
-  './manifest.json?v=1.0.30',
-  './icon-3.png?v=1.0.30',
-  './badges.json?v=1.0.30',
-  './exercises.json?v=1.0.30',
-  './templates.json?v=1.0.30'
+  './index.html?v=1.0.31',
+  './workout.html?v=1.0.31',
+  './exercises.html?v=1.0.31',
+  './history.html?v=1.0.31',
+  './social.html?v=1.0.31',
+  './account.html?v=1.0.31',
+  './settings.html?v=1.0.31',
+  './index.js?v=1.0.31',
+  './workout.js?v=1.0.31',
+  './exercises.js?v=1.0.31',
+  './history.js?v=1.0.31',
+  './social.js?v=1.0.31',
+  './account.js?v=1.0.31',
+  './settings.js?v=1.0.31',
+  './drawer.js?v=1.0.31',
+  './modals.js?v=1.0.31',
+  './navbar.js?v=1.0.31',
+  './stopwatch.js?v=1.0.31',
+  './update-checker.js?v=1.0.31',
+  './workout-init.js?v=1.0.31',
+  './exercise-management.js?v=1.0.31',
+  './global-timer.js?v=1.0.31',
+  './template-creation.js?v=1.0.31',
+  './template-loading.js?v=1.0.31',
+  './template-preview.js?v=1.0.31',
+  './manifest.json?v=1.0.31',
+  './icon-3.png?v=1.0.31',
+  './badges.json?v=1.0.31',
+  './exercises.json?v=1.0.31',
+  './templates.json?v=1.0.31'
 ];
 
 // Enhanced background timer monitoring for PWA
@@ -188,160 +188,113 @@ self.addEventListener('activate', (event) => {
 });
 
 // Background timer monitoring function
+// Enhanced background timer monitoring for iOS compatibility
 function startBackgroundTimerMonitoring() {
-  if (backgroundTimerInterval) {
-    clearInterval(backgroundTimerInterval);
-  }
-  
-  // **ENHANCED: More aggressive checking for better reliability**
-  backgroundTimerInterval = setInterval(async () => {
-    try {
-      // Get timer data directly from storage simulation
-      const timerData = await getTimerDataFromStorage();
-      
-      if (timerData && timerData.isWorkoutActive) {
-        const now = Date.now();
-        const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
-        const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
-        
-        console.log(`SW Timer check: ${remainingTime}s remaining, notification shown: ${timerData.notificationShown}`);
-        
-        // **ENHANCED: Check if any clients are visible**
-        const clients = await self.clients.matchAll({ type: 'window' });
-        const hasVisibleClient = clients.some(client => client.visibilityState === 'visible');
-        
-        // If timer expired and no visible clients, show notification
-        if (remainingTime <= 0 && !timerData.notificationShown && !hasVisibleClient) {
-          console.log('Timer expired in background, showing notification');
-          await showBackgroundNotification(timerData);
-          await markNotificationShown();
+    if (backgroundTimerInterval) {
+        clearInterval(backgroundTimerInterval);
+    }
+    
+    backgroundTimerInterval = setInterval(async () => {
+        try {
+            const timerData = await getTimerDataFromStorage();
+            
+            if (timerData && timerData.isWorkoutActive) {
+                const now = Date.now();
+                const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
+                const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
+                
+                console.log(`SW Timer check: ${remainingTime}s remaining, notification shown: ${timerData.notificationShown}`);
+                
+                // Check if any clients are visible
+                const clients = await self.clients.matchAll({ 
+                    type: 'window',
+                    includeUncontrolled: true 
+                });
+                
+                const hasVisibleClient = clients.some(client => 
+                    client.visibilityState === 'visible' || client.focused
+                );
+                
+                console.log('Clients:', clients.length, 'Visible:', hasVisibleClient);
+                
+                // iOS-friendly notification logic
+                if (remainingTime <= 0 && !timerData.notificationShown) {
+                    console.log('Timer expired, showing notification. Visible clients:', hasVisibleClient);
+                    
+                    // Always try to show notification on iOS, regardless of visibility
+                    // iOS PWAs need more aggressive notification handling
+                    await showBackgroundNotification(timerData);
+                    await markNotificationShown();
+                }
+            }
+        } catch (error) {
+            console.error('Background timer check error:', error);
         }
-      }
-    } catch (error) {
-      console.error('Background timer check error:', error);
-    }
-  }, 250); // **ENHANCED: Even more frequent checking (250ms)**
+    }, 500); // Increased frequency for iOS reliability
 }
 
-// Function to get timer data (improved version)
-async function getTimerDataFromStorage() {
-  try {
-    // Try to get data from clients first
-    const clients = await self.clients.matchAll();
-    
-    if (clients.length > 0) {
-      // Try to get data from active client
-      return new Promise((resolve) => {
-        const messageChannel = new MessageChannel();
-        messageChannel.port1.onmessage = (event) => {
-          resolve(event.data);
-        };
-        
-        clients[0].postMessage({
-          type: 'GET_TIMER_DATA'
-        }, [messageChannel.port2]);
-        
-        // Timeout after 500ms and try alternative method
-        setTimeout(() => {
-          // Fallback: simulate localStorage access by checking if we have cached data
-          // This is a workaround since service workers can't access localStorage directly
-          resolve(getCachedTimerData());
-        }, 500);
-      });
-    }
-    
-    return getCachedTimerData();
-  } catch (error) {
-    console.error('Error getting timer data:', error);
-    return null;
-  }
-}
-
-// Cache timer data when received from clients
-let cachedTimerData = null;
-let lastCacheUpdate = 0;
-
-function getCachedTimerData() {
-  // Return cached data if it's recent (within 5 seconds)
-  if (cachedTimerData && (Date.now() - lastCacheUpdate) < 5000) {
-    return cachedTimerData;
-  }
-  return null;
-}
-
-function updateCachedTimerData(data) {
-  cachedTimerData = data;
-  lastCacheUpdate = Date.now();
-}
-
-// Function to mark notification as shown
-async function markNotificationShown() {
-  const clients = await self.clients.matchAll();
-  
-  if (clients.length > 0) {
-    clients[0].postMessage({
-      type: 'MARK_NOTIFICATION_SHOWN'
-    });
-  }
-  
-  // Also update cached data
-  if (cachedTimerData) {
-    cachedTimerData.notificationShown = true;
-  }
-}
-
-// Function to show background notification
-// Enhanced notification for better iOS compatibility
+// Enhanced notification for iOS compatibility
 async function showBackgroundNotification(timerData) {
-  const exerciseName = timerData.exerciseName || 'Exercise';
-  const setNumber = (timerData.setIndex || 0) + 1;
-  
-  // For iOS, we need to be more aggressive with notification properties
-  const notificationOptions = {
-    body: `Time for your next set of ${exerciseName} (Set ${setNumber})\n\nTap to return to your workout`,
-    icon: '/icon-3.png',
-    badge: '/icon-3.png',
-    tag: 'rest-timer-' + Date.now(), // Always unique tag
-    requireInteraction: true, // Force user interaction
-    silent: false,
-    vibrate: [200, 100, 200, 100, 200],
-    actions: [
-      {
-        action: 'open-workout',
-        title: '💪 Continue Workout'
-      },
-      {
-        action: 'dismiss',
-        title: '❌ Dismiss'
-      }
-    ],
-    data: {
-      exerciseName: exerciseName,
-      setNumber: setNumber,
-      url: '/workout.html',
-      timestamp: Date.now()
-    },
-    // iOS-specific enhancements
-    renotify: true,
-    timestamp: Date.now(),
-    // Add these for better iOS compatibility
-    dir: 'auto',
-    lang: 'en'
-  };
-  
-  // Try multiple notification strategies for iOS
-  try {
-    await self.registration.showNotification('🔔 Rest Timer Complete!', notificationOptions);
-    console.log('Background notification shown for:', exerciseName, 'Set', setNumber);
-  } catch (error) {
-    console.error('Notification failed:', error);
-    // Fallback: try with minimal options
-    await self.registration.showNotification('Rest Timer Complete!', {
-      body: `Time for ${exerciseName} Set ${setNumber}`,
-      requireInteraction: true,
-      tag: 'rest-timer-' + Date.now()
-    });
-  }
+    const exerciseName = timerData.exerciseName || 'Exercise';
+    const setNumber = (timerData.setIndex || 0) + 1;
+    
+    // iOS-optimized notification options
+    const notificationOptions = {
+        body: `Time for your next set of ${exerciseName} (Set ${setNumber})`,
+        icon: './icon-3.png',
+        badge: './icon-3.png',
+        tag: 'rest-timer-' + Date.now(), // Always unique for iOS
+        requireInteraction: true, // Force user interaction on iOS
+        silent: false,
+        vibrate: [200, 100, 200, 100, 200],
+        actions: [
+            {
+                action: 'open-workout',
+                title: '💪 Continue Workout'
+            },
+            {
+                action: 'dismiss',
+                title: '❌ Dismiss'
+            }
+        ],
+        data: {
+            exerciseName: exerciseName,
+            setNumber: setNumber,
+            url: './workout.html',
+            timestamp: Date.now()
+        },
+        // iOS-specific properties
+        renotify: true,
+        timestamp: Date.now(),
+        dir: 'auto',
+        lang: 'en'
+    };
+    
+    try {
+        // Check permission before showing notification
+        if (Notification.permission === 'granted') {
+            await self.registration.showNotification('🔔 Rest Timer Complete!', notificationOptions);
+            console.log('Background notification shown for:', exerciseName, 'Set', setNumber);
+        } else {
+            console.warn('Notification permission not granted:', Notification.permission);
+        }
+    } catch (error) {
+        console.error('Notification failed:', error);
+        
+        // iOS fallback: try with minimal options
+        try {
+            if (Notification.permission === 'granted') {
+                await self.registration.showNotification('Rest Timer Complete!', {
+                    body: `Time for ${exerciseName} Set ${setNumber}`,
+                    requireInteraction: true,
+                    tag: 'rest-timer-' + Date.now(),
+                    vibrate: [200, 100, 200]
+                });
+            }
+        } catch (fallbackError) {
+            console.error('Fallback notification also failed:', fallbackError);
+        }
+    }
 }
 
 // Function to update notification status

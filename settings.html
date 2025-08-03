@@ -89,6 +89,38 @@
                 <span id="lastUpdated" class="text-sm">-</span>
             </div>
         </section>
+        
+        <!-- Help Section -->
+        <section class="w-full max-w-md mt-4 mb-8">
+            <button id="helpBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                <i class="fas fa-question-circle mr-2"></i>
+                Help & Troubleshooting
+            </button>
+        </section>
+        
+        <!-- Help Modal -->
+        <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-6 m-4 max-w-md w-full max-h-96 overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-900">Help & Troubleshooting</h2>
+                    <button id="closeHelpModal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="ios-notification-help text-gray-800">
+                    <h3 class="text-lg font-semibold mb-3 flex items-center">
+                        <span class="mr-2">📱</span> iOS Notification Setup
+                    </h3>
+                    <p class="mb-4">For rest timer notifications to work on iPhone/iPad:</p>
+                    <ol class="list-decimal list-inside space-y-2 text-sm">
+                        <li><strong>Add to Home Screen:</strong> Tap the Share button in Safari, then "Add to Home Screen"</li>
+                        <li><strong>Open from Home Screen:</strong> Always open the app from the home screen icon, not Safari</li>
+                        <li><strong>Enable Notifications:</strong> Allow notifications when prompted</li>
+                        <li><strong>Keep App Active:</strong> iOS may kill background processes if the app isn't used regularly</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
     </main>
     <nav class="fixed bottom-0 left-0 w-full bg-gray-800 border-t border-gray-700 shadow-lg md:hidden z-50">
         <ul class="flex justify-around items-center h-16">
