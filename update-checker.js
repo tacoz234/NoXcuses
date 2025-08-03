@@ -1,7 +1,7 @@
 // Enhanced automatic update checker with aggressive cache invalidation
 function checkForUpdates() {
   const currentVersion = localStorage.getItem('app-version') || '1.0.0';
-  const latestVersion = '1.0.9';
+  const latestVersion = '1.0.10';
   
   console.log('Current version:', currentVersion, 'Latest version:', latestVersion);
   
@@ -59,7 +59,7 @@ function checkForUpdates() {
 
 // Force version check on first load if no version is set
 if (!localStorage.getItem('app-version')) {
-  localStorage.setItem('app-version', '1.0.9');
+  localStorage.setItem('app-version', '1.0.10');
   localStorage.setItem('last-update-check', Date.now().toString());
 }
 

@@ -79,25 +79,35 @@ class GlobalRestTimer {
     }
 
     initializeAudioOnUserInteraction() {
-        const initAudio = () => {
+        const initAudio = async () => {
             if (!this.audioContext) {
                 try {
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    // Remove the event listeners once audio context is created
+                    
+                    // Test the audio context immediately
+                    if (this.audioContext.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+                    
+                    console.log('AudioContext initialized successfully, state:', this.audioContext.state);
+                    
+                    // Remove the event listeners once audio context is created and working
                     document.removeEventListener('click', initAudio);
                     document.removeEventListener('touchstart', initAudio);
                     document.removeEventListener('keydown', initAudio);
+                    document.removeEventListener('touchend', initAudio);
+                    
                 } catch (error) {
                     console.warn('Could not create audio context:', error);
                 }
-            }
-        };
-        
-        // Listen for any user interaction to initialize audio
-        document.addEventListener('click', initAudio);
-        document.addEventListener('touchstart', initAudio);
-        document.addEventListener('keydown', initAudio);
-    }
+            };
+            
+            // Listen for any user interaction to initialize audio
+            document.addEventListener('click', initAudio);
+            document.addEventListener('touchstart', initAudio);
+            document.addEventListener('touchend', initAudio); // Add touchend for mobile
+            document.addEventListener('keydown', initAudio);
+        }
 
     // New method to send timer data to service worker
     sendTimerDataToServiceWorker() {
@@ -414,17 +424,35 @@ class GlobalRestTimer {
 
     playNotificationSound() {
         try {
-            // Use the pre-initialized audio context
+            // Ensure we have an audio context
             if (!this.audioContext) {
-                // Fallback: try to create audio context (might not work without user interaction)
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.warn('AudioContext not initialized - sound may not play');
+                return;
             }
             
-            // Resume audio context if it's suspended
+            // Check if audio context is suspended and try to resume
             if (this.audioContext.state === 'suspended') {
-                this.audioContext.resume();
+                this.audioContext.resume().then(() => {
+                    this.playActualSound();
+                }).catch(error => {
+                    console.warn('Could not resume audio context:', error);
+                    this.tryFallbackSound();
+                });
+            } else if (this.audioContext.state === 'running') {
+                this.playActualSound();
+            } else {
+                console.warn('AudioContext in unexpected state:', this.audioContext.state);
+                this.tryFallbackSound();
             }
             
+        } catch (error) {
+            console.warn('Could not play notification sound:', error);
+            this.tryFallbackSound();
+        }
+    }
+
+    playActualSound() {
+        try {
             // Create a more pleasant notification sound (two-tone chime)
             const playTone = (frequency, startTime, duration) => {
                 const oscillator = this.audioContext.createOscillator();
@@ -437,7 +465,7 @@ class GlobalRestTimer {
                 oscillator.type = 'sine';
                 
                 gainNode.gain.setValueAtTime(0, startTime);
-                gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05); // Increased volume
                 gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
                 
                 oscillator.start(startTime);
@@ -446,21 +474,50 @@ class GlobalRestTimer {
             
             // Play a pleasant two-tone chime
             const now = this.audioContext.currentTime;
-            playTone(800, now, 0.3);      // First tone
-            playTone(1000, now + 0.15, 0.3); // Second tone (slightly delayed and higher)
+            playTone(800, now, 0.4);      // First tone (longer)
+            playTone(1000, now + 0.2, 0.4); // Second tone (slightly delayed and higher)
             
+            console.log('Notification sound played successfully');
         } catch (error) {
-            console.warn('Could not play notification sound:', error);
-            // Fallback: try to use a simple beep
-            try {
-                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
-                audio.play().catch(() => {});
-            } catch (fallbackError) {
-                // Silent fallback
-            }
+            console.warn('Could not play Web Audio sound:', error);
+            this.tryFallbackSound();
         }
     }
 
+    tryFallbackSound() {
+        try {
+            // Enhanced fallback with multiple attempts
+            const audio = new Audio();
+            audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.volume = 0.7;
+            
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('Fallback audio played successfully');
+                }).catch(error => {
+                    console.warn('Fallback audio failed:', error);
+                    // Try system beep as last resort
+                    this.trySystemBeep();
+                });
+            }
+        } catch (fallbackError) {
+            console.warn('All audio methods failed:', fallbackError);
+            this.trySystemBeep();
+        }
+    }
+
+    trySystemBeep() {
+        try {
+            // Try to trigger system notification sound
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200]);
+            }
+            console.log('Using vibration as audio fallback');
+        } catch (error) {
+            console.warn('Even vibration failed:', error);
+        }
+    }
     destroy() {
         if (this.checkInterval) {
             clearInterval(this.checkInterval);

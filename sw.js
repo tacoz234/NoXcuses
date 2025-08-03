@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.9';
+const CACHE_NAME = 'noxcuses-v1.0.10';
 const urlsToCache = [
   './',
   './index.html',
@@ -8,7 +8,6 @@ const urlsToCache = [
   './social.html',
   './account.html',
   './settings.html',
-  // JS files
   './index.js',
   './workout.js',
   './exercises.js',
@@ -26,9 +25,8 @@ const urlsToCache = [
   './template-creation.js',
   './template-loading.js',
   './template-preview.js',
-  // Assets
   './manifest.json',
-  './icon-192.png',
+  './icon-192.png?v=1.0.10', // Add version parameter
   './badges.json',
   './exercises.json',
   './templates.json'
@@ -185,24 +183,24 @@ async function markNotificationShown() {
 }
 
 // Function to show background notification
+// Enhanced notification for better iOS compatibility
 async function showBackgroundNotification(timerData) {
   const exerciseName = timerData.exerciseName || 'Exercise';
   const setNumber = (timerData.setIndex || 0) + 1;
   
-  // Enhanced notification for iOS compatibility
-  await self.registration.showNotification('🔔 Rest Timer Complete!', {
+  // For iOS, we need to be more aggressive with notification properties
+  const notificationOptions = {
     body: `Time for your next set of ${exerciseName} (Set ${setNumber})\n\nTap to return to your workout`,
-    icon: './icon-192.png',
-    badge: './icon-192.png',
-    tag: 'rest-timer-' + Date.now(), // Unique tag to ensure notification shows
-    requireInteraction: true,
-    silent: false, // Allow sound
-    vibrate: [200, 100, 200, 100, 200, 100, 200],
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: 'rest-timer-' + Date.now(), // Always unique tag
+    requireInteraction: true, // Force user interaction
+    silent: false,
+    vibrate: [200, 100, 200, 100, 200],
     actions: [
       {
         action: 'open-workout',
-        title: '💪 Continue Workout',
-        icon: './icon-192.png'
+        title: '💪 Continue Workout'
       },
       {
         action: 'dismiss',
@@ -212,15 +210,30 @@ async function showBackgroundNotification(timerData) {
     data: {
       exerciseName: exerciseName,
       setNumber: setNumber,
-      url: './workout.html',
+      url: '/workout.html',
       timestamp: Date.now()
     },
-    // iOS-specific properties
+    // iOS-specific enhancements
     renotify: true,
-    timestamp: Date.now()
-  });
+    timestamp: Date.now(),
+    // Add these for better iOS compatibility
+    dir: 'auto',
+    lang: 'en'
+  };
   
-  console.log('Background notification shown for:', exerciseName, 'Set', setNumber);
+  // Try multiple notification strategies for iOS
+  try {
+    await self.registration.showNotification('🔔 Rest Timer Complete!', notificationOptions);
+    console.log('Background notification shown for:', exerciseName, 'Set', setNumber);
+  } catch (error) {
+    console.error('Notification failed:', error);
+    // Fallback: try with minimal options
+    await self.registration.showNotification('Rest Timer Complete!', {
+      body: `Time for ${exerciseName} Set ${setNumber}`,
+      requireInteraction: true,
+      tag: 'rest-timer-' + Date.now()
+    });
+  }
 }
 
 // Function to update notification status
