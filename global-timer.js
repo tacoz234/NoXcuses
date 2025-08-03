@@ -8,6 +8,8 @@ class GlobalRestTimer {
         this.hasShownNotification = false;
         this.serviceWorkerRegistration = null;
         this.audioContext = null; // Add audio context for sound
+        this.isPageVisible = !document.hidden;
+        this.backgroundStartTime = null;
         this.init();
     }
 
@@ -34,6 +36,20 @@ class GlobalRestTimer {
             }
         });
         
+        // **NEW: Add Page Visibility API handling**
+        document.addEventListener('visibilitychange', () => {
+            this.handleVisibilityChange();
+        });
+        
+        // **NEW: Add focus/blur handling for additional reliability**
+        window.addEventListener('focus', () => {
+            this.handlePageFocus();
+        });
+        
+        window.addEventListener('blur', () => {
+            this.handlePageBlur();
+        });
+        
         // Send initial timer data to service worker
         this.sendTimerDataToServiceWorker();
         
@@ -42,6 +58,98 @@ class GlobalRestTimer {
         
         // Initialize audio context on first user interaction
         this.initializeAudioOnUserInteraction();
+    }
+
+    // **NEW: Handle visibility changes**
+    handleVisibilityChange() {
+        if (document.hidden) {
+            // Page is going to background
+            this.handlePageBlur();
+        } else {
+            // Page is coming to foreground
+            this.handlePageFocus();
+        }
+    }
+
+    // **NEW: Handle page going to background**
+    handlePageBlur() {
+        this.isPageVisible = false;
+        this.backgroundStartTime = Date.now();
+        
+        // Update timer state before going to background
+        this.updateTimerStateBeforeBackground();
+        
+        // Ensure service worker has latest data
+        this.sendTimerDataToServiceWorker();
+        
+        console.log('Page going to background, timer state updated');
+    }
+
+    // **NEW: Handle page coming to foreground**
+    handlePageFocus() {
+        this.isPageVisible = true;
+        
+        // Calculate time spent in background
+        const backgroundDuration = this.backgroundStartTime ? 
+            Date.now() - this.backgroundStartTime : 0;
+        
+        console.log(`Page returning to foreground after ${backgroundDuration}ms`);
+        
+        // Update timer state after returning from background
+        this.updateTimerStateAfterBackground(backgroundDuration);
+        
+        // Force immediate timer check
+        this.checkTimerStatus();
+        
+        this.backgroundStartTime = null;
+    }
+
+    // **NEW: Update timer state before going to background**
+    updateTimerStateBeforeBackground() {
+        const savedTimer = localStorage.getItem('activeRestTimer');
+        if (savedTimer) {
+            try {
+                const timerData = JSON.parse(savedTimer);
+                // Update the lastUpdateTime to current time
+                timerData.lastUpdateTime = Date.now();
+                localStorage.setItem('activeRestTimer', JSON.stringify(timerData));
+            } catch (e) {
+                console.error('Error updating timer state before background:', e);
+            }
+        }
+    }
+
+    // **NEW: Update timer state after returning from background**
+    updateTimerStateAfterBackground(backgroundDuration) {
+        const savedTimer = localStorage.getItem('activeRestTimer');
+        if (savedTimer) {
+            try {
+                const timerData = JSON.parse(savedTimer);
+                const now = Date.now();
+                
+                // Calculate elapsed time including background time
+                const totalElapsed = Math.floor((now - timerData.lastUpdateTime) / 1000);
+                const newRemainingTime = Math.max(0, timerData.remainingSeconds - totalElapsed);
+                
+                // Update timer data
+                timerData.remainingSeconds = newRemainingTime;
+                timerData.lastUpdateTime = now;
+                
+                // If timer expired while in background, mark it
+                if (newRemainingTime <= 0 && !timerData.notificationShown) {
+                    console.log('Timer expired while in background');
+                    // Don't show notification here - let the normal check handle it
+                }
+                
+                localStorage.setItem('activeRestTimer', JSON.stringify(timerData));
+                
+                // Send updated data to service worker
+                this.sendTimerDataToServiceWorker();
+                
+            } catch (e) {
+                console.error('Error updating timer state after background:', e);
+            }
+        }
     }
 
     async checkNotificationPermission() {
@@ -100,14 +208,15 @@ class GlobalRestTimer {
                 } catch (error) {
                     console.warn('Could not create audio context:', error);
                 }
-            };
-            
-            // Listen for any user interaction to initialize audio
-            document.addEventListener('click', initAudio);
-            document.addEventListener('touchstart', initAudio);
-            document.addEventListener('touchend', initAudio); // Add touchend for mobile
-            document.addEventListener('keydown', initAudio);
-        }
+            }
+        };
+        
+        // Listen for any user interaction to initialize audio
+        document.addEventListener('click', initAudio);
+        document.addEventListener('touchstart', initAudio);
+        document.addEventListener('touchend', initAudio);
+        document.addEventListener('keydown', initAudio);
+    }
 
     // New method to send timer data to service worker
     sendTimerDataToServiceWorker() {
@@ -200,18 +309,22 @@ class GlobalRestTimer {
             const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
             const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
 
-            // If timer has expired and we haven't shown notification yet
+            // **ENHANCED: Better notification logic**
             if (remainingTime <= 0 && !this.hasShownNotification && !timerData.notificationShown) {
-                if (this.isOnWorkoutPage()) {
-                    // Show in-page notification if on workout page
+                console.log('Timer expired, showing notification. Page visible:', this.isPageVisible);
+                
+                if (this.isPageVisible && this.isOnWorkoutPage()) {
+                    // Show in-page notification if on workout page and visible
                     this.showCrossPageNotification(timerData);
                 } else {
                     // Show background notification via service worker
                     this.showBackgroundNotification(timerData);
                 }
                 
-                // Clean up the expired timer
-                localStorage.removeItem('activeRestTimer');
+                // Mark notification as shown
+                timerData.notificationShown = true;
+                localStorage.setItem('activeRestTimer', JSON.stringify(timerData));
+                
                 this.hasShownNotification = true;
             }
         } catch (e) {
@@ -488,7 +601,7 @@ class GlobalRestTimer {
         try {
             // Enhanced fallback with multiple attempts
             const audio = new Audio();
-            audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.src = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT';
             audio.volume = 0.7;
             
             const playPromise = audio.play();

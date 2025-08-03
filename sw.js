@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.10';
+const CACHE_NAME = 'noxcuses-v1.0.11';
 const urlsToCache = [
   './',
   './index.html',
@@ -26,7 +26,7 @@ const urlsToCache = [
   './template-loading.js',
   './template-preview.js',
   './manifest.json',
-  './icon-192.png?v=1.0.10', // Add version parameter
+  './icon-192.png?v=1.0.11', // Add version parameter
   './badges.json',
   './exercises.json',
   './templates.json'
@@ -88,7 +88,7 @@ function startBackgroundTimerMonitoring() {
     clearInterval(backgroundTimerInterval);
   }
   
-  // More frequent checking for iOS
+  // **ENHANCED: More aggressive checking for better reliability**
   backgroundTimerInterval = setInterval(async () => {
     try {
       // Get timer data directly from storage simulation
@@ -99,20 +99,23 @@ function startBackgroundTimerMonitoring() {
         const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
         const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
         
-        console.log(`Timer check: ${remainingTime}s remaining, notification shown: ${timerData.notificationShown}`);
+        console.log(`SW Timer check: ${remainingTime}s remaining, notification shown: ${timerData.notificationShown}`);
         
-        // If timer expired, show notification
-        if (remainingTime <= 0 && !timerData.notificationShown) {
-          console.log('Timer expired, showing notification');
+        // **ENHANCED: Check if any clients are visible**
+        const clients = await self.clients.matchAll({ type: 'window' });
+        const hasVisibleClient = clients.some(client => client.visibilityState === 'visible');
+        
+        // If timer expired and no visible clients, show notification
+        if (remainingTime <= 0 && !timerData.notificationShown && !hasVisibleClient) {
+          console.log('Timer expired in background, showing notification');
           await showBackgroundNotification(timerData);
-          // Mark notification as shown by updating the stored data
           await markNotificationShown();
         }
       }
     } catch (error) {
       console.error('Background timer check error:', error);
     }
-  }, 500); // Check every 500ms for more responsive notifications
+  }, 250); // **ENHANCED: Even more frequent checking (250ms)**
 }
 
 // Function to get timer data (improved version)
