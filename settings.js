@@ -208,12 +208,14 @@ function initializeNotificationToggle() {
         return;
     }
 
-    // Remove any existing event listeners
-    const newToggle = notificationToggle.cloneNode(true);
-    notificationToggle.parentNode.replaceChild(newToggle, notificationToggle);
+    // Remove any existing event listeners without cloning
+    notificationToggle.replaceWith(notificationToggle.cloneNode(true));
+    
+    // Get the fresh element reference after replacement
+    const freshToggle = document.getElementById('notificationToggle');
     
     // Add fresh event listener
-    newToggle.addEventListener('click', async function(event) {
+    freshToggle.addEventListener('click', async function(event) {
         event.preventDefault();
         event.stopPropagation();
         
