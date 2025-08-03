@@ -1,7 +1,7 @@
-// Enhanced update checker with cache busting
+// Enhanced automatic update checker
 function checkForUpdates() {
   const currentVersion = localStorage.getItem('app-version') || '1.0.0';
-  const latestVersion = '1.0.6';
+  const latestVersion = '1.0.7';
   
   console.log('Current version:', currentVersion, 'Latest version:', latestVersion);
   
@@ -9,54 +9,67 @@ function checkForUpdates() {
   localStorage.setItem('last-update-check', Date.now().toString());
   
   if (currentVersion !== latestVersion) {
-    if (confirm('A new version is available! Update now? (Your data will be preserved)')) {
-      localStorage.setItem('app-version', latestVersion);
-      
-      // Enhanced reload with aggressive cache clearing
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          // Unregister all service workers
-          Promise.all(registrations.map(reg => reg.unregister())).then(() => {
-            // Clear all caches
-            caches.keys().then(cacheNames => {
-              return Promise.all(
-                cacheNames.map(cacheName => caches.delete(cacheName))
-              );
-            }).then(() => {
-              // Clear localStorage update flags
-              localStorage.removeItem('sw-cache-cleared');
-              // Force reload with cache bypass and timestamp
-              window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() + '&cache-bust=' + Math.random();
-            });
+    console.log('New version available, updating automatically...');
+    
+    // Update version in localStorage
+    localStorage.setItem('app-version', latestVersion);
+    
+    // Register for service worker updates
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').then(registration => {
+        // Check for updates
+        registration.update();
+        
+        // Listen for new service worker
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New service worker is ready, reload the page
+              console.log('New version installed, reloading...');
+              window.location.reload();
+            }
           });
         });
-      } else {
-        // Fallback for browsers without service worker
-        window.location.href = window.location.href.split('?')[0] + '?v=' + Date.now() + '&cache-bust=' + Math.random();
-      }
+      });
+      
+      // Listen for service worker messages
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.type === 'SW_UPDATED') {
+          console.log('Service worker updated, reloading page...');
+          // Small delay to ensure everything is ready
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }
+      });
+    } else {
+      // Fallback for browsers without service worker
+      console.log('No service worker support, doing hard reload...');
+      window.location.reload(true);
     }
   }
 }
 
-// Force version check on first load if no version is set
+// Initialize version on first load
 if (!localStorage.getItem('app-version')) {
-  localStorage.setItem('app-version', '1.0.6');
+  localStorage.setItem('app-version', '1.0.7');
   localStorage.setItem('last-update-check', Date.now().toString());
 }
 
 // Check on app start
 checkForUpdates();
 
-// Check when app becomes visible (more frequent for better detection)
+// Check when app becomes visible
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     checkForUpdates();
   }
 });
 
-// Check every 15 seconds when active (more frequent)
+// Check every 30 seconds when active (less frequent to reduce overhead)
 setInterval(() => {
   if (!document.hidden) {
     checkForUpdates();
   }
-}, 15000);
+}, 30000);

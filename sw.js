@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.6';
+const CACHE_NAME = 'noxcuses-v1.0.7';
 const urlsToCache = [
   './',
   './index.html',
@@ -45,7 +45,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
   );
-  // Force immediate activation
+  // Force immediate activation and skip waiting
   self.skipWaiting();
 });
 
@@ -63,6 +63,16 @@ self.addEventListener('activate', (event) => {
     }).then(() => {
       // Force immediate control of all clients
       return self.clients.claim();
+    }).then(() => {
+      // Notify all clients that a new version is available
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'SW_UPDATED',
+            version: CACHE_NAME
+          });
+        });
+      });
     })
   );
   
@@ -251,29 +261,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // For HTML files, try network first, then cache
-  if (event.request.destination === 'document') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Clone the response before caching
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => cache.put(event.request, responseClone));
-          return response;
-        })
-        .catch(() => {
-          return caches.match(event.request);
-        })
-    );
-    return;
-  }
-  
-  // For other resources, cache first, then network
+  // For all app files, use stale-while-revalidate strategy
+  // This serves from cache immediately but updates in background
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        return response || fetch(event.request);
-      })
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.match(event.request).then(cachedResponse => {
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          // Update cache with new response
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        }).catch(() => {
+          // If network fails, return cached version
+          return cachedResponse;
+        });
+        
+        // Return cached version immediately if available, otherwise wait for network
+        return cachedResponse || fetchPromise;
+      });
+    })
   );
 });
