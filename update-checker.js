@@ -1,6 +1,6 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.25'; // Increment this for new updates
+        this.latestVersion = '1.0.26'; // Increment to new version
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
@@ -230,8 +230,8 @@ class UpdateChecker {
                     await registration.unregister();
                 }
                 
-                // Wait a bit for unregistration to complete
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Wait longer for unregistration to complete
+                await new Promise(resolve => setTimeout(resolve, 2000));
             }
             
             // 2. Clear ALL caches aggressively
@@ -281,34 +281,44 @@ class UpdateChecker {
                 }
             }
             
-            // 6. Enhanced cache busting for production
+            // 6. SUPER aggressive cache busting
             const timestamp = Date.now();
+            const randomId = Math.random().toString(36).substring(2, 15);
             const currentUrl = new URL(window.location.href);
             
             // Clear all URL parameters first
             currentUrl.search = '';
             
-            // Add aggressive cache busting
+            // Add multiple cache busting parameters
             currentUrl.searchParams.set('v', this.latestVersion);
             currentUrl.searchParams.set('_t', timestamp);
             currentUrl.searchParams.set('_force', '1');
-            currentUrl.searchParams.set('_cb', Math.random().toString(36));
+            currentUrl.searchParams.set('_cb', randomId);
+            currentUrl.searchParams.set('_update', this.latestVersion);
+            currentUrl.searchParams.set('_nocache', '1');
             
             if (isProduction) {
                 // Additional production cache busting
                 currentUrl.searchParams.set('_prod_update', '1');
                 currentUrl.searchParams.set('_no_cache', timestamp);
+                currentUrl.searchParams.set('_bust', randomId);
             }
             
             console.log('Forcing reload to:', currentUrl.href);
             
-            // Use location.href instead of replace for more aggressive reload
-            window.location.href = currentUrl.href;
+            // Force a hard reload that bypasses all caches
+            window.location.replace(currentUrl.href);
+            
+            // Fallback after a delay
+            setTimeout(() => {
+                window.location.href = currentUrl.href;
+            }, 1000);
             
         } catch (error) {
             console.error('Update failed:', error);
-            // Fallback: aggressive reload
-            window.location.href = window.location.href + '?_force_reload=' + Date.now();
+            // Fallback: super aggressive reload
+            const fallbackUrl = window.location.href.split('?')[0] + '?_emergency_reload=' + Date.now() + '&v=' + this.latestVersion;
+            window.location.href = fallbackUrl;
         }
     }
 

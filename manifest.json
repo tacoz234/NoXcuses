@@ -1,8 +1,8 @@
 {
   "name": "NoXcuses Fitness Tracker",
   "short_name": "NoXcuses",
-  "version": "1.0.25",
-  "start_url": "./workout.html",
+  "version": "1.0.26",
+  "start_url": "./workout.html?v=1.0.26",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#1a1a1a",
