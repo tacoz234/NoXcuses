@@ -339,8 +339,8 @@ class GlobalRestTimer {
             
             await this.serviceWorkerRegistration.showNotification('Rest Timer Complete! 💪', {
                 body: `Time for your next set of ${exerciseName} (Set ${setNumber})`,
-                icon: './icon-2.png',
-                badge: './icon-2.png',
+                icon: './icon-3.png',
+                badge: './icon-3.png',
                 tag: 'rest-timer',
                 requireInteraction: true,
                 vibrate: [200, 100, 200, 100, 200],
@@ -516,8 +516,8 @@ class GlobalRestTimer {
         if (this.notificationPermission === 'granted') {
             const notification = new Notification('Rest Timer Complete!', {
                 body: `Time for your next set of ${exerciseName} (Set ${setNumber})`,
-                icon: '/icon-2.png',
-                badge: '/icon-2.png',
+                icon: '/icon-3.png',
+                badge: '/icon-3.png',
                 tag: 'rest-timer',
                 requireInteraction: false // Don't require interaction since we have custom modal
             });
