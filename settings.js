@@ -143,21 +143,31 @@ displayAppInfo();
 
 // Notification permission handling
 function updateNotificationUI() {
+    const notificationToggle = document.getElementById('notificationToggle');
+    const notificationStatus = document.getElementById('notificationStatus');
+    
+    if (!notificationToggle || !notificationStatus) {
+        console.error('Notification UI elements not found');
+        return;
+    }
+    
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     
+    // Always enable the button
+    notificationToggle.disabled = false;
+    
     if (!('Notification' in window)) {
         notificationToggle.textContent = 'Not Supported';
-        notificationToggle.disabled = true;
-        notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-gray-300 text-gray-500 cursor-not-allowed';
+        notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-gray-300 text-gray-500';
         notificationStatus.textContent = 'Notifications not supported in this browser';
         return;
     }
 
     // iOS-specific check
     if (isIOS && !isStandalone) {
-        notificationToggle.textContent = 'Add to Home Screen';
-        notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-orange-500 text-white';
+        notificationToggle.textContent = 'Add to Home Screen First';
+        notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-orange-500 text-white hover:bg-orange-600';
         notificationStatus.textContent = 'Must be added to Home Screen for iOS notifications';
         return;
     }
@@ -166,19 +176,19 @@ function updateNotificationUI() {
     
     switch (permission) {
         case 'granted':
-            notificationToggle.textContent = 'Enabled ✓';
-            notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-green-500 text-white';
-            notificationStatus.textContent = isIOS ? 'iOS notifications enabled' : 'Notifications are enabled';
+            notificationToggle.textContent = 'Test Notification';
+            notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-green-500 text-white hover:bg-green-600';
+            notificationStatus.textContent = isIOS ? 'iOS notifications enabled ✓' : 'Notifications enabled ✓';
             break;
         case 'denied':
-            notificationToggle.textContent = 'Blocked';
-            notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-red-500 text-white';
+            notificationToggle.textContent = 'Blocked - Check Settings';
+            notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-red-500 text-white hover:bg-red-600';
             notificationStatus.textContent = isIOS ? 
                 'Enable in iPhone Settings > Notifications > NoXcuses' : 
                 'Notifications blocked. Enable in browser settings';
             break;
         default: // 'default'
-            notificationToggle.textContent = 'Enable';
+            notificationToggle.textContent = 'Enable Notifications';
             notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-blue-500 text-white hover:bg-blue-600';
             notificationStatus.textContent = isIOS ? 
                 'Tap to enable iOS notifications' : 
@@ -188,102 +198,138 @@ function updateNotificationUI() {
 }
 
 // Handle notification toggle click (iOS-optimized)
-notificationToggle.addEventListener('click', async function() {
-    if (!('Notification' in window)) {
-        alert('Notifications are not supported in this browser.');
-        return;
-    }
-
-    // Check if running as PWA on iOS
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+// Improved notification toggle with better error handling
+function initializeNotificationToggle() {
+    const notificationToggle = document.getElementById('notificationToggle');
+    const notificationStatus = document.getElementById('notificationStatus');
     
-    if (isIOS && !isStandalone) {
-        alert('📱 iOS Requirement:\n\n1. Add this app to your Home Screen\n2. Open from the Home Screen icon (not Safari)\n3. Then try enabling notifications again\n\nNotifications only work for installed PWAs on iOS.');
+    if (!notificationToggle || !notificationStatus) {
+        console.error('Notification toggle elements not found');
         return;
     }
 
-    if (Notification.permission === 'granted') {
-        // Show test notification
+    // Remove any existing event listeners
+    const newToggle = notificationToggle.cloneNode(true);
+    notificationToggle.parentNode.replaceChild(newToggle, notificationToggle);
+    
+    // Add fresh event listener
+    newToggle.addEventListener('click', async function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        console.log('Notification toggle clicked');
+        
         try {
-            if ('serviceWorker' in navigator) {
-                const registration = await navigator.serviceWorker.ready;
-                await registration.showNotification('🎉 Notifications Working!', {
-                    body: 'Rest timer notifications are enabled and working.',
-                    icon: './icon-192.png',
-                    badge: './icon-192.png',
-                    tag: 'test-notification',
-                    requireInteraction: false
-                });
+            if (!('Notification' in window)) {
+                alert('Notifications are not supported in this browser.');
+                return;
             }
-        } catch (error) {
-            console.error('Test notification failed:', error);
-        }
-        return;
-    }
 
-    if (Notification.permission === 'denied') {
-        if (isIOS) {
-            alert('🚫 Notifications Blocked on iOS\n\nTo fix:\n1. Go to iPhone Settings\n2. Scroll down to find "NoXcuses"\n3. Tap it and enable "Allow Notifications"\n4. Return to this app and try again');
-        } else {
-            alert('Notifications are blocked. Please enable them in your browser settings.');
-        }
-        return;
-    }
-
-    // Request permission with iOS-specific handling
-    try {
-        // iOS requires a more explicit user interaction
-        const userConfirmed = confirm('🔔 Enable Rest Timer Notifications?\n\nYou\'ll get notified when your rest timer finishes, even when the app is in the background.\n\nTap OK to enable notifications.');
-        
-        if (!userConfirmed) {
-            return;
-        }
-
-        const permission = await Notification.requestPermission();
-        
-        if (permission === 'granted') {
-            alert('✅ Notifications Enabled!\n\nYou\'ll now receive rest timer alerts when the app is in the background.');
+            // Check if running as PWA on iOS
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             
-            // Show welcome notification
-            if ('serviceWorker' in navigator) {
-                const registration = await navigator.serviceWorker.ready;
-                setTimeout(async () => {
-                    try {
-                        await registration.showNotification('🎉 Welcome!', {
-                            body: 'Rest timer notifications are now enabled.',
+            console.log('iOS:', isIOS, 'Standalone:', isStandalone, 'Permission:', Notification.permission);
+            
+            if (isIOS && !isStandalone) {
+                alert('📱 iOS Requirement:\n\n1. Add this app to your Home Screen\n2. Open from the Home Screen icon (not Safari)\n3. Then try enabling notifications again\n\nNotifications only work for installed PWAs on iOS.');
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                // Show test notification
+                console.log('Permission already granted, showing test notification');
+                try {
+                    if ('serviceWorker' in navigator) {
+                        const registration = await navigator.serviceWorker.ready;
+                        await registration.showNotification('🎉 Notifications Working!', {
+                            body: 'Rest timer notifications are enabled and working.',
                             icon: './icon-192.png',
                             badge: './icon-192.png',
-                            tag: 'welcome-notification',
+                            tag: 'test-notification',
                             requireInteraction: false
                         });
-                    } catch (e) {
-                        console.log('Welcome notification failed:', e);
+                    } else {
+                        new Notification('🎉 Notifications Working!', {
+                            body: 'Rest timer notifications are enabled and working.',
+                            icon: './icon-192.png'
+                        });
                     }
-                }, 1000);
+                } catch (error) {
+                    console.error('Test notification failed:', error);
+                    alert('Test notification failed: ' + error.message);
+                }
+                return;
             }
-        } else if (permission === 'denied') {
-            if (isIOS) {
-                alert('❌ Notifications Denied\n\nIf you change your mind:\n1. Go to iPhone Settings > Notifications\n2. Find "NoXcuses" and enable notifications\n3. Restart the app');
-            } else {
-                alert('❌ Notifications were denied. Rest timer alerts won\'t work.');
-            }
-        } else {
-            // Permission is still 'default' - this shouldn't happen after requestPermission
-            alert('⚠️ Notification permission unclear. Please try again.');
-        }
-        
-        updateNotificationUI();
-        
-    } catch (error) {
-        console.error('Error requesting notification permission:', error);
-        if (isIOS) {
-            alert('❌ iOS Notification Error\n\nTry:\n1. Make sure you opened this app from the Home Screen\n2. Restart the app\n3. Try again');
-        } else {
-            alert('Error requesting notification permission. Please try again.');
-        }
-    }
-});
 
-// Initialize notification UI
-updateNotificationUI();
+            if (Notification.permission === 'denied') {
+                if (isIOS) {
+                    alert('🚫 Notifications Blocked on iOS\n\nTo fix:\n1. Go to iPhone Settings\n2. Scroll down to find "NoXcuses"\n3. Tap it and enable "Allow Notifications"\n4. Return to this app and try again');
+                } else {
+                    alert('Notifications are blocked. Please enable them in your browser settings.');
+                }
+                return;
+            }
+
+            // Request permission (permission is 'default')
+            console.log('Requesting notification permission...');
+            
+            // Show confirmation first
+            const userConfirmed = confirm('🔔 Enable Rest Timer Notifications?\n\nYou\'ll get notified when your rest timer finishes, even when the app is in the background.\n\nTap OK to enable notifications.');
+            
+            if (!userConfirmed) {
+                console.log('User cancelled notification request');
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            console.log('Permission result:', permission);
+            
+            if (permission === 'granted') {
+                alert('✅ Notifications Enabled!\n\nYou\'ll now receive rest timer alerts when the app is in the background.');
+                
+                // Show welcome notification
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.ready;
+                    setTimeout(async () => {
+                        try {
+                            await registration.showNotification('🎉 Welcome!', {
+                                body: 'Rest timer notifications are now enabled.',
+                                icon: './icon-192.png',
+                                badge: './icon-192.png',
+                                tag: 'welcome-notification',
+                                requireInteraction: false
+                            });
+                        } catch (e) {
+                            console.log('Welcome notification failed:', e);
+                        }
+                    }, 1000);
+                }
+            } else if (permission === 'denied') {
+                if (isIOS) {
+                    alert('❌ Notifications Denied\n\nIf you change your mind:\n1. Go to iPhone Settings > Notifications\n2. Find "NoXcuses" and enable notifications\n3. Restart the app');
+                } else {
+                    alert('❌ Notifications were denied. Rest timer alerts won\'t work.');
+                }
+            } else {
+                console.log('Permission still default after request - this is unusual');
+                alert('⚠️ Notification permission unclear. Please try again.');
+            }
+            
+            updateNotificationUI();
+            
+        } catch (error) {
+            console.error('Error in notification toggle:', error);
+            alert('Error: ' + error.message + '\n\nPlease check the console for more details.');
+        }
+    });
+    
+    // Update UI immediately
+    updateNotificationUI();
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize notification toggle
+    initializeNotificationToggle();
+});
