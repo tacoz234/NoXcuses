@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.0'; // Update version number when you make changes
+const CACHE_NAME = 'noxcuses-v1.0.2'; // Update version number when you make changes
 const urlsToCache = [
   './',
   './index.html',

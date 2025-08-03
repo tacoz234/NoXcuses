@@ -1,7 +1,7 @@
 // Check for updates periodically
 function checkForUpdates() {
   const currentVersion = localStorage.getItem('app-version') || '1.0.0';
-  const latestVersion = '1.0.1'; // Update this when you release
+  const latestVersion = '1.0.2'; // Update this when you release
   
   if (currentVersion !== latestVersion) {
     if (confirm('A new version is available! Update now? (Your data will be preserved)')) {
