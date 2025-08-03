@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.2'; // Update version number when you make changes
+const CACHE_NAME = 'noxcuses-v1.0.2';
 const urlsToCache = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const urlsToCache = [
   './social.html',
   './account.html',
   './settings.html',
+  // JS files
   './index.js',
   './workout.js',
   './exercises.js',
@@ -25,6 +26,7 @@ const urlsToCache = [
   './template-creation.js',
   './template-loading.js',
   './template-preview.js',
+  // Assets
   './manifest.json',
   './icon-192.png',
   './badges.json',
@@ -32,12 +34,15 @@ const urlsToCache = [
   './templates.json'
 ];
 
+// Don't cache update-checker.js - always fetch fresh
+const noCacheFiles = ['./update-checker.js'];
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
   );
-  self.skipWaiting(); // Force activation of new service worker
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -46,20 +51,27 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName); // Delete old caches
+            return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  self.clients.claim(); // Take control of all clients
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Never cache update-checker.js - always fetch fresh
+  if (noCacheFiles.some(file => url.pathname.endsWith(file.replace('./', '')))) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
         return response || fetch(event.request);
       }
     )
