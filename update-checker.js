@@ -1,9 +1,10 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.14'; // Increment this for new updates
+        this.latestVersion = '1.0.15'; // Increment this for new updates
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
+        this.hasShownNotification = false;
         
         this.init();
     }
@@ -14,28 +15,28 @@ class UpdateChecker {
         // Check immediately on load
         this.checkForUpdates();
         
-        // Check when page becomes visible
+        // Check when page becomes visible (but less frequently)
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && !this.isUpdating) {
+            if (!document.hidden && !this.isUpdating && !this.hasShownNotification) {
                 console.log('Page became visible, checking for updates');
                 this.checkForUpdates();
             }
         });
         
-        // Check when window gains focus
+        // Check when window gains focus (but less frequently)
         window.addEventListener('focus', () => {
-            if (!this.isUpdating) {
+            if (!this.isUpdating && !this.hasShownNotification) {
                 console.log('Window focused, checking for updates');
                 this.checkForUpdates();
             }
         });
         
-        // More frequent checking - every 5 seconds when active
+        // Less frequent checking - every 30 seconds when active
         this.updateCheckInterval = setInterval(() => {
-            if (!document.hidden && !this.isUpdating) {
+            if (!document.hidden && !this.isUpdating && !this.hasShownNotification) {
                 this.checkForUpdates();
             }
-        }, 5000);
+        }, 30000); // Changed from 5000 to 30000
         
         // Listen for service worker updates
         if ('serviceWorker' in navigator) {
@@ -73,7 +74,7 @@ class UpdateChecker {
     }
 
     async checkForUpdates() {
-        if (this.isUpdating) return;
+        if (this.isUpdating || this.hasShownNotification) return;
         
         try {
             console.log('Checking for updates...', this.currentVersion, 'vs', this.latestVersion);
@@ -83,13 +84,13 @@ class UpdateChecker {
                 
                 // Show update notification instead of auto-updating
                 this.showUpdateNotification();
+                this.hasShownNotification = true;
             }
         } catch (error) {
             console.error('Update check failed:', error);
         }
     }
 
-    // Add this new method
     showUpdateNotification() {
         // Check if we've already shown the notification for this version
         const lastNotifiedVersion = localStorage.getItem('last-notified-version');
@@ -155,6 +156,7 @@ class UpdateChecker {
             updateDiv.remove();
             // Remember we showed notification for this version
             localStorage.setItem('last-notified-version', this.latestVersion);
+            this.hasShownNotification = true;
         };
         
         // Auto-hide after 10 seconds
@@ -162,6 +164,7 @@ class UpdateChecker {
             if (document.getElementById('updateNotification')) {
                 updateDiv.remove();
                 localStorage.setItem('last-notified-version', this.latestVersion);
+                this.hasShownNotification = true;
             }
         }, 10000);
     }
@@ -193,15 +196,26 @@ class UpdateChecker {
                 );
             }
             
-            // 3. Clear all storage
+            // 3. Clear all storage except notification permissions
+            const notificationAsked = localStorage.getItem('notification-permission-asked');
+            const notificationResult = localStorage.getItem('notification-permission-result');
+            
             localStorage.clear();
             sessionStorage.clear();
+            
+            // Restore notification permissions to avoid re-prompting
+            if (notificationAsked) {
+                localStorage.setItem('notification-permission-asked', notificationAsked);
+            }
+            if (notificationResult) {
+                localStorage.setItem('notification-permission-result', notificationResult);
+            }
             
             // 4. Set the new version in localStorage
             localStorage.setItem('app-version', this.latestVersion);
             localStorage.setItem('last-update-check', Date.now().toString());
             
-            // 4. Clear IndexedDB if present
+            // 5. Clear IndexedDB if present
             if ('indexedDB' in window) {
                 try {
                     const databases = await indexedDB.databases();
@@ -219,7 +233,7 @@ class UpdateChecker {
                 }
             }
             
-            // 5. Force hard reload with cache busting
+            // 6. Force hard reload with cache busting
             const timestamp = Date.now();
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('v', this.latestVersion);

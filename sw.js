@@ -1,35 +1,35 @@
-const CACHE_NAME = 'noxcuses-v1.0.14'; // Update version
+const CACHE_NAME = 'noxcuses-v1.0.15'; // Update version to match
 const urlsToCache = [
   './',
-  './index.html?v=1.0.14',
-  './workout.html?v=1.0.14',
-  './exercises.html?v=1.0.14',
-  './history.html?v=1.0.14',
-  './social.html?v=1.0.14',
-  './account.html?v=1.0.14',
-  './settings.html?v=1.0.14',
-  './index.js?v=1.0.14',
-  './workout.js?v=1.0.14',
-  './exercises.js?v=1.0.14',
-  './history.js?v=1.0.14',
-  './social.js?v=1.0.14',
-  './account.js?v=1.0.14',
-  './settings.js?v=1.0.14',
-  './drawer.js?v=1.0.14',
-  './modals.js?v=1.0.14',
-  './navbar.js?v=1.0.14',
-  './stopwatch.js?v=1.0.14',
-  './workout-init.js?v=1.0.14',
-  './exercise-management.js?v=1.0.14',
-  './global-timer.js?v=1.0.14',
-  './template-creation.js?v=1.0.14',
-  './template-loading.js?v=1.0.14',
-  './template-preview.js?v=1.0.14',
-  './manifest.json?v=1.0.14',
-  './icon-192.png?v=1.0.14',
-  './badges.json?v=1.0.14',
-  './exercises.json?v=1.0.14',
-  './templates.json?v=1.0.14'
+  './index.html?v=1.0.15',
+  './workout.html?v=1.0.15',
+  './exercises.html?v=1.0.15',
+  './history.html?v=1.0.15',
+  './social.html?v=1.0.15',
+  './account.html?v=1.0.15',
+  './settings.html?v=1.0.15',
+  './index.js?v=1.0.15',
+  './workout.js?v=1.0.15',
+  './exercises.js?v=1.0.15',
+  './history.js?v=1.0.15',
+  './social.js?v=1.0.15',
+  './account.js?v=1.0.15',
+  './settings.js?v=1.0.15',
+  './drawer.js?v=1.0.15',
+  './modals.js?v=1.0.15',
+  './navbar.js?v=1.0.15',
+  './stopwatch.js?v=1.0.15',
+  './workout-init.js?v=1.0.15',
+  './exercise-management.js?v=1.0.15',
+  './global-timer.js?v=1.0.15',
+  './template-creation.js?v=1.0.15',
+  './template-loading.js?v=1.0.15',
+  './template-preview.js?v=1.0.15',
+  './manifest.json?v=1.0.15',
+  './icon-192.png?v=1.0.15',
+  './badges.json?v=1.0.15',
+  './exercises.json?v=1.0.15',
+  './templates.json?v=1.0.15'
 ];
 
 // Enhanced background timer monitoring for PWA
@@ -78,67 +78,51 @@ function startBackgroundTimerMonitoring() {
 
 // Enhanced notification for PWA
 async function showBackgroundNotification(timerData) {
-  const exerciseName = timerData.exerciseName || 'Exercise';
-  const setNumber = (timerData.setIndex || 0) + 1;
+  const { exerciseName, setNumber, currentExerciseIndex } = timerData;
   
-  // PWA-optimized notification options
   const notificationOptions = {
-    body: `Time for your next set of ${exerciseName} (Set ${setNumber})\n\nTap to return to your workout`,
-    icon: '/icon-192.png?v=1.0.14',
-    badge: '/icon-192.png?v=1.0.14',
-    tag: 'rest-timer-' + Date.now(), // Always unique for PWA
+    body: `Time for ${exerciseName} Set ${setNumber}`,
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'rest-timer-' + currentExerciseIndex + '-' + setNumber,
     requireInteraction: true,
-    silent: false,
-    vibrate: [300, 100, 300, 100, 300],
-    renotify: true,
-    timestamp: Date.now(),
+    vibrate: [200, 100, 200, 100, 200],
     actions: [
-      {
-        action: 'open-workout',
-        title: '💪 Continue Workout'
-      },
-      {
-        action: 'dismiss',
-        title: '❌ Dismiss'
-      }
+      { action: 'open', title: 'Open App' },
+      { action: 'dismiss', title: 'Dismiss' }
     ],
     data: {
-      exerciseName: exerciseName,
-      setNumber: setNumber,
-      url: '/workout.html?v=1.0.14',
-      timestamp: Date.now()
+      exerciseName,
+      setNumber,
+      currentExerciseIndex,
+      url: './workout.html'
     },
     // PWA-specific enhancements
     dir: 'auto',
     lang: 'en',
-    // Force notification even if permission is default
     persistent: true
   };
   
   try {
-    // Request permission if needed
-    if (Notification.permission === 'default') {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        console.log('Notification permission denied');
-        return;
-      }
-    }
-    
+    // Only check permission, don't request it in service worker
     if (Notification.permission === 'granted') {
       await self.registration.showNotification('🔔 Rest Timer Complete!', notificationOptions);
       console.log('PWA notification shown for:', exerciseName, 'Set', setNumber);
+    } else {
+      console.log('Notification permission not granted, skipping notification');
     }
   } catch (error) {
     console.error('PWA notification failed:', error);
     // Fallback: try with minimal options
     try {
-      await self.registration.showNotification('Rest Timer Complete!', {
-        body: `Time for ${exerciseName} Set ${setNumber}`,
-        requireInteraction: true,
-        tag: 'rest-timer-' + Date.now(),
-        vibrate: [200, 100, 200]
-      });
+      if (Notification.permission === 'granted') {
+        await self.registration.showNotification('Rest Timer Complete!', {
+          body: `Time for ${exerciseName} Set ${setNumber}`,
+          requireInteraction: true,
+          tag: 'rest-timer-' + Date.now(),
+          vibrate: [200, 100, 200]
+        });
+      }
     } catch (fallbackError) {
       console.error('Fallback notification also failed:', fallbackError);
     }
