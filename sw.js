@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noxcuses-v1.0.8';
+const CACHE_NAME = 'noxcuses-v1.0.9';
 const urlsToCache = [
   './',
   './index.html',
@@ -41,15 +41,17 @@ const noCacheFiles = ['./update-checker.js'];
 let backgroundTimerInterval = null;
 
 self.addEventListener('install', (event) => {
+  console.log('Service worker installing with cache:', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
   );
-  // Force immediate activation and skip waiting
+  // Force immediate activation
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+  console.log('Service worker activating');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -61,11 +63,13 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
+      console.log('Taking control of all clients');
       // Force immediate control of all clients
       return self.clients.claim();
     }).then(() => {
       // Notify all clients that a new version is available
       return self.clients.matchAll().then(clients => {
+        console.log('Notifying', clients.length, 'clients of update');
         clients.forEach(client => {
           client.postMessage({
             type: 'SW_UPDATED',
@@ -86,6 +90,7 @@ function startBackgroundTimerMonitoring() {
     clearInterval(backgroundTimerInterval);
   }
   
+  // More frequent checking for iOS
   backgroundTimerInterval = setInterval(async () => {
     try {
       // Get timer data directly from storage simulation
@@ -95,6 +100,8 @@ function startBackgroundTimerMonitoring() {
         const now = Date.now();
         const elapsedSeconds = Math.floor((now - timerData.lastUpdateTime) / 1000);
         const remainingTime = Math.max(0, timerData.remainingSeconds - elapsedSeconds);
+        
+        console.log(`Timer check: ${remainingTime}s remaining, notification shown: ${timerData.notificationShown}`);
         
         // If timer expired, show notification
         if (remainingTime <= 0 && !timerData.notificationShown) {
@@ -107,7 +114,7 @@ function startBackgroundTimerMonitoring() {
     } catch (error) {
       console.error('Background timer check error:', error);
     }
-  }, 1000);
+  }, 500); // Check every 500ms for more responsive notifications
 }
 
 // Function to get timer data (improved version)
@@ -182,29 +189,38 @@ async function showBackgroundNotification(timerData) {
   const exerciseName = timerData.exerciseName || 'Exercise';
   const setNumber = (timerData.setIndex || 0) + 1;
   
-  await self.registration.showNotification('Rest Timer Complete! 💪', {
-    body: `Time for your next set of ${exerciseName} (Set ${setNumber})`,
+  // Enhanced notification for iOS compatibility
+  await self.registration.showNotification('🔔 Rest Timer Complete!', {
+    body: `Time for your next set of ${exerciseName} (Set ${setNumber})\n\nTap to return to your workout`,
     icon: './icon-192.png',
     badge: './icon-192.png',
-    tag: 'rest-timer',
+    tag: 'rest-timer-' + Date.now(), // Unique tag to ensure notification shows
     requireInteraction: true,
-    vibrate: [200, 100, 200, 100, 200],
+    silent: false, // Allow sound
+    vibrate: [200, 100, 200, 100, 200, 100, 200],
     actions: [
       {
         action: 'open-workout',
-        title: 'Go to Workout'
+        title: '💪 Continue Workout',
+        icon: './icon-192.png'
       },
       {
         action: 'dismiss',
-        title: 'Dismiss'
+        title: '❌ Dismiss'
       }
     ],
     data: {
       exerciseName: exerciseName,
       setNumber: setNumber,
-      url: './workout.html'
-    }
+      url: './workout.html',
+      timestamp: Date.now()
+    },
+    // iOS-specific properties
+    renotify: true,
+    timestamp: Date.now()
   });
+  
+  console.log('Background notification shown for:', exerciseName, 'Set', setNumber);
 }
 
 // Function to update notification status
@@ -261,22 +277,32 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // For all app files, use stale-while-revalidate strategy
-  // This serves from cache immediately but updates in background
+  // Use network-first strategy for better updates
+  // This ensures users get the latest version as soon as it's available
   event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(event.request).then(cachedResponse => {
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-          // Update cache with new response
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        }).catch(() => {
-          // If network fails, return cached version
-          return cachedResponse;
+    fetch(event.request, {
+      cache: 'no-cache' // Always check network first
+    }).then(networkResponse => {
+      // If network request succeeds, update cache and return response
+      if (networkResponse && networkResponse.status === 200) {
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
         });
-        
-        // Return cached version immediately if available, otherwise wait for network
-        return cachedResponse || fetchPromise;
+        return networkResponse;
+      }
+      throw new Error('Network response not ok');
+    }).catch(() => {
+      // If network fails, fall back to cache
+      return caches.match(event.request).then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        // If no cache either, return a basic error response
+        return new Response('Offline - content not available', {
+          status: 503,
+          statusText: 'Service Unavailable'
+        });
       });
     })
   );

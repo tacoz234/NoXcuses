@@ -1,7 +1,7 @@
-// Enhanced automatic update checker
+// Enhanced automatic update checker with aggressive cache invalidation
 function checkForUpdates() {
   const currentVersion = localStorage.getItem('app-version') || '1.0.0';
-  const latestVersion = '1.0.8';
+  const latestVersion = '1.0.9';
   
   console.log('Current version:', currentVersion, 'Latest version:', latestVersion);
   
@@ -9,67 +9,74 @@ function checkForUpdates() {
   localStorage.setItem('last-update-check', Date.now().toString());
   
   if (currentVersion !== latestVersion) {
-    console.log('New version available, updating automatically...');
+    console.log('New version detected, forcing update...');
     
-    // Update version in localStorage
+    // Update version immediately
     localStorage.setItem('app-version', latestVersion);
     
-    // Register for service worker updates
+    // Force immediate update without user confirmation
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').then(registration => {
-        // Check for updates
-        registration.update();
-        
-        // Listen for new service worker
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New service worker is ready, reload the page
-              console.log('New version installed, reloading...');
-              window.location.reload();
-            }
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        // Unregister all service workers first
+        Promise.all(registrations.map(reg => reg.unregister())).then(() => {
+          console.log('Service workers unregistered');
+          
+          // Clear all caches aggressively
+          caches.keys().then(cacheNames => {
+            return Promise.all(
+              cacheNames.map(cacheName => {
+                console.log('Deleting cache:', cacheName);
+                return caches.delete(cacheName);
+              })
+            );
+          }).then(() => {
+            console.log('All caches cleared');
+            
+            // Clear any update flags
+            localStorage.removeItem('sw-cache-cleared');
+            
+            // Force hard reload with multiple cache-busting parameters
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substring(7);
+            const newUrl = window.location.href.split('?')[0] + 
+              `?v=${latestVersion}&t=${timestamp}&r=${random}&cache-bust=true`;
+            
+            console.log('Reloading with URL:', newUrl);
+            window.location.replace(newUrl);
           });
         });
       });
-      
-      // Listen for service worker messages
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'SW_UPDATED') {
-          console.log('Service worker updated, reloading page...');
-          // Small delay to ensure everything is ready
-          setTimeout(() => {
-            window.location.reload();
-          }, 100);
-        }
-      });
     } else {
       // Fallback for browsers without service worker
-      console.log('No service worker support, doing hard reload...');
-      window.location.reload(true);
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(7);
+      const newUrl = window.location.href.split('?')[0] + 
+        `?v=${latestVersion}&t=${timestamp}&r=${random}&cache-bust=true`;
+      window.location.replace(newUrl);
     }
   }
 }
 
-// Initialize version on first load
+// Force version check on first load if no version is set
 if (!localStorage.getItem('app-version')) {
-  localStorage.setItem('app-version', '1.0.8');
+  localStorage.setItem('app-version', '1.0.9');
   localStorage.setItem('last-update-check', Date.now().toString());
 }
 
 // Check on app start
 checkForUpdates();
 
-// Check when app becomes visible
+// Check when app becomes visible (more aggressive checking)
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
-    checkForUpdates();
+    // Small delay to ensure page is fully loaded
+    setTimeout(checkForUpdates, 1000);
   }
 });
 
-// Check every 30 seconds when active (less frequent to reduce overhead)
+// Check every 15 seconds when active (more frequent for faster updates)
 setInterval(() => {
   if (!document.hidden) {
     checkForUpdates();
   }
-}, 30000);
+}, 15000);
