@@ -28,6 +28,10 @@ const themeSelect = document.getElementById('themeSelect');
 const weightUnitSelect = document.getElementById('weightUnitSelect');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 
+// Notification elements
+const notificationToggle = document.getElementById('notificationToggle');
+const notificationStatus = document.getElementById('notificationStatus');
+
 // Load user data
 function loadUserData() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -136,3 +140,106 @@ function displayAppInfo() {
 
 // Call on page load
 displayAppInfo();
+
+// Notification permission handling
+function updateNotificationUI() {
+    if (!('Notification' in window)) {
+        notificationToggle.textContent = 'Not Supported';
+        notificationToggle.disabled = true;
+        notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-gray-300 text-gray-500 cursor-not-allowed';
+        notificationStatus.textContent = 'Notifications not supported in this browser';
+        return;
+    }
+
+    const permission = Notification.permission;
+    
+    switch (permission) {
+        case 'granted':
+            notificationToggle.textContent = 'Enabled ✓';
+            notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-green-500 text-white';
+            notificationStatus.textContent = 'Notifications are enabled';
+            break;
+        case 'denied':
+            notificationToggle.textContent = 'Blocked';
+            notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-red-500 text-white';
+            notificationStatus.textContent = 'Notifications blocked. Enable in iOS Settings > Notifications';
+            break;
+        default: // 'default'
+            notificationToggle.textContent = 'Enable';
+            notificationToggle.className = 'px-4 py-2 rounded text-sm font-medium bg-blue-500 text-white hover:bg-blue-600';
+            notificationStatus.textContent = 'Tap to enable rest timer notifications';
+            break;
+    }
+}
+
+// Handle notification toggle click
+notificationToggle.addEventListener('click', async function() {
+    if (!('Notification' in window)) {
+        alert('Notifications are not supported in this browser.');
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        // Already granted, show test notification
+        try {
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.showNotification('🎉 Notifications Working!', {
+                    body: 'Rest timer notifications are enabled and working.',
+                    icon: './icon-192.png',
+                    badge: './icon-192.png',
+                    tag: 'test-notification',
+                    requireInteraction: false
+                });
+            } else {
+                new Notification('🎉 Notifications Working!', {
+                    body: 'Rest timer notifications are enabled and working.',
+                    icon: './icon-192.png'
+                });
+            }
+        } catch (error) {
+            console.error('Test notification failed:', error);
+            alert('Notification test failed. Check console for details.');
+        }
+        return;
+    }
+
+    if (Notification.permission === 'denied') {
+        alert('Notifications are blocked. To enable:\n\n1. Go to iOS Settings > Notifications\n2. Find "NoXcuses" in the app list\n3. Turn on "Allow Notifications"\n\nThen refresh this page and try again.');
+        return;
+    }
+
+    // Request permission
+    try {
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+            // Show success message and test notification
+            alert('✅ Notifications enabled! You\'ll now receive rest timer alerts.');
+            
+            // Show test notification
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.showNotification('🎉 Notifications Enabled!', {
+                    body: 'You\'ll now receive rest timer notifications.',
+                    icon: './icon-192.png',
+                    badge: './icon-192.png',
+                    tag: 'welcome-notification',
+                    requireInteraction: false
+                });
+            }
+        } else {
+            alert('❌ Notifications were not enabled. Rest timer alerts won\'t work.');
+        }
+        
+        // Update notification UI
+        updateNotificationUI();
+        
+    } catch (error) {
+        console.error('Error requesting notification permission:', error);
+        alert('Error requesting notification permission. Please try again.');
+    }
+});
+
+// Initialize notification UI
+updateNotificationUI();
