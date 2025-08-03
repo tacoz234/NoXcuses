@@ -1,6 +1,6 @@
 class UpdateChecker {
     constructor() {
-        this.latestVersion = '1.0.19'; // Increment this for new updates
+        this.latestVersion = '1.0.20'; // Increment this for new updates
         this.currentVersion = this.getCurrentVersion();
         this.updateCheckInterval = null;
         this.isUpdating = false;
@@ -106,8 +106,16 @@ class UpdateChecker {
                     
                     if (response.ok) {
                         const manifest = await response.json();
+                        // Compare with latestVersion instead of currentVersion
+                        if (manifest.version && manifest.version !== this.latestVersion) {
+                            console.log('Server version newer than expected:', manifest.version, 'vs', this.latestVersion);
+                            // Update our latest version to match server
+                            this.latestVersion = manifest.version;
+                        }
+                        
+                        // Now check if current version needs updating
                         if (manifest.version && manifest.version !== this.currentVersion) {
-                            console.log('Server version mismatch detected');
+                            console.log('Server version mismatch detected:', manifest.version, 'vs current:', this.currentVersion);
                             this.showUpdateNotification();
                             this.hasShownNotification = true;
                             return;
@@ -118,6 +126,7 @@ class UpdateChecker {
                 }
             }
             
+            // Standard version check
             if (this.currentVersion !== this.latestVersion) {
                 console.log('Update available! Current:', this.currentVersion, 'Latest:', this.latestVersion);
                 this.showUpdateNotification();
@@ -132,6 +141,7 @@ class UpdateChecker {
         // Check if we've already shown the notification for this version
         const lastNotifiedVersion = localStorage.getItem('last-notified-version');
         if (lastNotifiedVersion === this.latestVersion) {
+            console.log('Already notified for version:', this.latestVersion);
             return; // Don't spam notifications
         }
         
@@ -186,6 +196,8 @@ class UpdateChecker {
         // Add event listeners
         document.getElementById('updateNow').onclick = () => {
             updateDiv.remove();
+            // Mark as notified before updating to prevent loops
+            localStorage.setItem('last-notified-version', this.latestVersion);
             this.performUpdate();
         };
         
