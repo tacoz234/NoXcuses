@@ -8,7 +8,7 @@
     else if (path.endsWith('history.html')) page = 'HISTORY';
     else if (path.endsWith('workout.html')) page = 'WORKOUT';
     else if (path.endsWith('exercises.html')) page = 'EXERCISES';
-    else if (path.endsWith('social.html') || path.endsWith('account.html')) page = 'SOCIAL';
+    else if (path.endsWith('social.html') || path.endsWith('account.html') || path.endsWith('settings.html')) page = 'SOCIAL';
 
     nav.innerHTML = nav.innerHTML
         .replace('HOME_ACTIVE', page==='HOME' ? 'text-blue-500' : 'text-gray-400')
@@ -62,8 +62,15 @@ profilePicInput.addEventListener('change', function(e) {
     }
 });
 
-// Handle settings save
-saveSettingsBtn.addEventListener('click', function() {
+// Handle settings save with navigation blocking
+saveSettingsBtn.addEventListener('click', function(event) {
+    // Prevent any default button behavior
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Block any navigation attempts
+    const originalLocation = window.location.href;
+    
     const userData = {
         username: usernameInput.value.trim(),
         email: emailInput.value.trim(),
@@ -82,9 +89,15 @@ saveSettingsBtn.addEventListener('click', function() {
     // Show success message
     showAlert('Settings saved successfully!', 'Success');
     
+    // Force stay on current page if navigation was attempted
+    setTimeout(() => {
+        if (window.location.href !== originalLocation) {
+            console.log('Navigation detected, forcing back to settings');
+            window.location.href = 'settings.html';
+        }
+    }, 100);
     
-    // Redirect back to account page
-    window.location.href = 'account.html';
+    return false;
 });
 
 // Load user data when page loads
@@ -330,8 +343,102 @@ function initializeNotificationToggle() {
     updateNotificationUI();
 }
 
+// Update Now button functionality
+function initializeUpdateButton() {
+    const updateBtn = document.getElementById('updateNowBtn');
+    const updateIcon = document.getElementById('updateIcon');
+    const updateBtnText = document.getElementById('updateBtnText');
+    const updateStatus = document.getElementById('updateStatus');
+    
+    if (!updateBtn || !updateIcon || !updateBtnText || !updateStatus) {
+        console.error('Update button elements not found');
+        return;
+    }
+    
+    updateBtn.addEventListener('click', async function() {
+        // Disable button and show loading state
+        updateBtn.disabled = true;
+        updateIcon.className = 'fas fa-spinner fa-spin mr-2';
+        updateBtnText.textContent = 'Checking...';
+        updateStatus.textContent = 'Checking for updates...';
+        updateStatus.classList.remove('hidden');
+        
+        try {
+            // Access the global updateChecker instance
+            if (typeof updateChecker !== 'undefined') {
+                // Force a fresh check
+                updateChecker.hasShownNotification = false;
+                
+                // Get current and latest versions
+                const currentVersion = updateChecker.getCurrentVersion();
+                const latestVersion = updateChecker.latestVersion;
+                
+                console.log('Manual update check - Current:', currentVersion, 'Latest:', latestVersion);
+                
+                // Check if update is available
+                if (currentVersion !== latestVersion) {
+                    updateBtnText.textContent = 'Update Available!';
+                    updateIcon.className = 'fas fa-download mr-2';
+                    updateStatus.textContent = `Version ${latestVersion} is available. Click to install.`;
+                    updateStatus.className = 'text-xs text-green-400 mt-2 text-center';
+                    
+                    // Change button to install update
+                    updateBtn.onclick = function() {
+                        updateBtn.disabled = true;
+                        updateIcon.className = 'fas fa-spinner fa-spin mr-2';
+                        updateBtnText.textContent = 'Installing...';
+                        updateStatus.textContent = 'Installing update... Please wait.';
+                        updateStatus.className = 'text-xs text-blue-400 mt-2 text-center';
+                        
+                        // Perform the update
+                        updateChecker.performUpdate();
+                    };
+                } else {
+                    // No update available
+                    updateBtnText.textContent = 'Up to Date';
+                    updateIcon.className = 'fas fa-check mr-2';
+                    updateStatus.textContent = 'You have the latest version.';
+                    updateStatus.className = 'text-xs text-green-400 mt-2 text-center';
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        resetUpdateButton();
+                    }, 3000);
+                }
+            } else {
+                throw new Error('Update checker not available');
+            }
+        } catch (error) {
+            console.error('Update check failed:', error);
+            updateBtnText.textContent = 'Check Failed';
+            updateIcon.className = 'fas fa-exclamation-triangle mr-2';
+            updateStatus.textContent = 'Failed to check for updates. Try again later.';
+            updateStatus.className = 'text-xs text-red-400 mt-2 text-center';
+            
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                resetUpdateButton();
+            }, 3000);
+        }
+        
+        updateBtn.disabled = false;
+    });
+    
+    function resetUpdateButton() {
+        updateBtn.disabled = false;
+        updateIcon.className = 'fas fa-sync-alt mr-2';
+        updateBtnText.textContent = 'Check for Updates';
+        updateStatus.classList.add('hidden');
+        
+        // Reset the click handler
+        updateBtn.onclick = updateBtn.onclick;
+    }
+}
+
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize notification toggle
     initializeNotificationToggle();
+    // Initialize update button
+    initializeUpdateButton();
 });
