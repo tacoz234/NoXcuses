@@ -442,3 +442,142 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize update button
     initializeUpdateButton();
 });
+
+// Data Export/Import functionality
+const exportDataBtn = document.getElementById('exportDataBtn');
+const importDataInput = document.getElementById('importDataInput');
+
+// Export all user data
+function exportUserData() {
+    try {
+        const exportData = {
+            exportDate: new Date().toISOString(),
+            appVersion: localStorage.getItem('app-version') || '1.0.0',
+            userData: {
+                // User profile and settings
+                userData: JSON.parse(localStorage.getItem('userData') || '{}'),
+                
+                // Workout data
+                workoutHistory: JSON.parse(localStorage.getItem('workoutHistory') || '[]'),
+                currentWorkout: JSON.parse(localStorage.getItem('currentWorkout') || '{}'),
+                isWorkoutActive: localStorage.getItem('isWorkoutActive'),
+                
+                // Templates and exercises
+                custom_templates: JSON.parse(localStorage.getItem('custom_templates') || '[]'),
+                customExercises: JSON.parse(localStorage.getItem('customExercises') || '[]'),
+                
+                // App preferences
+                userPreferences: JSON.parse(localStorage.getItem('userPreferences') || '{}'),
+                settings: JSON.parse(localStorage.getItem('settings') || '{}'),
+                
+                // Notification settings
+                notificationPermissionAsked: localStorage.getItem('notification-permission-asked'),
+                notificationPermissionResult: localStorage.getItem('notification-permission-result'),
+                
+                // Any other relevant data
+                badges: JSON.parse(localStorage.getItem('badges') || '[]'),
+                achievements: JSON.parse(localStorage.getItem('achievements') || '[]')
+            }
+        };
+        
+        // Create and download the file
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `noxcuses-data-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showAlert('Data exported successfully! Save this file to import into your iOS app.', 'Success');
+    } catch (error) {
+        console.error('Export error:', error);
+        showAlert('Failed to export data. Please try again.', 'Error');
+    }
+}
+
+// Import user data
+function importUserData(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importData = JSON.parse(e.target.result);
+            
+            if (!importData.userData) {
+                throw new Error('Invalid data format');
+            }
+            
+            // Confirm before importing
+            if (!confirm('This will replace all your current data. Are you sure you want to continue?')) {
+                return;
+            }
+            
+            // Import all data
+            Object.entries(importData.userData).forEach(([key, value]) => {
+                if (value !== null && value !== undefined) {
+                    if (typeof value === 'object') {
+                        localStorage.setItem(key, JSON.stringify(value));
+                    } else {
+                        localStorage.setItem(key, value);
+                    }
+                }
+            });
+            
+            showAlert('Data imported successfully! Please refresh the page to see your imported data.', 'Success');
+            
+            // Refresh the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Import error:', error);
+            showAlert('Failed to import data. Please check the file format.', 'Error');
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Event listeners for export/import
+if (exportDataBtn) {
+    exportDataBtn.addEventListener('click', exportUserData);
+}
+
+if (importDataInput) {
+    importDataInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            importUserData(file);
+        }
+    });
+}
+
+// Helper function for showing alerts (if not already defined)
+function showAlert(message, type = 'Info') {
+    // Create a simple alert modal if one doesn't exist
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+        type === 'Success' ? 'bg-green-600' : 
+        type === 'Error' ? 'bg-red-600' : 'bg-blue-600'
+    } text-white`;
+    alertDiv.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${
+                type === 'Success' ? 'fa-check-circle' : 
+                type === 'Error' ? 'fa-exclamation-circle' : 'fa-info-circle'
+            } mr-2"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 4000);
+}

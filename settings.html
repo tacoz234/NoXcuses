@@ -117,6 +117,31 @@
             </div>
         </section>
         
+        <!-- Data Export/Import Section -->
+        <section class="w-full max-w-md bg-gray-800 rounded-lg shadow-md p-4 mt-4 text-white">
+            <h3 class="text-sm font-medium mb-4 text-gray-300">Data Management</h3>
+            <div class="space-y-3">
+                <button id="exportDataBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                    <i class="fas fa-download mr-2"></i>
+                    Export My Data
+                </button>
+                <div class="text-xs text-gray-400 text-center">
+                    Export all your workout history, templates, exercises, and settings
+                </div>
+                
+                <div class="border-t border-gray-600 pt-3">
+                    <label for="importDataInput" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center cursor-pointer">
+                        <i class="fas fa-upload mr-2"></i>
+                        Import Data
+                    </label>
+                    <input type="file" id="importDataInput" accept=".json" class="hidden">
+                    <div class="text-xs text-gray-400 text-center mt-2">
+                        Restore data from a previous export
+                    </div>
+                </div>
+            </div>
+        </section>
+        
         <!-- Help Section -->
         <section class="w-full max-w-md mt-4 mb-8">
             <button id="helpBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center">
